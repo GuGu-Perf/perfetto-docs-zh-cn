@@ -360,7 +360,7 @@ FROM android_heap_profile_summary_tree;
 
 - **自定义分配器**：某些应用程序出于性能原因使用自己的内存分配器。这些分配器通常使用 `mmap()` 从系统获取内存，然后在内部管理它。虽然 Perfetto 无法自动 profile 这些，但你可以使用 [heapprofd Custom Allocator API](/docs/instrumentation/heapprofd-api) 为你的自定义分配器添加插桩以启用 heap profiling。
 
-- **DMA 缓冲区(`dmabuf`)**：这些是用于在不同硬件组件（例如，CPU、GPU 和相机）之间共享内存的特殊缓冲区。这在图形密集型应用程序中很常见。你可以通过在你的 trace 配置中启用 `dmabuf_heap/dma_heap_stat` ftrace 事件来跟踪 `dmabuf` 分配。
+- **DMA 缓冲区(`dmabuf`)** ：这些是用于在不同硬件组件（例如，CPU、GPU 和相机）之间共享内存的特殊缓冲区。这在图形密集型应用程序中很常见。你可以通过在你的 trace 配置中启用 `dmabuf_heap/dma_heap_stat` ftrace 事件来跟踪 `dmabuf` 分配。
 
 ## 后续步骤
 
