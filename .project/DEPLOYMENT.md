@@ -309,6 +309,142 @@ perfetto/out/perfetto.dev/site/
 
 ---
 
+## GitHub Pages 部署指南
+
+将构建好的站点部署到 GitHub Pages，使用 `gh-pages` 分支。
+
+### 前置要求
+
+1. 仓库已推送到 GitHub
+2. 已启用 GitHub Pages（Settings → Pages）
+3. 配置为从 `gh-pages` 分支的 `/(root)` 目录部署
+
+### 部署步骤
+
+```bash
+# 1. 构建站点（按上面的本地部署步骤）
+./perfetto-docs-zh-cn/.project/deploy.sh
+
+# 2. 切换到 gh-pages 分支
+cd perfetto-docs-zh-cn
+git checkout gh-pages
+
+# 3. 清空旧文件并复制新构建
+git rm -rf .
+cp -r ../perfetto/out/perfetto.dev/site/* .
+touch .nojekyll  # 禁用 Jekyll 处理
+
+# 4. 修复路径（GitHub Pages 子目录部署必需）
+# 见下方 "GitHub Pages 路径修复"
+
+# 5. 提交并推送
+git add -A
+git commit -m "deploy: 更新 GitHub Pages"
+git push origin gh-pages --force
+```
+
+### GitHub Pages 路径修复（重要！）
+
+Perfetto 构建系统使用绝对路径（如 `/assets/style.css`），但 GitHub Pages 项目站点部署在子目录（`username.github.io/repo-name/`），需要修复所有路径。
+
+**必须修复的路径：**
+
+```bash
+# 修复 index.html
+sed -i '' 's|href="/assets/|href="/perfetto-docs-zh-cn/assets/|g' index.html
+sed -i '' 's|src="/assets/|src="/perfetto-docs-zh-cn/assets/|g' index.html
+sed -i '' 's|href="/docs/|href="/perfetto-docs-zh-cn/docs/|g' index.html
+sed -i '' 's|href="/"|href="/perfetto-docs-zh-cn/"|g' index.html
+
+# 修复所有 docs/*.html
+find docs -name "*.html" -exec sed -i '' 's|href="/assets/|href="/perfetto-docs-zh-cn/assets/|g' {} \;
+find docs -name "*.html" -exec sed -i '' 's|src="/assets/|src="/perfetto-docs-zh-cn/assets/|g' {} \;
+find docs -name "*.html" -exec sed -i '' 's|href="/docs/|href="/perfetto-docs-zh-cn/docs/|g' {} \;
+find docs -name "*.html" -exec sed -i '' 's|src="/docs/images/|src="/perfetto-docs-zh-cn/docs/images/|g' {} \;
+find docs -name "*.html" -exec sed -i '' 's|href="/"|href="/perfetto-docs-zh-cn/"|g' {} \;
+
+# 修复 assets/script.js（mermaid.js 路径）
+sed -i '' 's|"/assets/mermaid.min.js"|"/perfetto-docs-zh-cn/assets/mermaid.min.js"|g' assets/script.js
+
+# 修复 assets/style.css（sprite.png 路径）
+sed -i '' 's|"/assets/sprite.png"|"/perfetto-docs-zh-cn/assets/sprite.png"|g' assets/style.css
+
+# 为所有 docs 文件添加 .html 扩展名（GitHub Pages 需要）
+find docs -type f ! -name "*.png" ! -name "*.jpg" ! -name "*.gif" ! -name "*.svg" ! -name "*.ico" ! -name "*.html" -exec sh -c 'mv "$1" "$1.html"' _ {} \;
+
+# 为所有链接添加 .html 后缀
+find . -name "*.html" ! -path "./.git/*" -exec sed -i '' 's|href="/perfetto-docs-zh-cn/docs/\([^"]*\)"|href="/perfetto-docs-zh-cn/docs/\1.html"|g' {} \;
+
+# 修复错误的 docs/.html 链接
+find . -name "*.html" ! -path "./.git/*" -exec sed -i '' 's|href="/perfetto-docs-zh-cn/docs/.html"|href="/perfetto-docs-zh-cn/docs/"|g' {} \;
+```
+
+---
+
+## GitHub Pages 部署踩坑记录
+
+### 坑 1: 样式不生效（CSS 404）
+
+**现象**: 页面显示为纯文本，没有样式
+
+**原因**: CSS 路径是绝对路径 `/assets/style.css`，但 GitHub Pages 项目站点在子目录 `/repo-name/` 下
+
+**解决**: 将所有 `/assets/` 改为 `/repo-name/assets/`
+
+### 坑 2: 子页面 404
+
+**现象**: 点击侧边栏链接显示 404
+
+**原因**: 
+1. 文件没有 `.html` 扩展名
+2. 链接没有 `.html` 后缀
+
+**解决**: 
+1. 为所有文件添加 `.html` 扩展名
+2. 为所有链接添加 `.html` 后缀
+
+### 坑 3: 点击链接下载文件而不是打开页面
+
+**现象**: 点击链接弹出下载窗口
+
+**原因**: GitHub Pages 无法识别无扩展名文件为 HTML
+
+**解决**: 见坑 2 的解决方案
+
+### 坑 4: 图片不显示
+
+**现象**: 图片位置显示为空白或破碎图标
+
+**原因**: 图片路径是绝对路径 `/docs/images/xxx.png`
+
+**解决**: 改为 `/repo-name/docs/images/xxx.png`
+
+### 坑 5: Mermaid 图表不渲染
+
+**现象**: 关系图显示为代码块而不是图形
+
+**原因**: `script.js` 中加载 mermaid.js 的路径是绝对路径 `/assets/mermaid.min.js`
+
+**解决**: 改为 `/repo-name/assets/mermaid.min.js`
+
+### 坑 6: 首页链接错误
+
+**现象**: 点击 Logo 或 Docs 链接返回 404
+
+**原因**: 根路径 `/` 没有改为 `/repo-name/`
+
+**解决**: 将所有 `href="/"` 改为 `href="/repo-name/"`
+
+### 坑 7: GitHub Pages 配置错误
+
+**现象**: 整个站点 404
+
+**原因**: GitHub Pages 配置为从 `/docs` 文件夹部署，而不是 `/(root)`
+
+**解决**: Settings → Pages → Branch: gh-pages → Folder: `/(root)`
+
+---
+
 ## 总结
 
 部署成功的关键要点：
@@ -318,3 +454,5 @@ perfetto/out/perfetto.dev/site/
 3. ✅ **完整复制** - 确保 docs/ 目录完全替换
 4. ✅ **删除管理文件** - `.project/` 目录不属于构建系统
 5. ✅ **修复死链** - 删除指向不存在文件的引用
+6. ✅ **GitHub Pages 路径修复** - 所有绝对路径必须添加仓库名前缀
+7. ✅ **添加 .html 扩展名** - GitHub Pages 需要显式的文件扩展名
