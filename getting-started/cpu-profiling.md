@@ -16,9 +16,9 @@
 
 数据源配置([PerfEventConfig](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/profiling/perf_event_config.proto?q=PerfEventConfig))定义以下内容：
 
-- **[Timebase](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/common/perf_events.proto?q=Timebase)(或组领导者)**： 正在计数的主要事件。此事件在每个 CPU 上分别计数。
-- **采样周期/频率**： Counter 采样的频率。这可以是一个固定的 `period`（例如，每 1000 个事件）或一个 `frequency`(例如，每秒 100 次)。
-- **[Followers](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/common/perf_events.proto?q=FollowerEvent)**： 要记录的任何其他 Counters。这些 Counters 在 timebase 事件的同时被快照。
+- **[Timebase](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/common/perf_events.proto?q=Timebase)(或组领导者)** ： 正在计数的主要事件。此事件在每个 CPU 上分别计数。
+- **采样周期/频率** ： Counter 采样的频率。这可以是一个固定的 `period`（例如，每 1000 个事件）或一个 `frequency`(例如，每秒 100 次)。
+- **[Followers](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/common/perf_events.proto?q=FollowerEvent)** ： 要记录的任何其他 Counters。这些 Counters 在 timebase 事件的同时被快照。
 
 一个 trace 配置可以为单独的采样组定义多个"linux.perf"数据源。但请注意，如果计算硬件事件，你需要小心不要超过平台的 PMU 容量。否则内核将多路复用（重复切换进出）事件组，导致计数不足（参见[this perfwiki page](https://perfwiki.github.io/main/tutorial/#multiplexing-and-scaling-events）了解更多信息)。
 
