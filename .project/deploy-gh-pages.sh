@@ -58,7 +58,10 @@ print_success "构建输出已找到"
 cd "$DOCS_ZH_DIR"
 
 print_info "切换到 gh-pages 分支..."
-git checkout gh-pages 2>/dev/null || git checkout -b gh-pages
+# 如果不在 gh-pages 分支，则切换过去
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "gh-pages" ]; then
+    git checkout gh-pages 2>/dev/null || git checkout -b gh-pages
+fi
 
 # 清空旧文件
 print_info "清空旧文件..."
@@ -85,6 +88,7 @@ print_info "  修复 index.html..."
 sed -i '' "s|href=\"/assets/|href=\"/$REPO_NAME/assets/|g" index.html
 sed -i '' "s|src=\"/assets/|src=\"/$REPO_NAME/assets/|g" index.html
 sed -i '' "s|href=\"/docs/|href=\"/$REPO_NAME/docs/|g" index.html
+sed -i '' "s|src=\"/docs/|src=\"/$REPO_NAME/docs/|g" index.html
 sed -i '' "s|href=\"/\"|href=\"/$REPO_NAME/\"|g" index.html
 
 # 修复所有 docs/*.html
@@ -105,6 +109,14 @@ sed -i '' "s|\"\/assets\/sprite.png\"|\"\/$REPO_NAME\/assets\/sprite.png\"|g" as
 
 # 为所有 docs 文件添加 .html 扩展名
 print_info "  添加 .html 扩展名..."
+# 先处理根目录下的无扩展名文件（如 tracing-101）
+for file in docs/*; do
+    if [ -f "$file" ] && [[ ! "$file" =~ \. ]]; then
+        mv "$file" "$file.html"
+        print_info "    重命名: $(basename "$file") -> $(basename "$file").html"
+    fi
+done
+# 再处理子目录
 find docs -type f ! -name "*.png" ! -name "*.jpg" ! -name "*.gif" ! -name "*.svg" ! -name "*.ico" ! -name "*.html" -exec sh -c 'mv "$1" "$1.html"' _ {} \; 2>/dev/null || true
 
 # 为所有链接添加 .html 后缀
