@@ -484,6 +484,59 @@ md_to_html("gen_index") {
 
 ---
 
+## GitHub Pages 部署关键要点
+
+### 部署前检查清单
+
+- [ ] 本地构建成功 (`./.project/deploy.sh`)
+- [ ] 本地预览正常 (http://localhost:8082/)
+- [ ] README.md 图片路径为绝对路径 (`/docs/images/xxx`)
+- [ ] GitHub Pages 设置为 `/(root)` 而非 `/docs`
+
+### 常见问题排查
+
+**问题1：首页图片不显示**
+- 原因：README.md 使用了相对路径 `![](images/xxx)`
+- 解决：改为绝对路径 `![](/docs/images/xxx)`
+
+**问题2：子页面无法渲染（只显示导航栏）**
+- 原因：`deploy-gh-pages.sh` 中 `find docs -name "*.html"` 在添加 `.html` 扩展名之前执行
+- 解决：确保执行顺序：先添加 `.html` 扩展名 → 再修复 docs/*.html 路径
+
+**问题3：CSS/JS 加载失败**
+- 原因：路径未正确添加 `/$REPO_NAME/` 前缀
+- 解决：检查 `deploy-gh-pages.sh` 中的 sed 替换是否生效
+
+**问题4：SVG 图片不显示**
+- 原因：`<object>` 标签使用 `data` 属性，不是 `src`
+- 解决：添加 `data="/docs/` → `data="/$REPO_NAME/docs/` 的修复
+
+### 部署脚本执行顺序
+
+正确的执行顺序至关重要：
+
+1. **添加 .html 扩展名**（必须先执行）
+   - 处理 docs/ 目录下的无扩展名文件
+   - 这样 `find docs -name "*.html"` 才能找到文件
+
+2. **修复 index.html 路径**
+   - `href="/assets/` → `href="/$REPO_NAME/assets/`
+   - `src="/docs/` → `src="/$REPO_NAME/docs/`
+   - `data="/docs/` → `data="/$REPO_NAME/docs/`（SVG 图片）
+
+3. **修复 docs/*.html 路径**
+   - 使用 `for` 循环遍历所有 HTML 文件
+   - 修复 `href`、`src`、`data` 属性
+
+4. **修复 assets 文件**
+   - `script.js` 中的 mermaid.js 路径
+   - `style.css` 中的 sprite.png 路径
+
+5. **为链接添加 .html 后缀**
+   - 确保导航链接指向 `.html` 文件
+
+---
+
 ## 总结
 
 部署成功的关键要点：
