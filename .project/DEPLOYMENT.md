@@ -23,15 +23,27 @@
 - 或使用 **WSL** (Windows Subsystem for Linux)
 - 确保 Git Bash 在安装时选择了 "Use Git and optional Unix tools from the Command Prompt"
 
-## 快速开始
+## 部署方式
 
-在项目根目录执行：
+### 方式一：本地部署
+
+用于本地预览和调试：
 
 ```bash
 ./perfetto-docs-zh-cn/.project/deploy.sh
 ```
 
-或手动执行以下步骤：
+访问 http://localhost:8082/ 预览效果。
+
+### 方式二：GitHub Pages 部署
+
+用于发布到线上环境：
+
+```bash
+./perfetto-docs-zh-cn/.project/deploy-gh-pages.sh
+```
+
+访问 https://your-username.github.io/perfetto-docs-zh-cn/ 查看线上站点。
 
 ---
 
