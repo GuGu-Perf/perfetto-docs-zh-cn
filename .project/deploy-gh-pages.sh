@@ -58,10 +58,7 @@ print_success "构建输出已找到"
 cd "$DOCS_ZH_DIR"
 
 print_info "切换到 gh-pages 分支..."
-# 如果不在 gh-pages 分支，则切换过去
-if [ "$(git rev-parse --abbrev-ref HEAD)" != "gh-pages" ]; then
-    git checkout gh-pages 2>/dev/null || git checkout -b gh-pages
-fi
+git checkout gh-pages 2>/dev/null || git checkout -b gh-pages
 
 # 清空旧文件
 print_info "清空旧文件..."
