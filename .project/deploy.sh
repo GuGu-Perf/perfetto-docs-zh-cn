@@ -476,7 +476,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 脚本在 perfetto-docs-zh-cn/.project/，所以 DOCS_ZH_DIR 是 SCRIPT_DIR 的父目录
 DOCS_ZH_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$(dirname "$DOCS_ZH_DIR")"
-PERFETTO_DIR="$PROJECT_ROOT/perfetto"
+PERFETTO_DIR="$(dirname "$PROJECT_ROOT")/perfetto"
 
 print_debug "SCRIPT_DIR: $SCRIPT_DIR"
 print_debug "DOCS_ZH_DIR: $DOCS_ZH_DIR"

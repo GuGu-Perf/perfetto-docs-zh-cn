@@ -1,0 +1,10 @@
+# LAST_SYNC - 上游同步记录文件
+#
+# 格式: <short-hash> <date> <time> <tz> <message>
+#   对应命令: git log -1 --format="%h %ci %s"
+#
+# 更新方式:
+#   建议通过脚本自动更新，而非手动编辑：
+#   bash .project/sync-check.sh --update
+
+bf1d72c 2026-03-20 18:51:53 +0000 doc: updated the perfetto_cmd command line page (#5216)
