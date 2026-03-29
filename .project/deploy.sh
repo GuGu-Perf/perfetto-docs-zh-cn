@@ -472,46 +472,23 @@ fi
 
 cd "$PERFETTO_DIR"
 
-# 步骤 2: 清空并复制中文文档
-print_step "2" "复制中文文档"
+# 步骤 2: 替换为中文文档
+print_step "2" "替换为中文文档"
 
-# 检查中文文档是否存在
-if [ ! -d "$DOCS_ZH_DIR" ]; then
-    print_error "中文文档目录不存在: $DOCS_ZH_DIR"
+# 检查中文文档目录是否存在
+if [ ! -d "$DOCS_ZH_DIR/docs" ]; then
+    print_error "中文文档目录不存在: $DOCS_ZH_DIR/docs"
     exit 1
 fi
 
-# 清空 docs 目录
-print_info "清空 docs 目录..."
-rm -rf docs/* docs/.[!.]* 2>/dev/null || true
-print_debug "docs 目录已清空"
+# 删除英文 docs 目录，复制中文 docs 目录
+print_info "删除英文 docs 目录..."
+rm -rf docs
+print_success "英文 docs 目录已删除"
 
-# 复制中文文档
-print_info "复制中文文档到 perfetto/docs/..."
-print_debug "源: $DOCS_ZH_DIR"
-print_debug "目标: $(pwd)/docs/"
-
-# 使用 rsync 或 find + cp
-if command -v rsync &> /dev/null; then
-    print_debug "使用 rsync 复制"
-    if run_with_timeout $TIMEOUT_COPY 1 "rsync -av --exclude='.git/' --exclude='.project/' '$DOCS_ZH_DIR'/ docs/"; then
-        print_success "中文文档复制完成 (rsync)"
-    else
-        print_error "rsync 复制失败"
-        exit 1
-    fi
-else
-    print_debug "使用 find + cp 复制"
-    # Windows 兼容性：使用更通用的复制方式
-    if [ "$OS" = "Windows" ]; then
-        # Windows: 使用 cp -r 复制
-        cp -r "$DOCS_ZH_DIR"/* docs/ 2>/dev/null || true
-    else
-        find "$DOCS_ZH_DIR" -maxdepth 1 -type f -exec cp {} docs/ \;
-        find "$DOCS_ZH_DIR" -maxdepth 1 -type d ! -name '.*' ! -name 'perfetto-docs-zh-cn' -exec cp -r {} docs/ \; 2>/dev/null || true
-    fi
-    print_success "中文文档复制完成 (cp)"
-fi
+print_info "复制中文 docs 目录..."
+cp -r "$DOCS_ZH_DIR/docs" .
+print_success "中文 docs 目录已复制"
 
 # 验证复制结果
 if [ -f "docs/README.md" ]; then
@@ -536,12 +513,17 @@ sed -i '' 's|html_template = "src/template_index.html"|html_template = "src/temp
 
 print_success "首页配置已修改"
 
-# 步骤 3: 清理项目管理文件
-print_step "3" "清理管理文件"
+# 步骤 3: 验证文档复制结果
+print_step "3" "验证文档"
 
-print_info "删除 .project/ 和 .git/ 目录..."
-rm -rf docs/.project/ docs/.git/ 2>/dev/null || true
-print_success "管理文件已清理"
+print_info "验证中文文档..."
+if [ -f "docs/README.md" ]; then
+    print_success "README.md 验证通过"
+    print_info "共复制 $(find docs -name '*.md' 2>/dev/null | wc -l) 个 Markdown 文件"
+else
+    print_error "复制失败，docs/README.md 不存在"
+    exit 1
+fi
 
 # 步骤 4: 构建并启动服务器（官方方式）
 echo ""
