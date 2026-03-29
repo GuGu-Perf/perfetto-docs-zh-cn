@@ -4,45 +4,51 @@
 
 ## 📋 目录
 
-- [快速开始](#快速开始)
-- [翻译流程](#翻译流程)
+- [翻译工作流](#翻译工作流)
 - [翻译规范](#翻译规范)
-- [术语表](#术语表)
 - [提交规范](#提交规范)
+- [同步官方更新](#同步官方更新)
 - [常见问题](#常见问题)
 
-## 快速开始
+## 翻译工作流
 
-### 1. Fork 仓库
+### 1. 检查上游更新
 
-点击右上角的 "Fork" 按钮，将仓库 fork 到你的 GitHub 账号下。
-
-### 2. 克隆仓库
+运行同步检查脚本获取官方文档更新：
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/perfetto-docs-zh-cn.git
-cd perfetto-docs-zh-cn
+bash .project/sync-check.sh --check
 ```
 
-### 3. 创建分支
+### 2. 使用 AI 翻译
 
-```bash
-git checkout -b translate/your-branch-name
-```
+借助 AI 工具进行初步翻译。
 
-### 4. 开始翻译
+### 3. 术语统一
 
-在 `docs/` 目录下找到你要翻译的文件，使用 Markdown 编辑器进行翻译。
+对照术语表统一关键术语。
 
-### 5. 本地预览
+### 4. 本地预览
+
+运行部署脚本查看效果：
 
 ```bash
 bash .project/deploy.sh
 ```
 
-访问 http://localhost:8082/docs/ 预览效果。
+### 5. 人工校对
 
-### 6. 提交更改
+检查翻译质量，修正不通顺的地方。
+
+### 6. 更新同步记录
+
+翻译完成后更新同步点：
+
+```bash
+bash .project/sync-check.sh --update
+```
+
+### 7. 提交审核
 
 ```bash
 git add .
@@ -50,30 +56,11 @@ git commit -m "translate: 翻译 XXX 文档"
 git push origin translate/your-branch-name
 ```
 
-### 7. 创建 Pull Request
-
-在 GitHub 上创建 Pull Request，等待审核合并。
-
-## 翻译流程
-
-### 选择翻译文件
-
-1. 查看 [翻译进度](#翻译进度) 了解当前状态
-2. 在 Issue 中认领未翻译的文件
-3. 或者选择标记为 "待改进" 的文件进行优化
-
-### 翻译步骤
-
-1. **阅读原文**：确保理解原文含义
-2. **首次翻译**：快速完成初稿，不必追求完美
-3. **术语统一**：对照术语表统一关键术语
-4. **本地预览**：运行部署脚本查看效果
-5. **检查修改**：通读全文，修正不通顺的地方
-6. **提交审核**：创建 PR 等待审核
+然后在 GitHub 上创建 Pull Request，等待审核合并。
 
 ## 翻译规范
 
-详细的翻译规范请参考 **[.project/TRANSLATION_GUIDE.md](.project/TRANSLATION_GUIDE.md)
+详细的翻译规范请参考 **[翻译规范指南](.project/TRANSLATION_GUIDE.md)**。
 
 ## 提交规范
 
@@ -109,10 +96,6 @@ git commit -m "improve: 优化 getting-started.md 的表达"
 
 ## 常见问题
 
-### Q: 如何知道哪些文件需要翻译？
-
-A: 查看 Issue 列表中标记为 "待翻译" 或 "help wanted" 的 Issue。
-
 ### Q: 翻译过程中遇到不理解的术语怎么办？
 
 A: 
@@ -124,32 +107,25 @@ A:
 
 A: 可以！如果发现翻译错误或有更好的表达方式，欢迎提交改进。
 
-### Q: 如何同步官方最新文档？
+## 同步官方更新
 
-A: 项目维护者会定期同步官方文档。如果你想主动同步，可以：
+项目维护者会定期同步官方文档。我们提供了同步检查工具来帮助检测上游更新。
+
+### 检查上游更新
 
 ```bash
-# 进入 perfetto 目录
-cd ../perfetto
-git pull origin main
-
-# 对比 docs 目录差异，手动同步更新
-cd ../perfetto-docs-zh-cn
+# 检查是否有新的文档更新
+bash .project/sync-check.sh --check
 ```
 
-### Q: 本地预览报错怎么办？
+### 更新同步记录
 
-A:
-1. 确保 Node.js 已安装（v18+）
-2. 确保端口 8082 未被占用
-3. 查看日志文件 `/tmp/perfetto-deploy-*.log`
-4. 在 Issue 中寻求帮助
+翻译完成后，更新同步记录：
 
-## 项目状态
+```bash
+bash .project/sync-check.sh --update
+```
 
-**翻译完成** - 全部 108 个文档已翻译完成
-
-**持续维护** - 定期同步官方文档更新
 
 ### 如何参与维护
 
