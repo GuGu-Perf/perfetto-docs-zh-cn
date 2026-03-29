@@ -1,12 +1,11 @@
 # Perfetto 中文文档
 
 [![在线预览](https://img.shields.io/badge/在线预览-GitHub%20Pages-blue)](https://gugu-perf.github.io/perfetto-docs-zh-cn/)
-[![状态](https://img.shields.io/badge/状态-翻译完成-brightgreen)](.project/TRANSLATION_GUIDE.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](LICENSE)
 
 [Perfetto Docs](https://perfetto.dev/docs) 的中文翻译。
 
-**在线预览**: https://gugu-perf.github.io/perfetto-docs-zh-cn/
+**在线阅读**: https://gugu-perf.github.io/perfetto-docs-zh-cn/
 
 
 ## 快速开始
@@ -59,8 +58,8 @@ bash .project/sync-check.sh
 
 ## 许可证
 
-[Apache 2.0 License](LICENSE)（与 Perfetto 原项目一致）
+[Apache 2.0 License](LICENSE)
 
 ## 致谢
 
-感谢所有贡献者对本项目的支持！
+voidice@gmail.com
