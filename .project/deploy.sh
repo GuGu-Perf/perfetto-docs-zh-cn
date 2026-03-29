@@ -615,6 +615,9 @@ else
     print_success "npm 依赖已满足"
 fi
 
+# 返回 perfetto 根目录
+cd "$PERFETTO_DIR"
+
 # 检查端口
 if ! check_port 8082; then
     print_info "端口 8082 被占用，尝试清理..."
