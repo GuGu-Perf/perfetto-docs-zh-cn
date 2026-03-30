@@ -7,6 +7,7 @@
 - 专业术语必须准确对应，不可意译
 - 保持技术逻辑和结构的完整性
 
+
 ### 1.2 可读性
 - 符合中文表达习惯，避免"翻译腔"
 - 语句通顺流畅，避免冗长句式
@@ -88,180 +89,112 @@ grep -n "^##### [A-Z]" docs/*.md docs/**/*.md
 
 ## 三、术语翻译规范
 
-### 3.1 核心术语（保持英文）
+### 3.1 术语翻译表
 
-以下术语及其变种**不翻译**，保持原文：
+| 英文 | 中文翻译 | 是否翻译 | 说明 |
+|------|-----------|----------|------|
+| Perfetto | 性能追踪工具 | 否 | 系统名称 |
+| Trace | 追踪数据 | 否 | 性能追踪记录 |
+| Tracing | 追踪过程 | 否 | 采集追踪数据的动作 |
+| TracePoint | 追踪点 | 否 | 代码中的追踪标记点 |
+| Trace Buffer | 追踪缓冲区 | 否 | 存储追踪数据的内存区域 |
+| DataSource | 数据源 | 否 | 数据来源组件 |
+| Timeline | 时间线 | 否 | 可视化时间轴 |
+| Session | 会话 | 否 | 一次追踪会话 |
+| Packet | 数据包 | 否 | 追踪数据包 |
+| Slice | 时间片 | 否 | 时间段切片 |
+| Counter | 计数器 | 否 | 数值计数器 |
+| Frame | 帧 | 否 | 渲染帧 |
+| Profile | 性能分析数据 | 否 | 性能分析结果 |
+| Heap Profile | 堆内存分析 | 否 | 堆内存性能分析 |
+| Memory Profile | 内存分析 | 否 | 内存性能分析 |
+| CPU Profile | CPU 分析 | 否 | CPU 性能分析 |
+| Heap Snapshot | 堆快照 | 否 | 堆内存状态快照 |
+| Metric | 指标 | 否 | 性能指标 |
+| Log | 日志 | 否 | 系统日志 |
+| Logging | 日志记录 | 否 | 记录日志的过程 |
+| Track | 轨道 | 否 | 时间轴上的轨道 |
+| Slice Group | 切片组 | 否 | 时间片分组 |
+| UUID | 通用唯一标识符 | 否 | 唯一标识符 |
+| ProtoBuf | 协议缓冲区 | 否 | Google 序列化协议 |
+| Fuchsia | Fuchsia | 否 | Google 操作系统 |
+| Android | 安卓 | 否 | 移动操作系统 |
+| Chrome | Chrome | 否 | Google 浏览器 |
+| Linux | Linux | 否 | 开源操作系统 |
+| Windows | Windows | 否 | 微软操作系统 |
+| macOS | macOS | 否 | 苹果操作系统 |
+| Hook | 钩子 | 否 | 代码钩子机制 |
+| Cookbook | 实战指南 | 否 | 实践教程集合 |
+| Fork | 分叉 | 否 | 仓库分叉操作 |
+| fork | 派生 | 否 | 进程派生操作 |
+| Sideload | 侧载 | 否 | 旁加载安装 |
+| Plugin | 插件 | 否 | UI 扩展组件 |
+| Performance | 性能 | 是 | - |
+| Latency | 延迟 | 是 | - |
+| Throughput | 吞吐量 | 是 | - |
+| Overhead | 开销 | 是 | - |
+| Benchmark | 基准测试 | 是 | - |
+| Instrumentation | 插桩/埋点 | 是 | 添加追踪代码 |
+| Sampling | 采样 | 是 | - |
+| Allocation | 分配 | 是 | 内存分配 |
+| Deallocation | 释放 | 是 | 内存释放 |
+| Retention | 保留 | 是 | 内存保留 |
+| Leak | 泄漏 | 是 | 内存泄漏 |
+| Garbage Collection | 垃圾回收 | 是 | GC |
+| Compilation | 编译 | 是 | - |
+| Optimization | 优化 | 是 | - |
+| Scheduler | 调度器 | 是 | - |
+| System Call | 系统调用 | 是 | - |
+| Interrupt | 中断 | 是 | - |
+| Context Switch | 上下文切换 | 是 | - |
+| Stack Trace | 堆栈跟踪 | 是 | - |
+| Call Tree | 调用树 | 是 | - |
+| Flame Chart | 火焰图 | 是 | - |
+| Waterfall | 瀑布图 | 是 | - |
+| Dashboard | 仪表盘 | 是 | - |
+| Visualizer | 可视化工具 | 是 | - |
+| Query | 查询 | 是 | - |
+| Filter | 过滤器 | 是 | - |
+| Aggregation | 聚合 | 是 | - |
+| Histogram | 直方图 | 是 | - |
+| Percentile | 百分位 | 是 | - |
+| Mean | 平均值 | 是 | - |
+| Median | 中位数 | 是 | - |
+| Standard Deviation | 标准差 | 是 | - |
+| Variance | 方差 | 是 | - |
+| Outlier | 异常值 | 是 | - |
+| Distribution | 分布 | 是 | - |
+| Correlation | 相关性 | 是 | - |
+| Regression | 裂化 | 是 | 性能裂化 |
+| Benchmarking | 基准测试 | 是 | - |
+| Latency-sensitive | 延迟敏感 | 是 | - |
+| Real-time | 实时 | 是 | - |
+| Near real-time | 近实时 | 是 | - |
+| Offline | 离线 | 是 | - |
+| Post-processing | 后处理 | 是 | - |
+| Trace Summarization | Trace 汇总 | 是 | Trace 数据汇总功能 |
 
 **重要说明**：
-- 表格中列出的是术语的基本形式，但其所有变种形式（单复数、大小写变化、组合词等）也应保持英文
-- 例如：`Track` 包括 `track`、`tracks`、`Track`、`Tracks`、`track event`、`Track event` 等所有变种
-- 例如：`Trace` 包括 `trace`、`traces`、`Trace`、`Traces` 等所有变种
+- "否" 表示保持英文不翻译，"是" 表示翻译为中文
+- 表格中列出的是术语的基本形式，所有变种（单复数、大小写变化、组合词等）遵循同样的翻译规则
+- 例如：`Track` 包括 `track`、`tracks`、`Track`、`Tracks`、`track event` 等所有变种都保持英文
 
-| 术语（基本形式） | 变种示例 | 说明 |
-|------|------|------|
-| Perfetto | Perfetto | 系统名称 |
-| Trace | trace, traces, Trace, Traces | 追踪数据 |
-| Tracing | tracing, Tracing | 追踪（动词/名词） |
-| TracePoint | TracePoint, tracepoint, tracepoints | 追踪点 |
-| Trace Buffer | Trace Buffer, trace buffer | 追踪缓冲区 |
-| DataSource | DataSource, data source, data sources | 数据源 |
-| Timeline | timeline, Timeline, timelines | 时间线 |
-| Session | session, Session, sessions | 会话 |
-| Packet | packet, Packet, packets | 数据包 |
-| Slice | slice, Slice, slices | 时间片 |
-| Counter | counter, Counter, counters | 计数器 |
-| Frame | frame, Frame, frames | 帧 |
-| Memory（非术语） | memory（单独出现） | 内存 |
-| memory profile | memory profiling, memory profiler | 内存分析 |
-| Profile | profile, Profile, profiles, profiling, Profiling | 性能分析数据/过程 |
-| Heap Profile | Heap Profile, heap profile | 堆内存 Profile |
-| Memory Profile | memory profile, Memory Profile | 内存配置文件 |
-| CPU Profile | CPU Profile, CPU profile | CPU Profile |
-| Heap Snapshot | Heap Snapshot, heap snapshot | 堆快照 |
-| Metric | metric, Metric, metrics, Metrics | metrics |
-| Log | log, Log, logs, Logs | 日志 |
-| Logging | logging, Logging | 日志记录 |
-| Track | track, Track, tracks, Tracks | 轨道 |
-| Slice Group | Slice Group, slice group | 切片组 |
-| UUID | UUID, uuid | 通用唯一标识符 |
-| ProtoBuf | ProtoBuf, protobuf, Protocol Buffers | Protocol Buffers |
-| Fuchsia | Fuchsia | 操作系统名称 |
-| Android | Android | 操作系统名称 |
-| Chrome | Chrome | 浏览器名称 |
-| Linux | Linux | 操作系统名称 |
-| Windows | Windows | 操作系统名称 |
-| macOS | macOS | 操作系统名称 |
-| Hook | hook, Hook, hooks, Hooks | 钩子/挂钩 |
-| Cookbook | Cookbook, cookbook, cookbooks | 实战指南 |
-| Fork | Fork, forking, Forking | GitHub 仓库分叉操作 |
-| fork | fork, forking | 进程 fork 操作 |
-| Sideload | sideload, sideloading, Sideloading | 侧载/旁加载应用或二进制文件 |
-
-**变种处理示例**：
+**示例**：
 
 | 原文 | 正确翻译 | 错误翻译 |
 |------|---------|---------|
 | track event | Track event | 轨道事件 |
-| track events | Track events | 轨道事件 |
-| tracks | tracks | 轨道 |
 | trace processor | Trace Processor | 追踪处理器 |
-| trace data | trace 数据 | 追踪数据 |
-| tracing session | Tracing Session | 追踪会话 |
-| metrics | metrics | metrics |
-| slices | slices | 时间片 |
-| counters | counters | 计数器 |
-| Cookbook | 实战指南 | 食谱 |
-| cookbooks | 实战指南 | 食谱 |
+| Performance | 性能 | Performance |
 
-### 3.2 通用技术术语翻译
-
-| 英文 | 中文 | 说明 |
-|------|------|------|
-| Performance | 性能 | - |
-| Latency | 延迟 | - |
-| Throughput | 吞吐量 | - |
-| Overhead | 开销 | - |
-| Benchmark | 基准测试 | - |
-| Instrumentation | 插桩/埋点 | 添加追踪代码 |
-| Sampling | 采样 | - |
-| Allocation | 分配 | 内存分配 |
-| Deallocation | 释放 | 内存释放 |
-| Retention | 保留 | 内存保留 |
-| Leak | 泄漏 | 内存泄漏 |
-| Garbage Collection | 垃圾回收 | GC |
-| Compilation | 编译 | - |
-| Optimization | 优化 | - |
-| Scheduler | 调度器 | - |
-| System Call | 系统调用 | - |
-| Interrupt | 中断 | - |
-| Context Switch | 上下文切换 | - |
-| Stack Trace | 堆栈跟踪 | - |
-| Call Tree | 调用树 | - |
-| Flame Chart | 火焰图 | - |
-| Waterfall | 瀑布图 | - |
-| Dashboard | 仪表盘 | - |
-| Visualizer | 可视化工具 | - |
-| Query | 查询 | - |
-| Filter | 过滤器 | - |
-| Aggregation | 聚合 | - |
-| Histogram | 直方图 | - |
-| Percentile | 百分位 | - |
-| Mean | 平均值 | - |
-| Median | 中位数 | - |
-| Standard Deviation | 标准差 | - |
-| Variance | 方差 | - |
-| Outlier | 异常值 | - |
-| Distribution | 分布 | - |
-| Correlation | 相关性 | - |
-| Regression | 裂化 | 性能裂化 |
-| Benchmarking | 基准测试 | - |
-| Latency-sensitive | 延迟敏感 | - |
-| Real-time | 实时 | - |
-| Near real-time | 近实时 | - |
-| Offline | 离线 | - |
-| Post-processing | 后处理 | - |
-| Trace Summarization | Trace 汇总 | Trace 数据汇总功能，生成结构化 protobuf 输出 |
-| Plugin | 插件 | UI 扩展组件 |
-
-### 3.3 动词翻译
-
-| 英文 | 中文 | 说明 |
-|------|------|------|
-| to capture trace | 采集 trace | 特殊组合，贴近实际工作语言 |
-| to record trace | 采集 trace | 特殊组合，贴近实际工作语言 |
-| to trace | 追踪 | - |
-| to profile | 进行 profile/profiling | 核心术语不翻译 |
-| to capture | 捕获/采集 | - |
-| to record | 记录 | - |
-| to collect | 收集 | - |
-| to start | 开始 | - |
-| to stop | 停止 | - |
-| to query | 查询 | - |
-| to filter | 过滤 | - |
-| to aggregate | 聚合 | - |
-| to visualize | 可视化 | - |
-| to analyze | 分析 | - |
-| to debug | 调试 | - |
-| to instrument | 插桩/埋点 | - |
-| to sample | 采样 | - |
-| to enable | 启用 | - |
-| to disable | 禁用 | - |
-| to configure | 配置 | - |
-| to install | 安装 | - |
-| to build | 构建 | - |
-| to compile | 编译 | - |
-| to deploy | 部署 | - |
-| to integrate | 集成 | - |
-| to export | 导出 | - |
-| to import | 导入 | - |
-| to share | 共享 | - |
-| to upload | 上传 | - |
-| to download | 下载 | - |
+**动词翻译说明**：
+- `capture trace` / `record trace` → **采集 trace**（贴近实际工作语言）
+- `to profile` → **进行 profile/profiling**（核心术语不翻译）
+- 其他常用动词（start→开始, stop→停止等）按常规范翻译
 
 ---
 
-## 四、文档处理规范
-
-### 4.0 英文原文错误处理
-
-**原则**：翻译时应忠实于英文原文，但遇到以下情况需要特殊处理：
-
-#### 4.0.1 不要添加原文没有的内容
-
-**错误示例**：
-```markdown
-<!-- 英文原文只有45行，中文翻译扩展到404行 -->
-<!-- 添加了大量原文没有的安装步骤、使用示例等 -->
-```
-
-**正确做法**：
-- 忠实翻译原文内容
-- 不添加、不删除、不修改原文的结构和信息
-- 如果原文内容过少，保持原样
-
----
-
-## 五、语法和句式规范
+## 四、语法和句式规范
 
 ### 5.1 换行处理
 
@@ -714,7 +647,7 @@ perfetto -o trace.perfetto -c /data/local/tmp/config.cfg
 
 ---
 
-## 九、特殊处理
+## 八、特殊处理
 
 ### 9.1 API 名称
 
@@ -752,7 +685,7 @@ perfetto::TracedValue::WriteInt64(...)
 
 ---
 
-## 十、翻译流程
+## 九、翻译流程
 
 ### 10.1 准备阶段
 
@@ -807,7 +740,7 @@ perfetto::TracedValue::WriteInt64(...)
 
 ---
 
-## 十二、参考资料
+## 十、参考资料
 
 - [Perfetto 官方文档](https://perfetto.dev/docs/)
 - [Google 翻译规范](https://developers.google.com/style)
@@ -816,7 +749,7 @@ perfetto::TracedValue::WriteInt64(...)
 
 ---
 
-## 十三、版本信息
+## 十一、版本信息
 
 - 版本：1.11
 - 最后更新：2026-03-20
