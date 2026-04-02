@@ -456,6 +456,11 @@ find . -name "*.html" ! -path "./.git/*" -exec sed -i '' "s|href=\"\/$REPO_NAME\
 | **首页链接错误** | 点击 Logo 返回 404 | 根路径 `/` 未修改 | 将 `href="/"` 改为 `href="/repo-name/"` |
 | **整个站点 404** | 所有页面 404 | GitHub Pages 设置为 `/docs` 而非 `/(root)` | Settings → Pages → Folder: `/(root)` |
 | **下载而不是打开** | 点击链接下载文件 | 无 `.html` 扩展名 | 为所有文件添加 `.html` 扩展名 |
+| **test_data 每次下载 400MB** | 构建时重复下载测试数据 | `build.js` 强制检查 test_data 同步 | deploy.sh 自动 patch build.js 跳过检查 |
+| **install-build-deps 重复安装** | 每次部署都触发依赖安装 | `--check-only` 参数格式错误 | 移除 deploy.sh 中的检查，由构建过程自行处理 |
+| **cp 后 gh-pages 含 build.ninja** | 线上目录含构建中间文件 | cp 路径缺少 `/site` 子目录 | cp 路径改为 `out/perfetto.dev/site/*` |
+| **Perfetto 仓库克隆到错误位置** | `fatal: destination path already exists` | `PERFETTO_DIR` 多一层 dirname | `PERFETTO_DIR="$PROJECT_ROOT/perfetto"` |
+| **git push 推送到本地** | 线上 gh-pages 未更新 | push remote 指向本地路径 | deploy.sh 不含 git push，由用户手动推送 |
 
 ---
 
@@ -509,5 +514,6 @@ README.md 中的图片**必须使用绝对路径**：
 4. ✅ **删除管理文件** - `.project/` 目录不属于构建系统
 5. ✅ **修复死链** - 删除指向不存在文件的引用
 6. ✅ **首页配置** - 自动修改 BUILD.gn 使用 README.md 作为首页
-7. ✅ **GitHub Pages 路径修复** - 所有绝对路径必须添加仓库名前缀
-8. ✅ **添加 .html 扩展名** - GitHub Pages 需要显式的文件扩展名
+7. ✅ **跳过 test_data** - patch build.js 跳过 test_data 下载（与文档构建无关）
+8. ✅ **GitHub Pages 路径修复** - 所有绝对路径必须添加仓库名前缀
+9. ✅ **添加 .html 扩展名** - GitHub Pages 需要显式的文件扩展名

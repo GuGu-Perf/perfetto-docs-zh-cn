@@ -476,7 +476,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 脚本在 perfetto-docs-zh-cn/.project/，所以 DOCS_ZH_DIR 是 SCRIPT_DIR 的父目录
 DOCS_ZH_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$(dirname "$DOCS_ZH_DIR")"
-PERFETTO_DIR="$(dirname "$PROJECT_ROOT")/perfetto"
+PERFETTO_DIR="$PROJECT_ROOT/perfetto"
 
 print_debug "SCRIPT_DIR: $SCRIPT_DIR"
 print_debug "DOCS_ZH_DIR: $DOCS_ZH_DIR"
@@ -580,23 +580,15 @@ fi
 
 print_info "Node.js 版本: $(node --version 2>/dev/null || echo '未知')"
 
-# 检查 Perfetto 构建依赖
 cd "$PERFETTO_DIR"
-print_info "检查构建依赖..."
-if ! tools/install-build-deps --check-only --ui --filter=nodejs --filter=pnpm --filter=gn --filter=ninja > /dev/null 2>&1; then
-    print_warning "构建依赖不完整，正在自动安装..."
-    print_info "运行: install-build-deps --ui --filter=nodejs --filter=pnpm --filter=gn --filter=ninja"
-    print_info "这可能需要几分钟时间，请耐心等待..."
-    
-    if tools/install-build-deps --ui --filter=nodejs --filter=pnpm --filter=gn --filter=ninja 2>&1 | tee -a "$LOG_FILE"; then
-        print_success "构建依赖安装完成"
-    else
-        print_error "构建依赖安装失败"
-        print_info "请手动运行: cd perfetto && tools/install-build-deps --ui --filter=nodejs --filter=pnpm --filter=gn --filter=ninja"
-        exit 1
-    fi
+# build.js 内部会调用 install-build-deps 检查 test_data（与文档构建无关）
+# 直接 patch build.js 跳过此检查，避免下载 400MB+ 的测试数据
+BUILD_JS="$PERFETTO_DIR/infra/perfetto.dev/build.js"
+if grep -q "exec(installBuildDeps, depsArgs)" "$BUILD_JS" 2>/dev/null; then
+    sed -i '' 's/exec(installBuildDeps, depsArgs);/\/\/ exec(installBuildDeps, depsArgs); \/\/ 跳过 test_data 检查/' "$BUILD_JS"
+    print_success "已跳过 build.js 中的 test_data 依赖检查"
 else
-    print_success "构建依赖已满足"
+    print_info "build.js 无需 patch"
 fi
 
 # 检查并安装 npm 依赖（infra/perfetto.dev）
@@ -684,23 +676,44 @@ if monitor_build_progress "$BUILD_LOG"; then
         print_info "创建临时部署目录: $DEPLOY_TEMP"
         
         # 复制构建输出到临时目录
-        cp -r "$PERFETTO_DIR/out/perfetto.dev"/* "$DEPLOY_TEMP/"
+        cp -r "$PERFETTO_DIR/out/perfetto.dev/site"/* "$DEPLOY_TEMP/"
         
         # 修复 GitHub Pages 路径问题
         print_info "修复 GitHub Pages 路径..."
         
-        # 修复资源路径 (href="/assets/" -> href="/REPO_NAME/assets/")
+        # 1. 给 docs/ 下无扩展名文件添加 .html 后缀（GitHub Pages 需要扩展名才能渲染）
+        print_info "为无扩展名文件添加 .html 后缀..."
+        for file in "$DEPLOY_TEMP/docs"/*; do
+            if [ -f "$file" ] && [[ ! "$file" =~ \. ]]; then
+                mv "$file" "$file.html"
+            fi
+        done
+        find "$DEPLOY_TEMP/docs" -type f ! -name "*.png" ! -name "*.jpg" ! -name "*.gif" ! -name "*.svg" ! -name "*.ico" ! -name "*.html" -exec sh -c 'mv "$1" "$1.html"' _ {} \; 2>/dev/null || true
+        
+        # 2. 修复所有 HTML 文件中的资源路径
         find "$DEPLOY_TEMP" -name "*.html" -type f -exec sed -i '' \
             -e "s|href=\"/assets/|href=\"/$REPO_NAME/assets/|g" \
             -e "s|src=\"/assets/|src=\"/$REPO_NAME/assets/|g" \
             -e "s|href=\"/docs/|href=\"/$REPO_NAME/docs/|g" \
             -e "s|src=\"/docs/|src=\"/$REPO_NAME/docs/|g" \
             -e "s|data=\"/docs/|data=\"/$REPO_NAME/docs/|g" \
+            -e "s|href=\"/\"|href=\"/$REPO_NAME/\"|g" \
             {} \;
         
-        # 为无扩展名的链接添加 .html
+        # 3. 修复 assets/script.js（mermaid.min.js 路径）
+        sed -i '' "s|\"\/assets\/mermaid.min.js\"|\"\/$REPO_NAME\/assets\/mermaid.min.js\"|g" "$DEPLOY_TEMP/assets/script.js" 2>/dev/null || true
+        
+        # 4. 修复 assets/style.css（sprite.png 路径）
+        sed -i '' "s|\"\/assets\/sprite.png\"|\"\/$REPO_NAME\/assets\/sprite.png\"|g" "$DEPLOY_TEMP/assets/style.css" 2>/dev/null || true
+        
+        # 5. 为 docs 链接添加 .html 后缀
         find "$DEPLOY_TEMP" -name "*.html" -type f -exec sed -i '' \
             -e "s|href=\"/$REPO_NAME/docs/\([^\"]*\)\"|href=\"/$REPO_NAME/docs/\1.html\"|g" \
+            {} \;
+        
+        # 6. 修正根路径被错误加 .html 的问题
+        find "$DEPLOY_TEMP" -name "*.html" -type f -exec sed -i '' \
+            -e "s|href=\"/$REPO_NAME/docs/\.html\"|href=\"/$REPO_NAME/docs/\"|g" \
             {} \;
         
         print_success "路径修复完成"
