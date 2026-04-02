@@ -6,4 +6,4 @@
 # 更新方式:
 #   bash .project/sync-check.sh --update
 
-3a008d9f 2026-03-28 20:57:16 -0400 tp: Add SetGpuInfo and use GPU name in UI track labels (#5330)
+15d9eafe 2026-04-02 15:43:49 +0000 Copybara import from Chromium: proto and stdlib changes (#5391)

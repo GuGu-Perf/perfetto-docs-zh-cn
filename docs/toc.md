@@ -26,6 +26,7 @@
   - [实战指南](#)
 
   - [分析 Android Trace](getting-started/android-trace-analysis.md)
+  - [周期性 Trace 快照](getting-started/periodic-trace-snapshots.md)
 
   - [案例研究](#)
 

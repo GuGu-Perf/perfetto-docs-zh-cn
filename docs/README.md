@@ -130,3 +130,9 @@ Google 还有许多其他团队以多种方式使用 Perfetto。这包括 tracin
 
 Perfetto 遵循
 [Google 开源社区指南](https://opensource.google/conduct/)。
+
+社区项目：
+
+🇨🇳 社区维护的 Perfetto 文档中文翻译版本可通过以下地址访问：
+[gugu-perf.github.io/perfetto-docs-zh-cn](https://gugu-perf.github.io/perfetto-docs-zh-cn)。
+
