@@ -14,7 +14,7 @@ perfetto 仓库包含几个项目。这些是主要项目：
 
 3. TraceProcessor：位于 src/trace_processor/ 中的 C++ 项目。此代码通常不会部署在设备上，而是由离线工具使用。它内部基于 sqlite，并通过 vtable API 扩展其查询引擎。UI 在 Wasm(Web Assembly) 中使用此构建。
 
-4. Perfetto UI：这是一个单页 Web 应用程序，仅客户端（无服务器组件），使用 TypeScript 编写，为 ui.perfetto.dev 提供动力。它位于 ui/ 中。它通过 Wasm 嵌入 TraceProcessor。如果你计划进行 UI 更改，请查看 AGENTS-ui.md 文件（同一文件夹），并停止查看此文件的其余部分。
+4. Perfetto UI：这是一个单页 Web 应用程序，仅客户端（无服务器组件），使用 TypeScript 编写，为 ui.perfetto.dev 提供动力。它位于 ui/ 中。它通过 Wasm 嵌入 TraceProcessor。如果你计划进行 UI 更改，请查看 /docs/AGENTS-ui.md 并停止查看此文件的其余部分。
 
 5. 其他一些不常用的工具和实用程序，位于 tools/ 和 src/tools 中。
 

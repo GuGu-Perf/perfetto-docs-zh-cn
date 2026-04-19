@@ -193,3 +193,47 @@ gpu_render_stage_event {
 ```
 
 这会创建一个从 memcpy 事件（event\_id 1）到 matmul kernel（event\_id 2）的流，在 Perfetto UI 中可视化依赖关系。
+
+### GPU Counter 分组
+
+GPU counter 可以按自定义组（custom groups）进行组织，以覆盖或扩展固定的 `GpuCounterGroup` 枚举值（SYSTEM、VERTICES 等）。为此，将 `group_id` 设置为枚举值，并提供 `name` 和/或 `description`。
+
+Counter 的组成员关系是通过 `GpuCounterSpec.groups`（固定枚举）和 `GpuCounterGroupSpec.counter_ids`（自定义分组）分配的组的并集。
+
+例如，使用自定义分组 "Compute Core" 和 "L2 Cache"：
+
+```
+GPU > Counters > Compute Core > Counter A
+GPU > Counters > Compute Core > Counter B
+GPU > Counters > L2 Cache > Counter C
+```
+
+### Host-to-GPU 关联
+
+Host 端的 track event 可以使用 `GpuCorrelation` TrackEvent 扩展与 GPU 渲染阶段事件进行关联。这对于将 host API 调用（如 `cudaLaunchKernel`、`cudaMemcpyAsync`）与对应的 GPU 工作连接起来非常有用。
+
+该扩展提供两个字段：
+
+- `render_stage_submission_event_ids`：此 host event 提交的 GPU 渲染阶段事件的 event ID。
+- `render_stage_wait_event_ids`：此 host event 等待其完成的 GPU 渲染阶段事件的 event ID。
+
+示例：一个与 GPU 计算 kernel 关联的 host kernel 启动：
+
+```
+track_event {
+    type: TYPE_SLICE_BEGIN
+    name: "cudaLaunchKernel"
+    [perfetto.protos.GpuTrackEvent.gpu_correlation] {
+        render_stage_submission_event_ids: 1
+    }
+}
+
+gpu_render_stage_event {
+    event_id: 1
+    duration: 50000
+    hw_queue_iid: 1
+    stage_iid: 2
+    context: 0
+    name: "matmul_kernel"
+}
+```

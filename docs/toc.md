@@ -109,13 +109,14 @@
   - [系统调用](data-sources/syscalls.md)
   - [调频](data-sources/cpu-freq.md)
 
-  - [Android 数据源](#)
+    - [Android 数据源](#)
 
-  - [Atrace](data-sources/atrace.md)
-  - [Logcat](data-sources/android-log.md)
-  - [Frame Timeline](data-sources/frametimeline.md)
-  - [电池 Counters 和电源轨](data-sources/battery-counters.md)
-  - [其他数据源](data-sources/android-game-intervention-list.md)
+      - [Android Aflags](data-sources/android-aflags.md)
+       - [Atrace](data-sources/atrace.md)
+      - [电池 Counters 和电源轨](data-sources/battery-counters.md)
+       - [Frame Timeline](data-sources/frametimeline.md)
+      - [Logcat](data-sources/android-log.md)
+       - [其他数据源](data-sources/android-game-intervention-list.md)
 
   - [Trace 格式参考](#)
 
