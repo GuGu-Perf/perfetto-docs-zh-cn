@@ -21,11 +21,10 @@ https://gugu-perf.github.io/perfetto-docs-zh-cn/
 git clone https://github.com/GuGu-Perf/perfetto-docs-zh-cn.git
 cd perfetto-docs-zh-cn
 
-# 本地部署（自动构建并启动服务器）
-bash .project/deploy.sh
-
-# 访问 http://localhost:8082/docs/
+# 本地预览（自动构建并启动服务器）http://localhost:8082/docs/
+bash .project/workwork.sh deploy-local
 ```
+
 
 ## 项目结构
 
@@ -33,11 +32,11 @@ bash .project/deploy.sh
 perfetto-docs-zh-cn/
 ├── docs/                    # 翻译后的中文文档
 ├── .project/                # 项目工具与配置
-│   ├── deploy.sh            # 部署脚本（本地/GitHub Pages）
-│   ├── sync-check.sh        # 上游同步检测
+│   ├── workwork.sh          # 统一工具入口（预览/发布/同步）
+│   ├── workwork.md          # 工具使用说明
 │   ├── LAST_SYNC            # 上游同步记录
 │   ├── TRANSLATION_GUIDE.md # 翻译规范（术语表、格式要求）
-│   └── DEPLOYMENT.md        # 部署指南
+│   └── ...
 ├── CONTRIBUTING.md          # 贡献指南
 ├── LICENSE                  # Apache 2.0
 └── README.md
@@ -46,6 +45,8 @@ perfetto-docs-zh-cn/
 ## 上游同步
 
 上游跟踪：https://github.com/google/perfetto/tree/main/docs
+
+检查上游变更：`bash .project/workwork.sh sync-check`
 
 最新同步: [.project/LAST_SYNC](.project/LAST_SYNC)
 

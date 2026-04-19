@@ -128,8 +128,8 @@
 
 | 原文 | 正确翻译 | 错误翻译 |
 |------|---------|---------|
-| track event | Track event | 轨道事件 |
-| trace processor | Trace Processor | 追踪处理器 |
+| track event | track event | 轨道事件 |
+| trace processor | trace processor | 追踪处理器 |
 | Performance | 性能 | Performance |
 
 **动词翻译说明**：
@@ -203,17 +203,13 @@ WARNING: This operation cannot be undone.
 - **版本号**：v1.2.3 不翻译
 - **时间日期**：可译为中文格式
 
-## 七、翻译流程
-
-通读原文 → 逐段翻译（保持格式+术语一致）→ `bash .project/proofread.sh` 校对 → 提交
-
-## 八、常见问题
+## 七、常见问题
 
 - 不确定的术语 → 保留英文
 - 原文有误 → 按原文翻译，不添加标注
 - 图表截图 → 保留原图；示例代码 → 不变
 
-## 九、LLM 翻译使用指南
+## 八、LLM 翻译使用指南
 
 将本文档全文提供给大模型作为翻译上下文（100% 规则覆盖），无需提炼为 prompt。
 
@@ -229,7 +225,8 @@ WARNING: This operation cannot be undone.
 
 ```bash
 bash .project/proofread.sh --file docs/你翻译的文件.md   # 校对术语和格式
-bash .project/deploy.sh                                  # 本地预览
+bash .project/workwork.sh deploy-local                   # 本地预览
+bash .project/workwork.sh sync-check                     # 检查上游变更
 ```
 
 ## 十、参考资料
@@ -237,6 +234,3 @@ bash .project/deploy.sh                                  # 本地预览
 - [Google Developer Documentation Style Guide](https://developers.google.com/style)
 - [Microsoft Writing Style Guide](https://learn.microsoft.com/en-us/style-guide/)
 - [Perfetto 官方文档](https://perfetto.dev/docs/)
-- `proofread.sh` — 校对脚本 | `deploy.sh` — 部署脚本
-
-

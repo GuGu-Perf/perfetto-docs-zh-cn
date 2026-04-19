@@ -9,20 +9,23 @@
 运行同步检查脚本获取官方文档更新：
 
 ```bash
-bash .project/sync-check.sh --check
+bash .project/workwork.sh sync-check
 ```
 
 ### 2. 使用 AI 翻译
 
-借助 AI 工具按照[翻译规范指南](.project/TRANSLATION_GUIDE.md)进行初步翻译。
+借助 AI 工具按照[翻译规范](.project/TRANSLATION_GUIDE.md)进行初步翻译。
 
+### 3. 校对并修正文稿
+
+根据术语表、格式要求和实际内容进行人工校对。
 
 ### 4. 本地预览
 
-运行部署脚本查看效果：
+运行统一工具脚本查看效果：
 
 ```bash
-bash .project/deploy.sh
+bash .project/workwork.sh deploy-local
 ```
 
 ### 5. 人工校对
@@ -34,7 +37,7 @@ bash .project/deploy.sh
 翻译完成后更新同步点：
 
 ```bash
-bash .project/sync-check.sh --update
+bash .project/workwork.sh sync-update
 ```
 
 ### 7. 提交审核
@@ -96,35 +99,7 @@ A:
 
 A: 可以！如果发现翻译错误或有更好的表达方式，欢迎提交改进。
 
-## 同步官方更新
-
-项目维护者会定期同步官方文档。我们提供了同步检查工具来帮助检测上游更新。
-
-### 检查上游更新
-
-```bash
-# 检查是否有新的文档更新
-bash .project/sync-check.sh --check
-```
-
-### 更新同步记录
-
-翻译完成后，更新同步记录：
-
-```bash
-bash .project/sync-check.sh --update
-```
-
-
-### 如何参与维护
-
-1. **同步官方更新** - 检查官方文档是否有新增或修改
-2. **改进翻译质量** - 优化现有文档的表达
-3. **修正错误** - 修复翻译错误或术语不一致
-
 ## 联系我们
 
 - 提交 Issue：[GitHub Issues](https://github.com/GuGu-Perf/perfetto-docs-zh-cn/issues)
 - 讨论区：[GitHub Discussions](https://github.com/GuGu-Perf/perfetto-docs-zh-cn/discussions)
-
-感谢你的贡献！
