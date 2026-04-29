@@ -96,15 +96,11 @@ Perfetto 中大多数代码在类级别都存在单元测试。它们
 
 ## Trace Processor 差异测试
 
-Trace processor 主要使用所谓的"差异测试"进行测试。
+Trace Processor 主要使用所谓的"差异测试"而非单元测试进行测试。在处理解析 trace 的代码时，单元测试已被证明过于脆弱——每当解析逻辑重构时，它们都需要繁琐的机械更新——因此单元测试仅用于 Trace Processor 其余部分所基于的低层构建块。其他所有内容（解析事件、表 schema、stdlib 模块、动态表）都由差异测试覆盖。
 
-对于这些测试，trace processor 解析已知的 trace 并执行查询
-字符串或文件。然后比较这些查询的输出（即"差异"）与
-预期输出文件，并突出显示差异。
+对于这些测试，Trace Processor 解析已知的 trace 并执行查询字符串或文件。然后比较这些查询的输出（即"差异"）与预期输出文件，并突出显示差异。
 
-编写 metric 时也有类似的差异测试 - 不使用查询，
-而是使用 metric 名称，预期输出字符串包含
-计算 metric 的预期结果。
+编写 metric 时也有类似的差异测试——不使用查询，而是使用 metric 名称，预期输出字符串包含计算 metric 的预期结果。
 
 这些测试（对于查询和 metric）可以运行如下：
 
@@ -117,6 +113,49 @@ TIP: 查询差异测试预期只有单个查询，该查询在整个文件中产
 调用 `SELECT RUN_METRIC('metric file')` 可能会混淆此检查，因为此查询会生成一些隐藏输出。
 为了解决此问题，如果查询只有名为 `suppress_query_output` 的列，即使它有输出，也将被忽略(例如，
 `SELECT RUN_METRIC('metric file') as suppress_query_output`)
+
+### 添加新的差异测试
+
+所有差异测试位于 [`test/trace_processor`](/test/trace_processor) 下的 `tests{_category_name}.py` 文件中，作为类的方法。要添加新测试，在合适的 Python 文件中添加一个以 `test_` 开头的新方法。
+
+方法不能接受参数，必须返回一个 `DiffTestBlueprint`：
+
+```python
+class DiffTestBlueprint:
+  trace: Union[Path, Json, Systrace, TextProto]
+  query: Union[str, Path, Metric]
+  out: Union[Path, Json, Csv, TextProto]
+```
+
+_Trace_ 和 _Out_：对于 `Path` 以外的每种类型，对象的内容将被视为文件内容，因此必须遵循相同的规则。
+
+_Query_：对于 metric 测试，只需提供 metric 名称。对于查询测试，可以是原始 SQL 语句，例如 `"SELECT * FROM SLICE"`，或 `.sql` 文件的路径。
+
+NOTE: 运行 `tools/diff_test_trace_processor.py` 之前，需要先构建 `trace_processor_shell` 及相关 proto 描述符。最简单的方法是在首次和每次更改 Trace Processor 代码时运行 `tools/ninja -C <out directory>`。
+
+#### 选择差异测试的添加位置
+
+`diff_tests/` 包含与 Trace Processor 不同区域对应的目录：
+
+1. **stdlib**：专注于 PerfettoSQL 标准库的测试，包括 prelude 和常规模块。子目录通常对应 `perfetto_sql/stdlib` 中的目录。
+2. **parser**：专注于确保不同 trace 格式被正确解析且相应的内置表被填充的测试。
+3. **syntax**：专注于 PerfettoSQL 核心语法的测试（例如 `CREATE PERFETTO TABLE`、`CREATE PERFETTO FUNCTION`）。
+
+**场景**：正在添加新的 stdlib 模块 `foo/bar.sql`。
+
+_答案_：将测试添加到 `stdlib/foo/bar_tests.py`。
+
+**场景**：正在解析一个新事件，测试的重点是确保该事件被正确解析。
+
+_答案_：在 `parser` 子目录之一中添加测试。如果存在相关目录（例如 `sched`、`power`），优先将测试添加到现有目录中。
+
+**场景**：正在添加新的动态表，测试的重点是确保动态表被正确计算。
+
+_答案_：将测试添加到 `stdlib/dynamic_tables`。
+
+**场景**：正在修改 Trace Processor 的内部实现，测试旨在确保 Trace Processor 正确过滤/排序重要的内置表。
+
+_答案_：将测试添加到 `parser/core_tables`。
 
 ## UI 像素差异测试
 

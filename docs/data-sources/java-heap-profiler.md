@@ -1,12 +1,14 @@
-# 内存：Java 堆转储
+# 内存：ART Heap Dumps for Java/Kotlin Heap
 
-NOTE: 捕获 Java 堆转储需要 Android 11 或更高版本
+NOTE: 捕获 Heap dumps 需要 Android 11 或更高版本
 
-有关 Java 堆转储的入门，请参见 [内存指南](/docs/case-studies/memory.md#java-hprof)。
+NOTE: Perfetto ART Heap Dumps 与标准 JVM / HPROF heap dumps 不同。与 HPROF dumps 不同，这些仅包含引用图 — 而不包含对象内的数据。
 
-与 [Native heap Profiling](native-heap-profiler.md) 相反，Java 堆转储报告托管对象的完整保留图但不报告调用堆栈。在 Java 堆转储中记录的信息的形式为：_对象 X 通过其名为 Z 的类成员保留对象 Y，该对象 Y 大小为 N 字节_。
+有关 ART（Android RunTime）heap dumps 的入门，请参阅[内存指南](/docs/case-studies/memory.md#java-hprof)。
 
-Java 堆转储不得与 [Java 堆采样器](native-heap-profiler.md#java-heap-sampling) 采集的 Profiling 混淆。
+与 [heap profiles](native-heap-profiler.md) 相反，heap dumps 报告 Java 对象的完整保留图但不报告调用堆栈。在 heap dump 中记录的信息的形式为：_对象 X 通过其名为 Z 的类成员保留对象 Y，该对象 Y 大小为 N 字节_。
+
+Heap dumps 不得与 [Java Allocation Profiling](native-heap-profiler.md#java-heap-sampling) 采集的 profile 混淆，后者记录分配事件/调用堆栈。
 
 ## UI
 

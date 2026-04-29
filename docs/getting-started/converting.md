@@ -1075,6 +1075,7 @@ NOTE: 帧从最外层(堆栈底部，例如 `main()`)到最内层（堆栈顶部
 - **探索高级的 `TrackEvent` 功能：** 有关对 track 和事件外观、interning 和其他高级功能的更详细控制，请参阅
   [Writing synthetic traces using TrackEvent protobufs](/docs/reference/synthetic-track-event.md)
   参考页面。
+- **附加自定义类型字段：** 如果 `debug_annotations` 不够表达力，并且你想要自己的 schema，可以在 `TrackEvent` 上定义 protobuf 扩展，并沿内置字段设置这些字段。[高级指南的 proto extensions 部分](/docs/reference/synthetic-track-event.md#proto-extensions) 介绍了 Python 工作流；有关该机制的背景以及描述符如何到达 Trace Processor，请参阅 [使用自定义 Protos 扩展 TrackEvent](/docs/instrumentation/extensions.md)。
 - **可视化你的 trace：** 在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `.pftrace` 文件以在交互式 Timeline 上探索你的数据。
 - **使用 SQL 分析：** 使用
   [Trace Processor](/docs/analysis/getting-started.md) 查询你的自定义

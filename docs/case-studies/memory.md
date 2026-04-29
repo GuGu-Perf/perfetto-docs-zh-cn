@@ -229,16 +229,16 @@ NOTE: 有关 native heap profiler 和故障排除的详细说明，请参阅 [Da
 
 ### {#capture-profile-native} 捕获 profile
 
-使用 `tools/heap_profile` 脚本profile 进程。如果你遇到问题，请确保你使用 [最新版本](https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile)。使用 `tools/heap_profile -h` 查看所有参数，或使用默认值并仅profile 进程(例如 `system_server`):
+使用 `tools/heap_profile` 脚本的 `android` 子命令来 profile 连接的 Android 设备上的进程。如果你遇到问题，请确保你使用 [最新版本](https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile)。使用 `tools/heap_profile android -h` 查看所有参数，或使用默认值并仅 profile 进程（例如 `system_server`）：
 
 ```bash
-$ tools/heap_profile -n system_server
+$ tools/heap_profile android -n system_server
 
 Profiling active. Press Ctrl+C to terminate.
 You may disconnect your device.
 
 Wrote profiles to /tmp/profile-1283e247-2170-4f92-8181-683763e17445 (symlink /tmp/heap_profile-latest)
-These can be viewed using pprof. Googlers: head to pprof/ and upload them.
+The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.perfetto.dev.
 ```
 
 当你看到 _Profiling active_ 时，请在手机上操作一下。完成后，按 Ctrl-C 结束 profile。对于本教程，我打开了几个应用程序。

@@ -1,24 +1,21 @@
 # Perfetto UI 发布流程
 
-UI 有三个发布渠道，由 [channels.json](/ui/release/channels.json) 文件配置。渠道包括：
+UI 有三个发布渠道。每个渠道从一个长期分支的 HEAD 提供服务：
 
-- `stable`，ui.perfetto.dev 上默认提供的版本。每四周更新一次。
-- `canary`，一个不太稳定但较新的版本。每 1-2 周更新一次。
-- `autopush`，UI 的当前 HEAD 版本。不稳定。
+- `stable`，ui.perfetto.dev 上默认提供的版本。从 `stable` 分支提供服务，每四周更新一次。
+- `canary`，一个不太稳定但较新的版本。每 1-2 周更新一次。从 `canary` 分支提供服务。
+- `autopush`，UI 的当前 HEAD 版本。不稳定。从 `main` 分支提供服务。
 
 发布流程基于四周的周期。
 
-- 第 1 周：将 `canary` 更新到 `HEAD`。
-- 第 2 周：将 `canary` 更新到 `HEAD`。
- Canary 稳定化第 1/2 周从这里开始。
- 只有关键错误修复可以被 cherry-pick 到 `canary`。
+- 第 1 周：从 `main` 切割 `canary`。
+- 第 2 周：从 `main` 切割 `canary`。Canary 稳定化第 1/2 周从这里开始。只有关键错误修复可以被 cherry-pick 到 `canary`。
 - 第 3 周：Canary 稳定化第 2/2 周。
-- 第 4 周：将 `stable` 更新到当前的 `canary`，将 `canary` 更新到 `HEAD`。
+- 第 4 周：将当前 `canary` 提升为 `stable`，然后从 `main` 切割 `canary`。
 
-第四周之后，周期从第一周重复。
-这样是为了：
+第四周之后，周期从第一周重复。这样是为了：
 
-- Canary 在升级到 stable 之前有两周的 soak 时间。
+- Canary 在提升为 stable 之前有两周的 soak 时间。
 - 较新的功能可以在一周内，最多两周（如果在稳定化周）在 Canary 中试用。
 - Stable 用户每月不会受到超过一次的干扰。
 
@@ -44,7 +41,7 @@ UI 当前使用的渠道显示在左上角。如果 logo 后面的标签显示 `
 
 ![perfetto-ui-version.png](/docs/images/perfetto-ui-version.png)
 
-点击版本号将带你到 GitHub，在那里你可以看到哪些提交是该版本的一部分。版本号格式为 `v<maj>.<min>.<Commit SHA1 prefix>`，其中 `<maj>.<min>` 从 [CHANGELOG](/CHANGELOG) 的顶部条目中提取。
+点击版本号将带你到 GitHub，在那里你可以看到哪些提交是该版本的一部分。版本号格式为 `v<maj>.<min>`，其中 `<maj>.<min>` 从 [CHANGELOG](/CHANGELOG) 的顶部条目中提取。
 
 ## Cherry-picking 更改
 
@@ -52,42 +49,22 @@ UI 当前使用的渠道显示在左上角。如果 logo 后面的标签显示 `
 
 ```bash
 git fetch origin
-git co -b ui-canary -t origin/ui-canary
+git checkout -b cherry-pick-canary origin/canary
 git cherry-pick -x $SHA1_OF_ORIGINAL_CL
 git cl upload
 
-# 如果需要，对 origin/ui-stable 分支重复。
+# 如果需要，从 origin/stable 重复。
 ```
 
-一旦 cherry-picks 落地，发送一个 CL 来更新 `main` 分支中的 [channels.json](/ui/release/channels.json)。有关示例，请参阅 [r.android.com/1726101](https://r.android.com/1726101)。
+一旦 cherry-pick 落地到 `canary` 或 `stable`，推送到该分支会触发对应 UI 渠道的 Cloud Build。没有单独的渠道固定文件需要更新。
 
-```json
-{
- "channels": [
- {
- "name": "stable",
- "rev": "6dd6756ffbdff4f845c4db28e1fd5aed9ba77b56"
- // ^ 这应该指向 origin/ui-stable 的 HEAD。
- },
- {
- "name": "canary",
- "rev": "3e21f613f20779c04b0bcc937f2605b9b05556ad"
- // ^ 这应该指向 origin/ui-canary 的 HEAD。
- },
- {
- "name": "autopush",
- "rev": "HEAD"
- // ^ 不要碰这个。
- }
- ]
-}
-```
+要进行正常的发布渠道迁移，请使用 GitHub Actions 工作流：
 
-其他分支中 `channels.json` 的状态是无关紧要的，发布基础设施只查看 `main` 分支来确定每个渠道的固定版本。
+- `Cut canary (open PR merging main -> canary)` 开启一个针对 `canary` 的 PR。当该 PR 被合并时，Cloud Build 会重新部署 canary 渠道。
+- `Promote to stable (open PR merging canary -> stable)` 开启一个针对 `stable` 的 PR。当该 PR 被合并时，Cloud Build 会重新部署 stable 渠道，并且 `tag-on-stable-push.yml` 会创建发布标签和草稿发布。
 
-`channels.json` CL 落地后，构建基础设施将在 ~30 分钟内选取它并更新 ui.perfetto.dev。
-
-Googlers：你可以在 [go/perfetto-ui-build-status](http://go/perfetto-ui-build-status) 上检查构建进度和 Log。有关服务基础设施的设计文档，请参阅 [go/perfetto-ui-autopush](http://go/perfetto-ui-autopush) 和 [go/perfetto-ui-channels](http:///go/perfetto-ui-channels)。
+Googlers：你可以在 [go/perfetto-ui-build-status](http://go/perfetto-ui-build-status) 上检查构建进度和 Log。有关服务基础设施的设计文档，请参阅 [go/perfetto-ui-autopush](http://go/perfetto-ui-autopush) 和 [go/perfetto-ui-channels](http://go/perfetto-ui-channels)。
 
 ## 发布 Perfetto Chrome 扩展
+
 Googlers：请参阅 go/perfetto-release-chrome-extension

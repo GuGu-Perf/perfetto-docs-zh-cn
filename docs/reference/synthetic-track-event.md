@@ -879,6 +879,142 @@ Perfetto 支持三种类型的关联标识符：
 
 ![关联 ID](/docs/images/synthetic-track-event-correlation-ids.png)
 
+### {#proto-extensions} 使用 Proto 扩展附加自定义类型字段
+
+当 `debug_annotations` 不够表达力时 — 你想要具有嵌套消息、重复字段或下游工具可以依赖的类型的真实模式 — 使用 protobuf 扩展扩展 `TrackEvent`。Trace Processor 会自动将每个解码的扩展字段解析到 `args` 表中，前提是其描述符可用。
+
+有关该机制的完整说明（字段编号分配、包装消息要求、描述符到达 Trace Processor 的三种方式），请参阅[使用自定义 Proto 扩展 TrackEvent](/docs/instrumentation/extensions.md)。本节重点介绍手动 trace 写入流程：如何使用标准 protobuf Python API 设置扩展字段并将描述符嵌入 trace 中，使结果自包含。
+
+#### 双文件设置
+
+将模式拆分为两个 `.proto` 文件。
+
+**文件 1 — `acme_data.proto`** 是你的常规数据模式。你将为此文件生成 Python 绑定并像任何其他 protobuf 消息一样使用它们。
+
+```protobuf
+syntax = "proto2";
+package com.acme;
+
+message AcmeRequestMetadata {
+  optional string request_id = 1;
+  repeated int32 retry_latencies_ms = 2;
+  optional string endpoint = 3;
+}
+```
+
+**文件 2 — `acme_extension.proto`** 是扩展 *Hook*：它将数据消息绑定到 `TrackEvent` 上的特定字段编号。你永远不要为此文件导入 Python 绑定 — 其唯一目的是生成嵌入在 trace 中的 `FileDescriptorSet`，以便 Trace Processor 知道如何解码该字段编号。
+
+```protobuf
+syntax = "proto2";
+import "protos/perfetto/trace/perfetto_trace.proto";
+import "acme_data.proto";
+package com.acme;
+
+message AcmeExtension {
+  extend perfetto.protos.TrackEvent {
+    optional AcmeRequestMetadata request_metadata = 9902;
+  }
+}
+```
+
+将 `perfetto_trace.proto` 的副本（[从 GitHub 下载](https://github.com/google/perfetto/blob/main/protos/perfetto/trace/perfetto_trace.proto)）放在 `protos/perfetto/trace/` 下：
+
+```
+project/
+├── protos/perfetto/trace/perfetto_trace.proto   # 来自 Perfetto 仓库
+├── acme_data.proto
+└── acme_extension.proto
+```
+
+从 `project/` 编译：
+
+```bash
+# 仅数据模式的 Python 绑定。
+protoc --python_out=. acme_data.proto
+
+# 扩展 Hook 的自包含描述符集（拉入其导入）。
+protoc -I. --include_imports \
+       --descriptor_set_out=acme_extension.desc \
+       acme_extension.proto
+```
+
+#### Python 示例
+
+扩展有效负载作为 protobuf 线字节写入 `TrackEvent` — 一个长度分隔的字段（线类型 2），其值是数据消息的序列化字节。
+
+将以下代码复制到你的 `trace_converter_template.py` 脚本中的 `populate_packets(builder)` 函数中。
+
+```python
+    from acme_data_pb2 import AcmeRequestMetadata
+
+    # 在 acme_extension.proto 中声明的字段编号。
+    REQUEST_METADATA_FIELD_NUMBER = 9902
+
+    def _varint(n):
+        out = bytearray()
+        while n >= 0x80:
+            out.append((n & 0x7f) | 0x80)
+            n >>= 7
+        out.append(n)
+        return bytes(out)
+
+    def set_request_metadata(track_event, meta):
+        """将消息类型的扩展字段（线类型 2）附加到 TrackEvent 上。"""
+        tag = (REQUEST_METADATA_FIELD_NUMBER << 3) | 2
+        payload = meta.SerializeToString()
+        wire = _varint(tag) + _varint(len(payload)) + payload
+        # MergeFromString 将编译模式之外的字段保留为
+        # 未知字段，这些字段在重新序列化时会被保留。
+        track_event.MergeFromString(wire)
+
+    TRUSTED_PACKET_SEQUENCE_ID = 1001
+    TRACK_UUID = 77777
+
+    # 1. 嵌入描述符集，以便 Trace Processor 可以解码扩展。
+    desc_packet = builder.add_packet()
+    with open('acme_extension.desc', 'rb') as f:
+        desc_packet.extension_descriptor.extension_set.ParseFromString(f.read())
+
+    # 2. 描述事件将出现的 Track。
+    td = builder.add_packet()
+    td.track_descriptor.uuid = TRACK_UUID
+    td.track_descriptor.name = "Requests"
+
+    # 3. 构建你的元数据。
+    meta = AcmeRequestMetadata()
+    meta.request_id = "req-42"
+    meta.retry_latencies_ms.extend([12, 34])
+    meta.endpoint = "/api/v1/search"
+
+    # 4. 发出带有作为扩展插入的元数据的 SLICE_BEGIN。
+    begin = builder.add_packet()
+    begin.timestamp = 1000
+    begin.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    begin.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
+    begin.track_event.track_uuid = TRACK_UUID
+    begin.track_event.name = "HandleRequest"
+    set_request_metadata(begin.track_event, meta)
+
+    # 5. 关闭 Slice。
+    end = builder.add_packet()
+    end.timestamp = 1500
+    end.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    end.track_event.type = TrackEvent.TYPE_SLICE_END
+    end.track_event.track_uuid = TRACK_UUID
+```
+
+导入生成的 trace 后，扩展字段可以使用 `EXTRACT_ARG` 查询。Trace Processor 按名称（`request_metadata`）键入扩展字段，并使用点表示法展平嵌套消息；重复字段使用 `[N]` 索引。
+
+```sql
+SELECT
+  slice.name,
+  EXTRACT_ARG(slice.arg_set_id, 'request_metadata.request_id') AS request_id,
+  EXTRACT_ARG(slice.arg_set_id, 'request_metadata.endpoint') AS endpoint,
+  EXTRACT_ARG(slice.arg_set_id, 'request_metadata.retry_latencies_ms[0]') AS first_retry_ms
+FROM slice
+WHERE EXTRACT_ARG(slice.arg_set_id, 'request_metadata.request_id') IS NOT NULL;
+```
+
 ## {#controlling-track-merging} 控制 Track 合并
 
 默认情况下，Perfetto UI 合并共享相同名称的 Track。这通常是用于分组相关异步事件的所需行为。但是，在某些情况下，你需要更明确的控制。你可以使用 `TrackDescriptor` 中的 `sibling_merge_behavior` 和 `sibling_merge_key`

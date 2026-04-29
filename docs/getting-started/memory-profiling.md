@@ -14,13 +14,15 @@
 
 - **Java/KT 应用**： 应用程序内存占用的大部分位于**托管堆**中（在 Android 的情况下，由 ART 的垃圾收集器管理）。这是每个 `new X()` 对象所在的地方。
 
-Perfetto 提供了两种补充技术来调试上述内容：
+Perfetto 提供了多种互补技术来调试上述内容：
 
-- [**heap profiling**](#native-c-c-rust-heap-profling) 用于 native 代码：这是基于在 malloc/free 时采样调用栈并显示聚合火焰图以按调用站点分解内存使用。
+工具 | 语言 | 插桩内容 | 用途
+-----|----------|------|------
+[ART Heap Dumps](#java-managed-heap-dumps) | Java/Kotlin | 所有已分配对象的引用图 | 分解内存使用，查找泄漏。
+[Native Allocation Profiling](#native-c-c-rust-heap-profiling) | Native C/C++/Rust | `malloc` + `free` | 减少 native 分配流变，分解内存使用并查找 **profiling 开始后**的泄漏。
+[ART Allocation Profiling](/docs/data-sources/native-heap-profiler.md#java-heap-sampling) | Java/Kotlin | 对象分配 | 减少 Java/Kotlin 分配流变
 
-- [**heap dumps**](#java-managed-heap-dumps) 用于 Java/托管代码：这是基于创建堆保留图，显示对象之间的保留依赖关系（但没有调用站点）。
-
-## Native (C/C++/Rust) Heap Profiling
+## Native (C/C++/Rust) Allocation Profiling (aka native heap profiling)
 
 C/C++/Rust 等 native 语言通常通过使用 libc 系列的 `malloc`/`free` 函数在最低级别分配和释放内存。Native heap profiling 通过_拦截_对这些函数的调用并注入跟踪已分配但未释放内存的调用栈的代码来工作。这允许跟踪每个分配的"代码来源"。malloc/free 可能是繁重堆进程中的性能热点：为了减轻 memory profiler 的开销，我们支持[采样](/docs/design-docs/heapprofd-sampling）以权衡准确性和开销。
 
@@ -90,13 +92,15 @@ export ANDROID_SERIAL=24121FDH20006S
 curl -LO https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile
 ```
 
-然后开始 profile:
+然后使用 `android` 子命令开始 profile:
 
 ```bash
-python3 heap_profile -n com.google.android.apps.nexuslauncher
+python3 heap_profile android -n com.google.android.apps.nexuslauncher
 ```
 
-运行你的测试模式，与进程交互，完成后按 Ctrl-C(或传递 `-d 10000` 进行限时 profiling)
+直接调用（`python3 heap_profile -n ...`）仍然有效，等同于 `android` 子命令 - 这是为了向后兼容而保留的。新脚本应使用显式子命令形式。
+
+运行你的测试模式，与进程交互，完成后按 Ctrl-C（或传递 `-d 10000` 进行限时 profiling）
 
 当你按 Ctrl-C 时，heap_profile 脚本将拉取 traces 并将它们存储在 /tmp/heap_profile-latest 中。查找说：
 
@@ -109,53 +113,58 @@ TAB: Linux (Command line)
 
 #### 先决条件
 
-- 你需要从 Perfetto checkout 构建 `libheapprofd_glibc_preload.so` 库([说明](/docs/data-sources/native-heap-profiler#-non-android-linux-support))
+* 一台运行 x86_64、ARM 或 ARM64 的 Linux 机器。
 
 #### 说明
 
-下载 tracebox 和 heap_profile 脚本
+下载 `heap_profile` 脚本：
+
 ```bash
-curl -LO https://get.perfetto.dev/tracebox
 curl -LO https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile
-chmod +x tracebox heap_profile
+chmod +x heap_profile
 ```
 
-启动 tracing 服务
+然后运行 `host` 子命令，在 `--` 后传递你想要 profile 的二进制文件：
+
 ```bash
-./tracebox traced &
+./heap_profile host -- ./my_binary --some-flag
 ```
 
-生成 heapprofd 配置并启动 tracing session。
+该脚本：
+
+1. 首次运行时将 `tracebox` 和 `libheapprofd_glibc_preload.so` 自动下载到 `~/.local/share/perfetto/prebuilts/` 中。
+2. 启动捆绑的 `traced` 守护进程并打开 tracing session。
+3. 使用 `LD_PRELOAD` 设置为预加载库和 `PERFETTO_HEAPPROFD_BLOCKING_INIT=1` 启动你的二进制文件。否则 heapprofd 会懒惰初始化并遗漏启动分配；此环境变量阻塞第一次 `malloc` 直到它已附加，因此每个分配都会被捕获。
+
+当你的二进制文件退出（或你按 `Ctrl-C` 提前停止）时，脚本运行 `traceconv` 以生成 gzip 压缩的 pprof 文件和原始 trace，并打印输出目录。典型的端到端运行如下：
+
+```text
+$ ./heap_profile host -- ./my_binary
+[762.189] ctory_standalone.cc:161 Child disconnected.
+[762.190] approfd_producer.cc:580 Stopping data source 1
+[762.190] pprofd_producer.cc:1230 1752951 disconnected from heapprofd (ds shutting down: 1).
+[762.190] approfd_producer.cc:346 Shutting down child heapprofd (status 0).
+Waiting for profiler shutdown...
+Wrote profiles to /tmp/f8f102 (symlink /tmp/heap_profile-latest)
+The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.perfetto.dev.
+```
+
+输出目录包含一个 `raw-trace` 文件（二进制 Perfetto trace）和每个注册堆一个 `heap_dump.*.pb.gz` 文件。将 `raw-trace` 上传到 [Perfetto UI](https://ui.perfetto.dev)，点击"Native heap profile" track 上的 V 形标记，即可获得与下面描述的 Android 流程形状相同的火焰图：
+
+![Linux host 模式 heap profile 火焰图](/docs/images/heapprofd-host-flamegraph.png)
+
+如果省略 `-n` / `--name`，进程名称默认为你在 `--` 后传递的二进制文件的基本名称。
+
+要使用本地构建覆盖自动下载的预加载库，请从 Perfetto checkout 构建 `heapprofd_glibc_preload` 并通过 `--preload-library` 传递其路径：
+
 ```bash
-# 将 trace_processor_shell 替换为你想要 profile 的进程名称。
-./heap_profile -n trace_processor_shell --print-config | \
- ./tracebox perfetto --txt -c - -o ~/trace_processor_memory.pftrace
+tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
+./heap_profile host \
+  --preload-library out/linux_clang_release/libheapprofd_glibc_preload.so \
+  -- ./my_binary --some-flag
 ```
 
-打开另一个终端（或标签），启动你想要 profile 的进程，预加载 heapprofd 的 .so。示例：
-```bash
-PERFETTO_HEAPPROFD_BLOCKING_INIT=1 \
-LD_PRELOAD=out/lnx/libheapprofd_glibc_preload.so \
-trace_processor_shell /dev/null
-
-# 键入这将导致 40MB 分配。
-> CREATE TABLE x as SELECT randomblob(40000000) as data
-```
-
-默认情况下，heapprofd 懒惰初始化以避免阻塞你的程序主线程。但是，如果你的程序在启动时进行内存分配，这些可能会被错过。为了避免这种情况，设置环境变量 `PERFETTO_HEAPPROFD_BLOCKING_INIT=1`;在第一次 malloc 上，你的程序将被阻塞，直到 heapprofd 完全初始化，但意味着每次分配都将被正确跟踪。
-
-此时：
-
-- 如果你的进程首先终止，它将把所有 profiling 数据刷新到 tracing 缓冲区中。
-- 如果不是，你可以通过停止 trace 请求刷新 profiling 数据。
-
-在任何情况下：在上一步的 `tracebox perfetto` 命令上按 Ctrl-C。这将写入 trace 文件（例如 `~/trace_processor_memory.pftrace`），你可以使用 Perfetto UI 打开它。
-
-完成后还要记得杀死 `tracebox traced` 服务。
-```bash
-fg
-# Ctrl-C
-```
+详见 [(非 Android) Linux 支持](/docs/data-sources/native-heap-profiler.md#non-android-linux-support)。
 </tabs?>
 
 ### 可视化你的第一个 heap profile
@@ -215,7 +224,7 @@ FROM android_heap_graph_class_aggregation;
 
 你可以看到可访问聚合对象大小和对象计数的摘要。
 
-## Java/Managed Heap Dumps
+## ART Heap Dumps
 
 Java 以及基于它构建的托管语言（如 Kotlin）使用运行时环境来处理内存管理和垃圾收集。在这些语言中，（几乎）每个对象都是堆分配。内存通过对象引用进行管理：对象保留其他对象，一旦对象变得不可访问，内存就会由垃圾收集器自动回收。没有像手动内存管理那样的 free() 调用。
 

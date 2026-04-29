@@ -86,7 +86,7 @@ void my_free(void* ptr) {
 
 不要忘记链接 `heapprofd_standalone_client.so` 并将其包含在你的应用程序中。
 
-## 为应用程序分析
+## Profile 你的应用
 
 然后，使用 [heap_profile](
 https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile)
@@ -100,7 +100,7 @@ https://raw.githubusercontent.com/google/perfetto/main/protos/perfetto/trace/per
 将 `$HEAP` 替换为你使用 `AHeapProfile_registerHeap` 注册的 heap 名称）：
 
 ```
-heap_profile -n $APP_NAME --heaps $HEAP --print-config | \
+heap_profile android -n $APP_NAME --heaps $HEAP --print-config | \
  path/to/protoc --encode=perfetto.protos.TraceConfig perfetto_trace.proto | \
  adb shell perfetto -c - -o /data/misc/perfetto-traces/profile
 ```
@@ -110,7 +110,7 @@ heap_profile -n $APP_NAME --heaps $HEAP --print-config | \
 将 `%HEAP%` 替换为你使用 `AHeapProfile_registerHeap` 注册的 heap 名称）：
 
 ```
-python /path/to/heap_profile -n %APP_NAME% --heaps %HEAP% --print-config | ^
+python /path/to/heap_profile android -n %APP_NAME% --heaps %HEAP% --print-config | ^
  path/to/protoc --encode=perfetto.protos.TraceConfig perfetto_trace.proto | ^
  adb shell perfetto -c - -o /data/misc/perfetto-traces/profile
 ```
