@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Heap Dump Explorer - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="Heap Dump Explorer - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/visualization/heap-dump-explorer">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">实战指南</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">周期性 Trace 快照</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-boot-tracing.html">开机 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-outofmemoryerror.html">OutOfMemoryError</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/developer-tools.html">开发者工具</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="doc" data-md-file="/docs/visualization/heap-dump-explorer">
+    <h1>Heap Dump Explorer</h1><p>Heap Dump Explorer 是 Perfetto UI 中用于分析 Android Java heap dump 的页面。对于每个可达对象，它显示类、浅大小和保留大小，以及从 GC root 到该对象的引用路径——因此你可以回答堆中有什么、是什么让每个对象存活、以及每个对象保留了多少内存。</p>
+<p>本指南涵盖：</p>
+<ul>
+<li><a href="#heap-dumps-vs-heap-profiles">Heap dump 与 Heap Profile 的对比</a>以及何时使用哪个。</li>
+<li><a href="#capturing-a-heap-dump">采集 Heap Dump</a>，包括轻量级的 Perfetto heap graph 和更完整的 ART HPROF 格式。</li>
+<li>如何使用 Explorer 的每个标签页，从<a href="#inspecting-a-single-object">检查单个对象</a>开始——大多数调查最终都会到达的视图。</li>
+<li>实践<a href="#case-studies">案例研究</a>：泄漏的 <code>Activity</code> 和重复的 Bitmap。</li>
+</ul>
+<h2><a name="heap-dump-heap-profile-" class="anchor" href="#heap-dump-heap-profile-"></a>Heap dump 与 Heap Profile 的对比</h2><!-- TODO(zezeozue): Move this explanation into the memory guide
+     (docs/case-studies/memory.md or docs/getting-started/memory-profiling.md)
+     and cross-link from here instead of duplicating. -->
+
+<ul>
+<li><p><strong>Java Heap Profile</strong> 采样_随时间变化的分配_，以调用栈的火焰图呈现。它回答的是在采集 trace 期间哪些代码路径正在分配内存。参见 <a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler#java-heap-sampling.html">Java heap sampler</a>。</p>
+</li>
+<li><p><strong>Java Heap Dump</strong> 是_某一时间点堆的快照_。它采集每个可达对象、对象之间的引用、GC root，以及——取决于格式——字段值、字符串、原始数组字节和 Bitmap 像素缓冲区。</p>
+</li>
+</ul>
+<p>Heap Dump Explorer 用于 dump。如果你需要分配调用路径分析，请改用 Heap Profile。</p>
+<h3><a name="heap-dump-" class="anchor" href="#heap-dump-"></a>Heap Dump 适合的场景</h3><ul>
+<li><strong>内存泄漏。</strong> 一个不应该可达的对象却是可达的。从 GC root 出发的引用路径指向持有者——通常是静态字段、缓存的 Listener 或向已销毁的 Context 发送消息的 <code>Handler</code>。</li>
+<li><strong>保留大小意外。</strong> 一个对象本身很小，但通过其引用保留了许多兆字节。支配者树和 <em>Immediately dominated objects</em> 部分准确显示它持有什么。</li>
+<li><strong>重复内容。</strong> 同一 Bitmap、字符串或原始数组的多个副本。Overview 按内容哈希对它们分组，并显示浪费的字节数。</li>
+<li><strong>Bitmap 统计。</strong> 哪些 Bitmap 是存活的、它们有多大以及是什么持有它们。</li>
+<li><strong>类分解。</strong> 哪些类拥有最大份额的保留内存。</li>
+</ul>
+<h3><a name="heap-dump-" class="anchor" href="#heap-dump-"></a>Heap Dump 不适合的场景</h3><ul>
+<li><strong>分配调用路径。</strong> Heap Dump 是快照，不是录制——它不会告诉你_是哪段代码_分配了一个对象。请使用 <a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler#java-heap-sampling.html">Java Heap Profile</a>。</li>
+<li><strong>纯 Native 内存。</strong> Dump 覆盖的是 Java 堆。对于 native 分配，请使用 <a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">native heap profiler</a>。</li>
+<li><strong>时间和性能。</strong> Heap Dump 不涉及对象创建时间或操作耗时。</li>
+</ul>
+<h2><a name="-heap-dump" class="anchor" href="#-heap-dump"></a>采集 Heap Dump</h2><p>支持两种格式。</p>
+<h3><a name="perfetto-heap-graph-" class="anchor" href="#perfetto-heap-graph-"></a>Perfetto Heap Graph（轻量级）</h3><p>采集对象图——类、引用、大小、GC root——但不包括字段值、字符串、原始数组字节或 Bitmap 像素。足以进行保留、支配者和类分解分析。</p>
+<p><strong>优点：</strong></p>
+<ul>
+<li>隐私安全——没有字符串值、像素缓冲区或字段内容离开设备，因此可以在不泄漏敏感数据的情况下从真实用户采集。</li>
+<li>不需要 <code>debuggable</code> 进程。</li>
+<li>与其他 Perfetto 工具集成：你可以在单个 trace 中同时采集 heap graph、Heap Profile、内存 Counter 和其他 DataSource。</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>没有基于内容的分析——Strings、Arrays 和 Bitmaps 标签页以及 Overview 上的重复内容检测不可用。</li>
+</ul>
+<p>对于泄漏调查、支配者分析和类分解选择此格式，特别是在从不可调试的生产构建采集时。</p>
+<code class="hljs code-block">$ tools/java_heap_dump -n com.example.app -o heap.pftrace
+
+Dumping Java Heap.
+Wrote profile to heap.pftrace</code><p>使用 <code>--wait-for-oom</code> 在 <code>OutOfMemoryError</code> 时触发，或使用 <code>-c &lt;interval_ms&gt;</code> 进行连续 dump。完整配置参见 <a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">Java heap dumps</a>，OOM 触发变体参见 <a href="/perfetto-docs-zh-cn/docs/case-studies/android-outofmemoryerror.html">OutOfMemoryError heap dumps</a>。</p>
+<h3><a name="art-hprof-" class="anchor" href="#art-hprof-"></a>ART HPROF（完整详情）</h3><p>包含 heap graph 的一切，外加字段值、原始数组内容、字符串值和 Bitmap 像素缓冲区。Strings、Arrays 和 Bitmaps 标签页以及 Overview 标签页上的重复内容检测需要此格式。</p>
+<p><strong>优点：</strong></p>
+<ul>
+<li>完整可见性——字段值、字符串内容、Bitmap 像素和原始数组字节全部可用。</li>
+<li>启用重复内容检测和 Bitmaps 画廊。</li>
+<li>HPROF 格式也可被 Android Studio 等其他工具识别。</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>采集速度慢得多，会使目标进程冻结数秒（Perfetto 在 fork 的副本上工作，因此主进程不受影响）。</li>
+<li>产生更大的文件。</li>
+<li>包含堆的完整内容，因此不适合从真实用户采集——它将包含内存中的任何敏感数据。</li>
+<li>需要 <code>debuggable</code> 进程。</li>
+</ul>
+<p>当你需要内容级别的细节时选择此格式：追踪重复 Bitmap、检查字符串值或导出到其他工具。</p>
+<code class="hljs code-block">$ adb shell am dumpheap -g -b png com.example.app /data/<span class="hljs-built_in">local</span>/tmp/heap.hprof
+$ adb pull /data/<span class="hljs-built_in">local</span>/tmp/heap.hprof
+
+File: /data/<span class="hljs-built_in">local</span>/tmp/heap.hprof</code><p><code>-b</code> 将 Bitmap 像素缓冲区编码为指定格式（<code>png</code>、<code>jpg</code> 或 <code>webp</code>），Bitmaps 画廊渲染像素需要此选项。<code>-g</code> 在 dump 前强制 GC，因此不可达的实例不会出现在结果中——在追踪疑似泄漏时使用它。目标进程必须是 <code>debuggable</code> 的（<code>userdebug</code>/<code>eng</code> 构建，或 APK 设置了 <code>android:debuggable=&quot;true&quot;</code>）。</p>
+<p class="callout note">NOTE: 下面标记为 <em>requires HPROF</em> 的部分在使用 heap graph 格式采集的 trace 上是隐藏的。</p>
+<p>将生成的 trace 拖放到 <a href="https://ui.perfetto.dev">ui.perfetto.dev</a> 或在侧边栏点击 <em>&quot;Open trace file&quot;</em> 来打开。</p>
+<h2><a name="-explorer" class="anchor" href="#-explorer"></a>打开 Explorer</h2><p>有两个入口：</p>
+<ol>
+<li><p><strong>侧边栏。</strong> 在当前 trace 下点击 _&quot;Heapdump Explorer&quot;_。此条目仅在 trace 包含 heap dump 时出现。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/01-sidebar.png" alt="Perfetto UI 加载了 heap dump；侧边栏在&quot;Current Trace&quot;下显示&quot;Heapdump Explorer&quot;。"></p>
+</li>
+<li><p><strong>从 Heap Graph 火焰图。</strong> 在 <em>&quot;Heap Profile&quot;</em> Track 上点击菱形图标打开 heap graph 火焰图，点击节点选中它，然后点击节点详情弹出窗口中的菜单图标，选择 _&quot;Open in Heapdump Explorer&quot;_。这在<a href="#jumping-from-a-flamegraph">从火焰图跳转</a>中详细介绍。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/02-flamegraph-menu.png" alt="Heap graph 火焰图，`java.lang.String` 节点被选中；详情弹出窗口列出其 Cumulative size、Root Type 和 Self Count，溢出菜单已打开并显示&quot;Open in Heapdump Explorer&quot;。"></p>
+</li>
+</ol>
+<p>Explorer 顶部以标签页形式组织。<em>Overview_、_Classes_、_Objects_、_Dominators_、_Bitmaps_、_Strings</em> 和 <em>Arrays</em> 是固定的。通过钻取特定对象或火焰图选择打开的标签页会附加在右侧，可以关闭。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/03-tab-bar.png" alt="标签栏显示七个固定标签页和一个为 `ProfileActivity 0x00032f52` 打开的动态对象标签页。"></p>
+<p>所有标签页共享底层的 <code>heap_graph_*</code> 表。蓝色链接——类名、对象 id、<em>Copies</em> 计数——导航到相应标签页并预过滤。</p>
+<h2><a name="overview" class="anchor" href="#overview"></a>Overview</h2><p class="callout note">NOTE: 重复部分 _requires HPROF_。</p>
+<p>Overview 是默认着陆页，汇总 dump 信息：</p>
+<ul>
+<li><strong>常规信息。</strong> 可达实例数和 dump 中的堆列表（通常是 <code>app</code>、<code>zygote</code>、<code>image</code>）。</li>
+<li><strong>按堆保留的字节数。</strong> 每个堆的 Java、native 和总大小，顶部有总计行。使用此信息查看问题是在 Java 堆上、native 内存中还是两者都有。</li>
+<li><strong>重复的 Bitmap / 字符串 / 原始数组。</strong> 按内容哈希分组的重复内容。每行显示副本数量和浪费的字节数；点击 <em>Copies</em> 打开相关标签页并按该组过滤。</li>
+</ul>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/04-overview.png" alt="Overview 标签页：General Information（跨 app/image/zygote 堆的 437,681 个可达实例），Bytes Retained by Heap（总计 24.4 MiB，app 堆上 1.5 MiB），以及一个重复 Bitmap 组，同一 128×128 图像的 12 个副本浪费 785.8 KiB。"></p>
+<h2><a name="classes" class="anchor" href="#classes"></a>Classes</h2><p>Classes 标签页列出 dump 中的每个类，按 <em>Retained</em> 降序排列：</p>
+<ul>
+<li><strong>Count</strong>——可达实例。</li>
+<li><strong>Shallow / Shallow Native</strong>——所有实例的自大小合计。</li>
+<li><strong>Retained / Retained Native</strong>——如果每个实例变为不可达将释放的字节数。</li>
+<li>**Retained #**——将随之释放的对象数。</li>
+</ul>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/05-classes.png" alt="Classes 标签页按 Retained 排序；`byte[]` 和 `java.lang.String` 在顶部，`com.heapleak.ProfileActivity` 较下方 Count 为 1。"></p>
+<p>当你有可疑的类，或想要自上而下查看哪些类拥有最多内存时，使用此标签页。点击类名打开按该类过滤的 Objects。</p>
+<h2><a name="objects" class="anchor" href="#objects"></a>Objects</h2><p>Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应用过滤器；直接打开则显示所有对象。</p>
+<p>每行有对象标识符（短类名 + 十六进制 id）、其类、浅大小和保留大小，以及其所在堆。<code>java.lang.String</code> 行带有值预览徽章，可以一目了然地扫描字符串。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/06-objects-string.png" alt="Objects 标签页过滤到 `java.lang.String`；437,681 个中的 106,474 个实例，按保留字节数排序。"></p>
+<p>点击对象打开其<a href="#inspecting-a-single-object">对象标签页</a>。典型用途：识别泄漏后的过期 <code>Activity</code>，或持有最大子图的数据类实例。</p>
+<h2><a name="-" class="anchor" href="#-"></a>检查单个对象</h2><p><strong><em>Shortest Path from GC Root_、_Dominator Tree Path</em> 和 <em>Objects with References to this Object</em> 是大多数调查的关键部分。</strong> 最短路径显示保持对象存活的最少引用跳数；支配者树路径显示独占保留它的对象链；反向引用列出每个持有指向它的字段指针的对象。</p>
+<p>点击任何标签页中的任何对象都会为该实例打开一个可关闭的标签页。多个对象标签页可以同时打开。</p>
+<p>对象标签页包含关于该实例的所有已知信息：</p>
+<ul>
+<li><strong>标题</strong>带有对象 id，以及当对象本身是 <code>Class</code> 时的 <em>Open in Classes</em> 快捷方式。</li>
+<li><strong>Bitmap 预览</strong>（对于 Bitmap 实例），带有下载按钮。</li>
+<li><strong>Shortest Path from GC Root</strong>——从 GC root 到此对象的最短引用链。</li>
+<li><strong>Dominator Tree Path</strong>——保持此对象存活的支配者链，每行一步，显示持有者和字段名。</li>
+<li><strong>Object info</strong>——类、堆、root 类型。</li>
+<li><strong>Object size</strong>——按 Java / native / 计数细分的浅大小、保留大小和可达大小。</li>
+<li><strong>Class hierarchy</strong>——直到 <code>java.lang.Object</code> 的完整继承链，加上类对象的实例大小。点击任何类打开按该类及其子类过滤的 <strong>Classes</strong>。</li>
+<li><strong>Static fields</strong>（类对象）、<strong>instance fields</strong>（普通对象）或 <strong>array elements</strong>（数组）。引用值可点击并跳转到被引用对象。对于 byte 数组，<em>Download bytes</em> 导出原始数据。</li>
+<li><strong>Objects with references to this object</strong>——反向引用。每个具有指向此对象字段的实例。</li>
+<li><strong>Immediately dominated objects</strong>——如果此实例变为不可达将释放什么。</li>
+</ul>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/12-object-tab-top.png" alt="`ProfileActivity 0x0004f1ae` 的对象标签页（顶部）：Sample Path from GC Root 为 `Class&lt;ProfileActivity&gt; → com.heapleak.ProfileActivity.history → ArrayList → Object[0] → ProfileActivity`；保留 117.6 KiB，跨 1,604 个对象。"></p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/13-object-tab-bottom.png" alt="对象标签页（底部）：来自 `android.app.Activity` 的实例字段，&quot;Objects with References to this Object&quot;（来自视图和 Context 包装器的反向引用），以及&quot;Immediately Dominated Objects&quot;——如果此实例变为不可达将释放的视图层次结构。"></p>
+<p>两个部分在大对象上自动折叠——点击标题展开。</p>
+<h2><a name="dominators" class="anchor" href="#dominators"></a>Dominators</h2><p>Dominators 标签页显示堆的<a href="https://en.wikipedia.org/wiki/Dominator_(graph_theory)">支配者树</a>。在有向图中，节点 <code>a</code> <em>支配</em> 节点 <code>b</code> 当从 root 到 <code>b</code> 的每条路径都必须经过 <code>a</code>。应用于堆：如果你释放 <code>a</code>，它支配的一切——每个_仅_通过 <code>a</code> 可达的对象——也会被释放。支配者树将堆分组为这些&quot;一起释放&quot;的子树，使你容易看到哪些单个对象控制着最大的保留内存块。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/07-dominators.png" alt="Dominators 标签页按 Retained 排序；`Class&lt;ProfileActivity&gt;`（root 类型 `STATIC`）和一个 `ProfileActivity` 实例靠近顶部，各自保留一个大型子图。"></p>
+<p>_Root Type_（例如 <code>THREAD</code>、<code>STATIC</code>、<code>JNI_GLOBAL</code>）标识每个支配者本身是如何被保持存活的。点击行打开其对象标签页并遍历引用路径。</p>
+<p>当没有特定的可疑对象，问题仅仅是内存去了哪里时，使用此标签页。</p>
+<h2><a name="bitmaps" class="anchor" href="#bitmaps"></a>Bitmaps</h2><p class="callout note">NOTE: 像素预览和重复检测 _requires HPROF_。</p>
+<p>Bitmaps 标签页是 dump 中每个 <code>android.graphics.Bitmap</code> 的画廊。使用 HPROF 时，每个 Bitmap 的像素会内联渲染。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/08-bitmaps-gallery.png" alt="Bitmaps 画廊：15 个 Bitmap，971.2 KiB 保留。同一图像的 12 个 128×128 副本内联渲染，每个 64.2 KiB。"></p>
+<p>每张卡片显示渲染的像素、尺寸（px 和 dp）、DPI、保留内存和打开对象标签页的 <em>Details</em> 按钮。像素缓冲区可能是 RGBA、PNG、JPEG 或 WebP，取决于它们的存储方式。</p>
+<p>画廊上方的路径下拉菜单选择要在每张卡片上覆盖的引用路径：_Shortest path_（从 GC root 的最少边数）、_Dominator path_（支配者链）或 _No path_。显示路径是发现持有泄漏 Bitmap 的 <code>Activity</code>、<code>Fragment</code> 或 <code>Handler</code> 的最快方式。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/09-bitmaps-show-paths.png" alt="启用了&quot;Show Paths&quot;的 Bitmaps 画廊；每张卡片下方的引用链为 `Class&lt;FeedAdapter&gt;.cache → ArrayList → Bitmap`，显示唯一的静态持有者。"></p>
+<p>底部的两个表列出有和没有像素数据的 Bitmap，带有过滤器、排序和导出控件。通过 Overview 上的 <em>Copies</em> 到达会按缓冲区内容哈希预过滤标签页，只留下该组中视觉上相同的 Bitmap。</p>
+<h2><a name="strings" class="anchor" href="#strings"></a>Strings</h2><p class="callout note">NOTE: Strings 标签页 _requires HPROF_。</p>
+<p>Strings 标签页列出每个 <code>java.lang.String</code> 及其值。摘要卡片报告字符串总数、不同值的数量和总保留内存。总数和不同值之间的差距是花在重复上的内存。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/10-strings.png" alt="Strings 标签页：105,868 个总字符串，71,176 个唯一，4.9 MiB 保留。总数和不同值之间的差距（约 30k 重复）是花在重复值上的内存。"></p>
+<p>按值过滤以查找预期唯一的数据：用户 id、序列化的配置负载、重复数千次的错误消息。点击行打开其对象标签页，反向引用部分列出持有该字符串的每个对象。</p>
+<h2><a name="arrays" class="anchor" href="#arrays"></a>Arrays</h2><p class="callout note">NOTE: Arrays 标签页 _requires HPROF_。</p>
+<p>Arrays 标签页列出原始数组（<code>byte[]</code>、<code>int[]</code>、<code>long[]</code>、...）及其稳定的内容哈希。按 <em>Content Hash</em> 过滤返回具有相同字节的每个数组；这是 Overview 检测重复数组的方式。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/11-arrays.png" alt="Arrays 标签页按 Shallow 排序，Content Hash 列可见；按哈希过滤返回共享相同字节的每个数组。"></p>
+<p>两个常见用途：找到支持图像或序列化缓冲区的大型重复 <code>byte[]</code>，以及从容器对象跳转到持有其数据的原始数组。</p>
+<h2><a name="-" class="anchor" href="#-"></a>从火焰图跳转</h2><p>Heap graph 火焰图有一个 <em>Open in Heapdump Explorer</em> 操作，可以在匹配选定分配路径的对象列表上打开 Explorer。使用它逐对象检查火焰图节点：</p>
+<ol>
+<li><p>在 <em>&quot;Heap Profile&quot;</em> Track 上点击菱形图标打开火焰图。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/14-flamegraph-bottom-panel.png" alt="顶部 Timeline，点击进程 Track 上的 heap dump 菱形后底部面板中的 heap graph 火焰图。"></p>
+</li>
+<li><p>点击节点选中它，然后点击节点详情弹出窗口中的菜单图标。选择 _&quot;Open in Heapdump Explorer&quot;_。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/02-flamegraph-menu.png" alt="火焰图，`java.lang.String` 被选中。其详情弹出窗口列出 Cumulative size（2.48 MiB, 10.48%）、Root Type（`ROOT_INTERNED_STRING`）、Heap Type 和 Self Count（53,546）。弹出窗口的溢出菜单已打开，&quot;Open in Heapdump Explorer&quot;在&quot;Copy Stack&quot;和&quot;Copy Stack With Details&quot;下方可见。"></p>
+<p>这会打开一个新的可关闭的 <em>Flamegraph Objects</em> 标签页，列出沿选定路径分配的每个对象。支配者火焰图节点产生基于支配者的选择；常规节点产生基于路径的选择。</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/15-flamegraph-objects-tab.png" alt="在 `java.lang.String` 上选择&quot;Open in Heapdump Explorer&quot;后打开的 Flamegraph Objects 标签页：53,546 行，每行有类、浅/保留大小和堆。标签页附加在固定七标签栏的右侧，右上角有&quot;Back to Timeline&quot;链接。"></p>
+</li>
+<li><p>从那里，点击任何对象打开其<a href="#inspecting-a-single-object">对象标签页</a>，或使用 <em>Back to Timeline</em> 返回火焰图视图。</p>
+</li>
+</ol>
+<p>多个火焰图选择可以同时打开，每个作为自己的标签页——对于并排比较两个调用栈很有用。</p>
+<h2><a name="-" class="anchor" href="#-"></a>案例研究</h2><!-- TODO(zezeozue): Break these case studies out and integrate them into
+     the existing memory guides (docs/case-studies/memory.md). Rationalize
+     the material so it isn't duplicated across docs. -->
+
+<h3><a name="-activity" class="anchor" href="#-activity"></a>查找泄漏的 Activity</h3><p>一个 Kotlin 应用的开发者报告，旋转个人资料屏幕几次后 Java 堆持续上升且不会回落。这个屏幕很普通——一个 <code>Activity</code>、一个视图层次结构、一个头像——旋转_应该_销毁旧实例。但它没有。</p>
+<p>快速 grep 发现了一个团队之前为崩溃报告添加的&quot;面包屑&quot;列表。它存储了每个创建的 <code>ProfileActivity</code> 实例，并且从未清除：</p>
+<code class="hljs code-block"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ProfileActivity</span> : <span class="hljs-type">Activity</span></span>() {
+    <span class="hljs-keyword">companion</span> <span class="hljs-keyword">object</span> {
+        <span class="hljs-keyword">val</span> history = mutableListOf&lt;ProfileActivity&gt;()   <span class="hljs-comment">// never cleared</span>
+    }
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onCreate</span><span class="hljs-params">(state: <span class="hljs-type">Bundle</span>?)</span></span> {
+        <span class="hljs-keyword">super</span>.onCreate(state)
+        setContentView(R.layout.profile)
+        history += <span class="hljs-keyword">this</span>                                   <span class="hljs-comment">// &lt;-- the bug</span>
+    }
+}</code><p>初衷是为崩溃报告保留最近屏幕的轻量轨迹。它实际上做的是固定了每个创建过的 <code>ProfileActivity</code>：<code>onDestroy</code> 在旧实例上运行，但类的静态 <code>history</code> 列表保持着强引用——连同旧 Activity 的整个视图层次结构。</p>
+<p><strong>采集。</strong> Heap graph 格式足以追踪 Activity 泄漏；它承载完整的对象图和 GC root：</p>
+<code class="hljs code-block">$ tools/java_heap_dump -n com.example.app -o /tmp/profile.pftrace
+
+Dumping Java Heap.
+Wrote profile to /tmp/profile.pftrace</code><p>先旋转设备几次以积累多个实例。将文件拖放到 <a href="https://ui.perfetto.dev">ui.perfetto.dev</a> 并在侧边栏点击 _Heapdump Explorer_。</p>
+<p><strong>确认泄漏。</strong> 打开 <strong>Classes</strong> 并找到 <code>com.heapleak.ProfileActivity</code>。用户导航离开后 <code>Count</code> 应该为 0；这里是 5，每次旋转一个：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/05-classes.png" alt="Classes 标签页。com.heapleak.ProfileActivity 的 Count 为 5——每次旋转一个实例，没有被回收。"></p>
+<p>点击类名打开过滤到 <code>ProfileActivity</code> 的 <strong>Objects</strong>。每行是一个存活实例：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/12a-objects-profile-activity.png" alt="Objects 标签页过滤到 com.heapleak.ProfileActivity：五个实例，每个保留约 116.6 KiB 和 1,566 个可达对象。"></p>
+<p><strong>阅读引用路径。</strong> 点击顶部行打开其对象标签页。<em>Sample Path from GC Root</em> 是保持此实例存活的字段引用链：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/12-object-tab-top.png" alt="泄漏 ProfileActivity 的对象标签页。Sample Path from GC Root：Class&lt;ProfileActivity&gt; → com.heapleak.ProfileActivity.history → ArrayList.elementData → Object[0] → ProfileActivity。保留 117.6 KiB，约 1,600 个可达对象。"></p>
+<p>从下往上读：运行时保持 <code>java.lang.Class&lt;ProfileActivity&gt;</code> 存活（就像每个已加载的类一样）；该类有一个 companion-object 字段 <code>history</code>；该字段指向一个 <code>ArrayList</code>，其元素 0 是这个 <code>ProfileActivity</code>。从类对象到 <code>history</code> 的跳转点出了 bug——一个 Activity 的静态列表。</p>
+<p><em>Object Size</em> 块量化了代价：一个泄漏的 Activity 固定了 117.6&nbsp;KiB 和约 1,600 个可达对象。乘以五（<code>Count</code>），泄漏已经是堆中约 600&nbsp;KiB 的 Activity 图。同一标签页更下方是 <em>Objects with References to this Object</em> 和 <em>Immediately Dominated Objects</em> 部分：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/13-object-tab-bottom.png" alt="对象标签页底部。来自 android.app.Activity 的实例字段，&quot;Objects with References to this Object&quot;和&quot;Immediately Dominated Objects&quot;。"></p>
+<p>展开 <em>Immediately Dominated Objects</em> 显示随泄漏一起释放的所有内容——<code>Activity</code> 的视图层次结构和它传递保留的其余状态。这些都不应该比 Activity 活得更久；但它们都活着，因为一个 companion-object 列表持有 root。</p>
+<p><strong>修复。</strong> 永远不要在 <code>static</code> 或 companion-object 容器中存储 <code>Activity</code>。如果你想要崩溃报告的面包屑轨迹，请改为存储有界容量的字符串：</p>
+<code class="hljs code-block"><span class="hljs-keyword">object</span> Breadcrumbs {
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">const</span> <span class="hljs-keyword">val</span> CAPACITY = <span class="hljs-number">16</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> trail = ArrayDeque&lt;String&gt;(CAPACITY)
+
+    <span class="hljs-meta">@Synchronized</span>
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">record</span><span class="hljs-params">(event: <span class="hljs-type">String</span>)</span></span> {
+        <span class="hljs-keyword">while</span> (trail.size &gt;= CAPACITY) trail.removeFirst()
+        trail.addLast(<span class="hljs-string">&quot;<span class="hljs-subst">${System.currentTimeMillis()}</span> <span class="hljs-variable">$event</span>&quot;</span>)
+    }
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ProfileActivity</span> : <span class="hljs-type">Activity</span></span>() {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onCreate</span><span class="hljs-params">(state: <span class="hljs-type">Bundle</span>?)</span></span> {
+        <span class="hljs-keyword">super</span>.onCreate(state)
+        setContentView(R.layout.profile)
+        Breadcrumbs.record(<span class="hljs-string">&quot;ProfileActivity.onCreate&quot;</span>)
+    }
+}</code><p>重新运行相同的复现步骤并重新 dump。Classes 标签页现在只显示一个 <code>ProfileActivity</code>——当前可见的屏幕——而不是每次旋转一个。</p>
+<p>这个小演示节省了约 1.5&nbsp;MiB 的 app 堆；具有活跃视图层次结构的真实屏幕会看到数十兆字节的差异。在用户导航离开后采集的 dump 中任何 <code>Count &gt; 0</code> 的 <code>Activity</code> 子类都是泄漏。</p>
+<p>同样的方法可以找到其他常见的 Activity 泄漏形式——延迟消息 <code>Handler</code>、未注册的 Listener、超出其作用域的协程。引用路径中 Activity 之前的最后一跳总是指向持有者；修复是在正确的生命周期回调中清除该字段。</p>
+<h3><a name="-bitmap" class="anchor" href="#-bitmap"></a>追踪重复 Bitmap</h3><p>一个 Kotlin 信息流应用在长时间滚动时内存不足。<code>dumpsys meminfo com.example.feed</code> 报告的 <code>Graphics:</code> 行比屏幕上实际像素大好几倍，而应用内图片缓存看起来很小。有其他东西在持有像素。</p>
+<p>嫌疑对象原来是一个 <code>RecyclerView</code> adapter，它在每次绑定时从资源解码每行的缩略图，并将结果附加到 companion-object 列表：</p>
+<code class="hljs code-block"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FeedAdapter</span></span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> res: Resources) : RecyclerView.Adapter&lt;VH&gt;() {
+    <span class="hljs-keyword">companion</span> <span class="hljs-keyword">object</span> {
+        <span class="hljs-keyword">val</span> cache = mutableListOf&lt;Bitmap&gt;()     <span class="hljs-comment">// grows without bound</span>
+    }
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onBindViewHolder</span><span class="hljs-params">(holder: <span class="hljs-type">VH</span>, position: <span class="hljs-type">Int</span>)</span></span> {
+        <span class="hljs-keyword">val</span> bmp = BitmapFactory.decodeResource(res, R.drawable.thumb)
+        cache += bmp                            <span class="hljs-comment">// &quot;cache&quot; — actually just accumulates</span>
+        holder.image.setImageBitmap(bmp)
+    }
+    <span class="hljs-comment">// ...</span>
+}</code><p>每次绑定都解码同一 PNG 的新副本。每个副本然后被 <code>cache</code> 永久持有。像素都哈希到相同的值，但它们是不同的 <code>Bitmap</code> 实例，具有不同的后备 <code>byte[]</code>。</p>
+<p><strong>采集。</strong> 重复检测需要每个 Bitmap 像素缓冲区的哈希，只有 HPROF 格式才携带。<code>-b png</code> 编码像素以便 Bitmaps 画廊渲染预览：</p>
+<code class="hljs code-block">$ adb shell am dumpheap -g -b png com.example.feed /data/<span class="hljs-built_in">local</span>/tmp/feed.hprof
+$ adb pull /data/<span class="hljs-built_in">local</span>/tmp/feed.hprof</code><p>在 dump 前滚动信息流足够长时间以复现膨胀——adapter 的 <code>cache</code> 仅在绑定时增长。</p>
+<p><strong>在 Overview 上分诊。</strong> Overview 按像素缓冲区哈希对 Bitmap 分组。每行显示副本数、所有副本的总字节数和浪费的字节数——去重到单个副本将节省多少：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/04-overview.png" alt="Overview 标签页。Duplicate Bitmaps 卡片有一个 128×128 组：12 个副本，770.0 KiB 总计，785.8 KiB 浪费——正是 adapter 缓存列表的形状。"></p>
+<p>该行显示积累的内容：一个 128×128 资产的 12 个副本，都具有相同的内容哈希。下面的 <em>Duplicate Strings</em> 和 <em>Duplicate Primitive Arrays</em> 卡片工作方式相同——相同的分组、相同的大小计算——当浪费的内存是文本（例如重复数千次的配置负载）或原始缓冲区时很有用。所有三个重复检测器都需要 HPROF，因为它们哈希实际内容，而 heap graph 格式不携带这些内容。</p>
+<p><strong>钻入副本。</strong> 点击该行的 _Copies_。<strong>Bitmaps</strong> 打开并预过滤到该内容哈希组，因此只有那些副本渲染为卡片：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/08-bitmaps-gallery.png" alt="过滤到 128×128 组的 Bitmaps 画廊。12 个副本每个 64.2 KiB，标签页中共 971.2 KiB 保留。"></p>
+<p><strong>找到持有者。</strong> 将路径下拉菜单设置为 _Shortest path_。每张卡片下方的引用链是保持该 Bitmap 存活的字段：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/09-bitmaps-show-paths.png" alt="启用了 Show Paths 的 Bitmaps 画廊。每张卡片的链为 Class&lt;FeedAdapter&gt;.cache → ArrayList → Bitmap——companion-object 列表是唯一的持有者。"></p>
+<p>画廊中的每条链都是相同的：<code>Class&lt;FeedAdapter&gt;.cache → ArrayList → Bitmap</code>。所有 12 个副本共享一个持有者——一个缓存层的 bug，一个需要修复的字段。</p>
+<p>链的形状就是诊断。在未来的调查中要注意的另外两种模式：</p>
+<ul>
+<li>_每个副本有不同的链_→调用点 bug。没有缓存，或者调用者绕过了它。</li>
+<li>_链经过一个 <code>Activity</code>_→先修复 Activity 泄漏（<a href="#finding-a-leaked-activity">上一个案例研究</a>）；Bitmap 会随之释放。</li>
+</ul>
+<p><strong>修复。</strong> 完全没有理由保留 <code>Bitmap</code> 的旁路列表——Android 已经有 <code>LruCache&lt;K, Bitmap&gt;</code>，作用域限定到应用，具有你控制的淘汰策略：</p>
+<code class="hljs code-block"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FeedAdapter</span></span>(<span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> res: Resources) : RecyclerView.Adapter&lt;VH&gt;() {
+    <span class="hljs-keyword">companion</span> <span class="hljs-keyword">object</span> {
+        <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> cache = <span class="hljs-keyword">object</span> : LruCache&lt;<span class="hljs-built_in">Int</span>, Bitmap&gt;(<span class="hljs-number">4</span>) {
+            <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">sizeOf</span><span class="hljs-params">(key: <span class="hljs-type">Int</span>, value: <span class="hljs-type">Bitmap</span>)</span></span> = <span class="hljs-number">1</span>
+        }
+    }
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onBindViewHolder</span><span class="hljs-params">(holder: <span class="hljs-type">VH</span>, position: <span class="hljs-type">Int</span>)</span></span> {
+        <span class="hljs-keyword">val</span> key = R.drawable.thumb
+        <span class="hljs-keyword">val</span> bmp = cache[key] ?: BitmapFactory.decodeResource(res, key).also { cache.put(key, it) }
+        holder.image.setImageBitmap(bmp)
+    }
+    <span class="hljs-comment">// ...</span>
+}</code><p><strong>验证。</strong> 滚动信息流相同距离，重新 dump，重新打开。Overview 应该显示 <code>No duplicate bitmaps found</code>，app 堆保留字节数应相应下降：</p>
+<p><img src="/perfetto-docs-zh-cn/docs/images/heap_docs/16-fixed-overview.png" alt="修复后 trace 的 Overview 标签页。Duplicate Bitmaps 卡片现在显示&quot;No duplicate bitmaps found&quot;，app 堆保留内存从 2.1 MiB 降至 580.2 KiB。"></p>
+<p>Overview 上所有组的 <em>wasted bytes</em> 总计是最清晰的单数字记分卡——观察它从一次 dump 到下一次 dump 下降，就是你确认每个修复和捕获回归的方式。</p>
+<h2><a name="-" class="anchor" href="#-"></a>另见</h2><ul>
+<li><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">Java heap dumps</a>——采集配置、故障排除和 SQL schema 参考。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">Memory 案例研究</a>——调查 Android 内存问题的端到端指南，涵盖 <code>dumpsys meminfo</code>、native Heap Profile 和 Java Heap Dump。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/case-studies/android-outofmemoryerror.html">OutOfMemoryError heap dumps</a>——在 OOM 时自动采集 Heap Dump。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Native heap profiler</a>——用于分配调用路径分析而非堆内容。</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="docs-footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

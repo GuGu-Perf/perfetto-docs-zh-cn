@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>符号化与反混淆 - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="符号化与反混淆 - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/learning-more/symbolization">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">实战指南</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">周期性 Trace 快照</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-boot-tracing.html">开机 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-outofmemoryerror.html">OutOfMemoryError</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/developer-tools.html">开发者工具</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="doc" data-md-file="/docs/learning-more/symbolization">
+    <h1>符号化与反混淆</h1><p>本文档描述如何将采集的 trace 中的原始指令地址和混淆的 Java/Kotlin 名称转换为人类可读的函数名、源代码位置和类/方法名。这适用于任何采集调用栈的 DataSource：native heap profiler、基于 perf 的 CPU profiler、Java heap profiler、ART 方法 Trace 等。</p>
+<p>在本指南中，你将学习如何：</p>
+<ul>
+<li>使用 <code>traceconv bundle</code> 一键丰富 trace（推荐）。</li>
+<li>使用传统的 <code>traceconv symbolize</code> / <code>traceconv deobfuscate</code> 命令生成并附加符号/反混淆数据。</li>
+<li>了解符号文件在磁盘上的定位方式（Build ID 查找顺序）。</li>
+<li>诊断最常见的&quot;could not find library&quot; / &quot;only one frame shown&quot;错误。</li>
+</ul>
+<p>本文档中使用的两个定义：</p>
+<ul>
+<li><strong>符号化（Symbolization）</strong>：使用被 profile 进程中加载的未剥离 ELF 二进制文件（或等效的 Breakpad 符号文件），将 native 指令地址映射回函数名、源文件和行号。</li>
+<li><strong>反混淆（Deobfuscation）</strong>：使用构建时生成的 <code>mapping.txt</code>，将 R8/ProGuard 发出的混淆 Java/Kotlin 名称（例如 <code>fsd.a</code>）映射回原始标识符。</li>
+</ul>
+<p>只要你仍然有匹配的二进制文件和 mapping 文件，你<strong>不需要</strong>重新采集即可获得符号或反混淆名称。</p>
+<h2><a name="-1-code-traceconv-bundle-code-" class="anchor" href="#-1-code-traceconv-bundle-code-"></a>方式 1：<code>traceconv bundle</code>（推荐）</h2><p><code>traceconv bundle</code> 是一个一键命令，它接受一个 trace 并生成一个<strong>丰富化的 trace</strong>：原始 trace 加上分析它所需的所有符号和反混淆数据，打包在单个文件中。</p>
+<code class="hljs code-block">traceconv bundle input.perfetto-trace enriched-trace</code><p>丰富化的 trace 可以像任何其他 trace 一样在 <a href="https://ui.perfetto.dev">Perfetto UI</a> 或 <code>trace_processor_shell</code> 中打开，符号和反混淆名称已自动应用。</p>
+<p class="callout note">NOTE: 作为实现细节，丰富化的 trace 目前被打包为 TAR 归档文件，包含原始 trace、native 符号 Packet 和 Java/Kotlin 反混淆 Packet。UI 和 <code>trace_processor_shell</code> 透明地读取此格式，因此你通常不需要自行解包。</p>
+<p><strong>要求：</strong></p>
+<ul>
+<li><code>$PATH</code> 上需要有 <code>llvm-symbolizer</code> 以生成函数名和行号的 native 符号化（在 Debian/Ubuntu 上使用 <code>sudo apt install llvm</code>）。</li>
+<li>输入和输出必须是文件路径；不支持 stdin/stdout。</li>
+<li>磁盘上有匹配的未剥离二进制文件 / Breakpad 符号（Build ID 必须与设备上采集的匹配）。</li>
+<li>对于 Java/Kotlin：需要设备上运行的构建所产生的 <code>mapping.txt</code>。</li>
+</ul>
+<h3><a name="-" class="anchor" href="#-"></a>自动路径发现</h3><p>相比<a href="#option-2-legacy-traceconv-symbolize--deobfuscate">方式 2</a> 的主要优势是，<code>bundle</code> 会在所有常见位置查找符号和 mapping 文件，无需配置。它搜索：</p>
+<ul>
+<li>在 <code>lunch</code> 过的 AOSP 检出中运行时的 AOSP 构建输出（<code>$ANDROID_PRODUCT_OUT/symbols</code>）。</li>
+<li>标准系统调试目录（<code>$HOME/.debug</code>、<code>/usr/lib/debug</code>）。</li>
+<li>trace 的 <code>stack_profile_mapping</code> 中记录的绝对库路径（当在你用于分析的同一台机器上进行 profile 时很有用）。</li>
+<li>ProGuard/R8 mapping 文件的标准 Android Gradle 项目布局（<code>./app/build/outputs/mapping/&lt;variant&gt;/mapping.txt</code>）。</li>
+</ul>
+<h3><a name="-" class="anchor" href="#-"></a>使用标志补充发现</h3><p>当自动发现不够时：</p>
+<code class="hljs code-block">traceconv bundle \
+  --symbol-paths /path/to/symbols1,/path/to/symbols2 \
+  --proguard-map com.example.app=/path/to/mapping.txt \
+  --verbose \
+  input.perfetto-trace enriched-trace</code><p><code>bundle</code> 标志的属性：</p>
+<ul>
+<li><code>--symbol-paths PATH1,PATH2,...</code>：搜索 native 符号的额外目录（除了自动发现的路径）。</li>
+<li><code>--no-auto-symbol-paths</code>：禁用 native 符号路径的自动发现。仅搜索通过 <code>--symbol-paths</code> 给出的路径。</li>
+<li><code>--proguard-map [pkg=]PATH</code>：用于 Java/Kotlin 反混淆的额外 ProGuard/R8 <code>mapping.txt</code>。对多个 mapping 重复此标志。可选的 <code>pkg=</code> 前缀将 mapping 限定到特定的 Java 包。</li>
+<li><code>--no-auto-proguard-maps</code>：禁用 ProGuard/R8 mapping 文件的自动发现（例如标准 Android Gradle 布局）。仅应用通过 <code>--proguard-map</code> 给出的 mapping。</li>
+<li><code>--verbose</code>：打印尝试的每个路径和查找的每个库——在调试&quot;could not find&quot;错误时很有用。</li>
+</ul>
+<h2><a name="-2-code-traceconv-symbolize-code-code-deobfuscate-code-" class="anchor" href="#-2-code-traceconv-symbolize-code-code-deobfuscate-code-"></a>方式 2：传统 <code>traceconv symbolize</code> / <code>deobfuscate</code></h2><p class="callout note">NOTE: 此流程是为了与已有的脚本和 CI 流水线向后兼容而保留的。对于新使用场景，请始终优先使用<a href="#option-1-traceconv-bundle-recommended">方式 1</a>——它更简单，具有自动发现功能，并且适用于非 Perfetto trace 格式。</p>
+<p>较旧的 <code>traceconv symbolize</code> 和 <code>traceconv deobfuscate</code> 子命令生成独立的符号和反混淆文件，完全由环境变量驱动，然后必须手动拼接到 trace 上。</p>
+<h3><a name="native-" class="anchor" href="#native-"></a>Native 符号化</h3><p>所有工具（<code>traceconv</code>、<code>trace_processor_shell</code>、<code>heap_profile</code> 脚本）都遵循 <code>PERFETTO_BINARY_PATH</code> 环境变量：</p>
+<code class="hljs code-block">PERFETTO_BINARY_PATH=somedir tools/heap_profile android --name <span class="hljs-variable">${NAME}</span></code><p>为已采集的 trace 生成独立的符号文件：</p>
+<code class="hljs code-block">PERFETTO_BINARY_PATH=somedir traceconv symbolize raw-trace &gt; symbols</code><p>或者，设置 <code>PERFETTO_SYMBOLIZER_MODE=index</code>，符号化器将按 Build ID 递归索引目录中的 ELF 文件，因此文件名不需要匹配。</p>
+<h3><a name="java-kotlin-" class="anchor" href="#java-kotlin-"></a>Java/Kotlin 反混淆</h3><p>通过 <code>PERFETTO_PROGUARD_MAP</code> 提供 ProGuard/R8 mapping，使用格式 <code>packagename=map_filename[:packagename=map_filename...]</code>：</p>
+<code class="hljs code-block">PERFETTO_PROGUARD_MAP=com.example.pkg1=foo.txt:com.example.pkg2=bar.txt \
+  ./tools/heap_profile android -n com.example.app</code><p>为现有 trace 生成独立的反混淆文件：</p>
+<code class="hljs code-block">PERFETTO_PROGUARD_MAP=com.example.pkg=proguard_map.txt \
+  traceconv deobfuscate <span class="hljs-variable">${TRACE}</span> &gt; deobfuscation_map</code><h3><a name="-trace" class="anchor" href="#-trace"></a>将输出附加到 trace</h3><p>上面的 <code>symbols</code> 和 <code>deobfuscation_map</code> 都是序列化的 <code>TracePacket</code> proto，因此对于 <strong>Perfetto protobuf trace</strong>，你可以简单地将它们拼接：</p>
+<code class="hljs code-block">cat <span class="hljs-variable">${TRACE}</span> symbols &gt; symbolized-trace
+cat <span class="hljs-variable">${TRACE}</span> deobfuscation_map &gt; deobfuscated-trace
+<span class="hljs-comment"># 或者两者都加：</span>
+cat <span class="hljs-variable">${TRACE}</span> symbols deobfuscation_map &gt; enriched-trace</code><p><code>tools/heap_profile</code> 脚本在设置了 <code>PERFETTO_BINARY_PATH</code> 时，会在其输出目录中自动执行此操作。</p>
+<p><strong>限制：</strong></p>
+<ul>
+<li>拼接技巧<strong>仅适用于 Perfetto protobuf trace</strong>。其他 trace 格式（Chrome JSON、systrace、Firefox profile 等）不能以这种方式追加 <code>TracePacket</code> 字节。对于这些格式，请使用<a href="#option-1-traceconv-bundle-recommended">方式 1</a>并通过 <code>trace_processor_shell</code> 加载符号。</li>
+<li>你必须手动管理 <code>PERFETTO_BINARY_PATH</code> / <code>PERFETTO_PROGUARD_MAP</code>；方式 1 中的自动发现不适用。</li>
+</ul>
+<h2><a name="-" class="anchor" href="#-"></a>符号查找顺序</h2><p>对于 trace 中的每个 native mapping，符号化器查找具有匹配 Build ID 的文件。对于每个搜索路径 <code>P</code>，它按以下顺序尝试：</p>
+<ol>
+<li>库文件相对于 <code>P</code> 的绝对路径。</li>
+<li>同上，但去掉文件名中的 <code>base.apk!</code>。</li>
+<li>库文件相对于 <code>P</code> 的基本名称。</li>
+<li>基本名称，去掉 <code>base.apk!</code>。</li>
+<li><code>P/.build-id/&lt;前 2 个十六进制数字&gt;/&lt;其余部分&gt;.debug</code>（标准的 <a href="https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID">Fedora Build ID 布局</a>）。</li>
+</ol>
+<p>例如，带有 Build ID <code>abcd1234...</code> 的 <code>/system/lib/base.apk!foo.so</code> 在符号路径 <code>P</code> 下查找：</p>
+<ol>
+<li><code>P/system/lib/base.apk!foo.so</code></li>
+<li><code>P/system/lib/foo.so</code></li>
+<li><code>P/base.apk!foo.so</code></li>
+<li><code>P/foo.so</code></li>
+<li><code>P/.build-id/ab/cd1234...debug</code></li>
+</ol>
+<p>第一个具有匹配 Build ID 的文件胜出。如果磁盘上的 Build ID 与 trace 中记录的不同，则跳过该文件。</p>
+<h2><a name="-c-" class="anchor" href="#-c-"></a>从 C++ 库使用符号化/反混淆</h2><p>目前<strong>没有稳定的公共 C++ API</strong> 用于在进程内执行符号化或反混淆。底层实现存在（<code>src/traceconv/trace_to_bundle.h</code> 中的 <code>TraceToBundle</code>，由 <code>src/trace_processor/util/trace_enrichment/trace_enrichment.h</code> 中的 <code>EnrichTrace</code> 支持），但它位于 <code>src/</code> 而非 <code>include/</code> 下，不属于公共 API 接口。</p>
+<p>如果你需要此功能，请在 <a href="https://github.com/google/perfetto/issues/5534">GitHub issue #5534</a> 上 +1，以便我们评估需求并确定优先级。</p>
+<h2><a name="-" class="anchor" href="#-"></a>故障排除</h2><h3><a name="-" class="anchor" href="#-"></a>找不到库</h3><p>在对 Profile 进行符号化时，你可能会看到如下消息：</p>
+<code class="hljs code-block">Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so
+(Build ID: 44b7138abd5957b8d0a56ce86216d478).</code><p>检查 <code>somelib.so</code> 是否存在于某个搜索路径下（<code>--symbol-paths</code>、<code>PERFETTO_BINARY_PATH</code> 或自动发现的位置）。然后使用 <code>readelf -n /path/to/somelib.so</code> 比较磁盘上的 Build ID 与消息中报告的 Build ID。如果它们不匹配，磁盘上的副本是不同于设备上的构建，无法使用。</p>
+<p>使用 <code>--verbose</code> 重新运行 <code>traceconv bundle</code> 会打印尝试的每个路径，这通常可以清楚地表明文件是完全缺失还是找到了但 Build ID 不匹配。</p>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="docs-footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

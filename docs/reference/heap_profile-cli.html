@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HEAP_PROFILE(1) - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="HEAP_PROFILE(1) - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/reference/heap_profile-cli">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">实战指南</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">周期性 Trace 快照</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-boot-tracing.html">开机 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/android-outofmemoryerror.html">OutOfMemoryError</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/developer-tools.html">开发者工具</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="doc" data-md-file="/docs/reference/heap_profile-cli">
+    <h1>HEAP_PROFILE(1)</h1><h2><a name="-" class="anchor" href="#-"></a>名称</h2><p>heap_profile - 在 Android 或本地 Linux 上记录 heap profile</p>
+<h2><a name="-" class="anchor" href="#-"></a>描述</h2><p><code>tools/heap_profile</code> 收集原生内存 profile。它提供两个子命令：</p>
+<ul>
+<li><code>heap_profile android</code> - 通过 <code>adb</code> 对连接的 Android 设备上的进程进行 profile（之前的行为，未指定子命令时仍为默认）。</li>
+<li><code>heap_profile host</code> - 通过 <code>LD_PRELOAD</code> 对本地 Linux 进程进行 profile。该脚本自动下载 <code>tracebox</code> 和 <code>libheapprofd_glibc_preload.so</code>，并在 Session 期间管理本地 <code>traced</code> 守护进程。</li>
+</ul>
+<p>有关数据源的更多详细信息，请参阅<a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">采集 traces</a>。</p>
+<code class="hljs code-block">用法: heap_profile [-h] [common options] {<span class="hljs-keyword">android,host} </span>...
+
+位置参数:
+  {<span class="hljs-keyword">android,host}
+</span>    <span class="hljs-keyword">android </span>  通过 adb 对连接的 <span class="hljs-keyword">Android </span>设备上的进程进行 profile
+              （默认）。
+    host      通过 LD_PRELOAD 对本地 Linux 进程进行 profile。</code><code class="hljs code-block">用法: heap_profile android <span class="hljs-comment">[-h]</span> <span class="hljs-comment">[-i INTERVAL]</span> <span class="hljs-comment">[-d DURATION]</span> <span class="hljs-comment">[--no-start]</span>
+                            <span class="hljs-comment">[-p PIDS]</span> <span class="hljs-comment">[-n NAMES]</span> <span class="hljs-comment">[-c CONTINUOUS_DUMP]</span>
+                            <span class="hljs-comment">[--heaps HEAPS]</span> <span class="hljs-comment">[--all-heaps]</span>
+                            <span class="hljs-comment">[--no-android-tree-symbolization]</span>
+                            <span class="hljs-comment">[--disable-selinux]</span> <span class="hljs-comment">[--no-versions]</span> <span class="hljs-comment">[--no-running]</span>
+                            <span class="hljs-comment">[--no-startup]</span> <span class="hljs-comment">[--shmem-size SHMEM_SIZE]</span>
+                            <span class="hljs-comment">[--block-client]</span>
+                            <span class="hljs-comment">[--block-client-timeout BLOCK_CLIENT_TIMEOUT]</span>
+                            <span class="hljs-comment">[--no-block-client]</span> <span class="hljs-comment">[--idle-allocations]</span>
+                            <span class="hljs-comment">[--dump-at-max]</span> <span class="hljs-comment">[--disable-fork-teardown]</span>
+                            <span class="hljs-comment">[--simpleperf]</span>
+                            <span class="hljs-comment">[--traceconv-binary TRACECONV_BINARY]</span>
+                            <span class="hljs-comment">[--no-annotations]</span> <span class="hljs-comment">[--print-config]</span> <span class="hljs-comment">[-o DIRECTORY]</span></code><code class="hljs code-block">用法: heap_profile host <span class="hljs-comment">[-h]</span> <span class="hljs-comment">[-i INTERVAL]</span> <span class="hljs-comment">[-d DURATION]</span> <span class="hljs-comment">[--no-start]</span>
+                         <span class="hljs-comment">[-n NAMES]</span> <span class="hljs-comment">[-c CONTINUOUS_DUMP]</span>
+                         <span class="hljs-comment">[--heaps HEAPS]</span> <span class="hljs-comment">[--all-heaps]</span>
+                         <span class="hljs-comment">[--shmem-size SHMEM_SIZE]</span> <span class="hljs-comment">[--block-client]</span>
+                         <span class="hljs-comment">[--block-client-timeout BLOCK_CLIENT_TIMEOUT]</span>
+                         <span class="hljs-comment">[--no-block-client]</span> <span class="hljs-comment">[--idle-allocations]</span>
+                         <span class="hljs-comment">[--dump-at-max]</span> <span class="hljs-comment">[--disable-fork-teardown]</span>
+                         <span class="hljs-comment">[--traceconv-binary TRACECONV_BINARY]</span>
+                         <span class="hljs-comment">[--no-annotations]</span> <span class="hljs-comment">[--print-config]</span> <span class="hljs-comment">[-o DIRECTORY]</span>
+                         <span class="hljs-comment">[--preload-library PRELOAD_LIBRARY]</span>
+                         <span class="hljs-comment">[--tracebox-binary TRACEBOX_BINARY]</span>
+                         -- COMMAND <span class="hljs-comment">[ARGS...]</span></code><h2><a name="common-options" class="anchor" href="#common-options"></a>COMMON OPTIONS</h2><p>这些标志适用于 <code>android</code> 和 <code>host</code> 子命令。</p>
+<dl><dt><p><code>-n</code>, <code>--name</code> <em>NAMES</em></p></dt><dd><p>:    要 profile 的进程名称的逗号分隔列表。在 <code>host</code> 上，如果省略，则使用 <code>--</code> 后命令的基本名称。</p></dd></dl><dl><dt><p><code>-i</code>, <code>--interval</code></p></dt><dd><p>:    采样间隔。默认 4096 (4KiB)。</p></dd></dl><dl><dt><p><code>-o</code>, <code>--output</code> <em>DIRECTORY</em></p></dt><dd><p>:    输出目录。如果已存在则必须为空。</p></dd></dl><dl><dt><p><code>--all-heaps</code></p></dt><dd><p>:    从目标注册的所有堆中收集分配。</p></dd></dl><dl><dt><p><code>--heaps</code> <em>HEAPS</em></p></dt><dd><p>:    要收集的堆的逗号分隔列表，例如：<code>libc.malloc,com.android.art</code>。需要 Android 12。</p></dd></dl><dl><dt><p><code>--block-client</code></p></dt><dd><p>:    当缓冲区已满时，阻塞客户端等待缓冲区空间。谨慎使用，因为这可能会显著降低客户端速度。这是默认选项。</p></dd></dl><dl><dt><p><code>--block-client-timeout</code></p></dt><dd><p>:    如果给出了 <code>--block-client</code>，则不要阻塞任何分配超过此超时时间（微秒）。</p></dd></dl><dl><dt><p><code>--no-block-client</code></p></dt><dd><p>:    当缓冲区已满时，提前停止 profile。</p></dd></dl><dl><dt><p><code>-c</code>, <code>--continuous-dump</code></p></dt><dd><p>:    转储间隔（毫秒）。0 禁用连续转储。</p></dd></dl><dl><dt><p><code>-d</code>, <code>--duration</code></p></dt><dd><p>:    Profile 持续时间（毫秒）。0 运行直到被中断。默认：直到被用户中断。</p></dd></dl><dl><dt><p><code>--disable-fork-teardown</code></p></dt><dd><p>:    不要在 Fork 中拆除客户端。这对于使用 vfork 的程序很有用。仅限 Android 11+。</p></dd></dl><dl><dt><p><code>--dump-at-max</code></p></dt><dd><p>:    转储最大内存使用量而不是转储时的内存使用量。</p></dd></dl><dl><dt><p><code>--idle-allocations</code></p></dt><dd><p>:    追踪自上次转储以来每个调用堆栈有多少字节未使用。</p></dd></dl><dl><dt><p><code>--no-annotations</code></p></dt><dd><p>:    不在 pprof 函数名后附加 Android ART 模式注释，例如 <code>[jit]</code>。</p></dd></dl><dl><dt><p><code>--no-running</code></p></dt><dd><p>:    不针对已经运行的进程。需要 Android 11。</p></dd></dl><dl><dt><p><code>--no-start</code></p></dt><dd><p>:    无操作，保留以实现向后兼容。</p></dd></dl><dl><dt><p><code>--no-startup</code></p></dt><dd><p>:    不针对在 Profile 期间启动的进程。需要 Android 11。</p></dd></dl><dl><dt><p><code>--print-config</code></p></dt><dd><p>:    打印配置而不是运行。用于调试。</p></dd></dl><dl><dt><p><code>--shmem-size</code></p></dt><dd><p>:    客户端和 heapprofd 之间的缓冲区大小。默认 8MiB。必须是 4096 的 2 的幂的倍数，至少 8192。</p></dd></dl><dl><dt><p><code>--traceconv-binary</code></p></dt><dd><p>:    本地 traceconv 的路径。用于调试。</p></dd></dl><dl><dt><p><code>-h</code>, <code>--help</code></p></dt><dd><p>:    显示帮助消息并退出。</p></dd></dl><h2><a name="android-only-options" class="anchor" href="#android-only-options"></a>ANDROID-ONLY OPTIONS</h2><p>这些标志在脚本中以 <code>args.subcommand == &#39;android&#39;</code> 进行限制，传递给 <code>host</code> 时无效。</p>
+<dl><dt><p><code>-p</code>, <code>--pid</code> <em>PIDS</em></p></dt><dd><p>:    要 Profile 的 PID 的逗号分隔列表。</p></dd></dl><dl><dt><p><code>--disable-selinux</code></p></dt><dd><p>:    在 Profile 持续时间内禁用 SELinux 强制执行。</p></dd></dl><dl><dt><p><code>--no-android-tree-symbolization</code></p></dt><dd><p>:    不使用 Android 树中当前 lunched 的目标进行符号化。</p></dd></dl><dl><dt><p><code>--no-versions</code></p></dt><dd><p>:    不获取关于 APK 的版本信息。</p></dd></dl><dl><dt><p><code>--simpleperf</code></p></dt><dd><p>:    获取 heapprofd 的 simpleperf 分析。这仅用于 heapprofd 开发。</p></dd></dl><h2><a name="host-only-options" class="anchor" href="#host-only-options"></a>HOST-ONLY OPTIONS</h2><dl><dt><p><code>--preload-library</code> <em>PRELOAD_LIBRARY</em></p></dt><dd><p>:    <code>libheapprofd_glibc_preload.so</code> 的路径。如果省略，预构建版本将自动下载（linux-amd64/arm/arm64）。</p></dd></dl><dl><dt><p><code>--tracebox-binary</code> <em>TRACEBOX_BINARY</em></p></dt><dd><p>:    本地 tracebox 二进制文件的路径。用于调试。</p></dd></dl><dl><dt><p><code>--</code> <em>COMMAND</em> [<em>ARGS...</em>]</p></dt><dd><p>:    必需的位置参数。要在 <code>LD_PRELOAD</code> 下启动的命令。二进制文件以 <code>PERFETTO_HEAPPROFD_BLOCKING_INIT=1</code> 运行，因此第一次分配会阻塞，直到 heapprofd 附加。</p></dd></dl><h2><a name="-" class="anchor" href="#-"></a>示例</h2><p>对连接的 Android 设备上的 <code>system_server</code> 进行 Profile，直到被中断：</p>
+<code class="hljs code-block">tools/heap_profile android -n system_server</code><p>对本地 Linux 二进制文件进行 Profile，从启动时捕获每次分配：</p>
+<code class="hljs code-block">tools/heap_profile host -- ./my_binary --some-flag</code><p><code>com.example.app</code> 的定期 5 秒快照：</p>
+<code class="hljs code-block">tools/heap_profile android -n com.example.app -c 5000</code><p>打印给定调用将发出的 trace 配置，而不实际运行：</p>
+<code class="hljs code-block">tools/heap_profile android -n system_server --print-config</code><h2><a name="-" class="anchor" href="#-"></a>备注</h2><ul>
+<li>不带子命令的直接调用 <code>heap_profile -n NAME</code> 保留以实现向后兼容，等同于 <code>heap_profile android -n NAME</code>。新脚本应使用显式形式。</li>
+<li><code>host</code> 子命令仅在 Linux 上运行；在其他平台上会报错。</li>
+<li>有关生成 trace 的符号化和 Java/Kotlin 反混淆，请参阅<a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化和反混淆</a>。</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="docs-footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
