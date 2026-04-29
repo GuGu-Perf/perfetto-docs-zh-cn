@@ -46,20 +46,19 @@ perfetto-docs-zh-cn/
 
 上游跟踪：https://github.com/google/perfetto/tree/main/docs
 
-检查上游变更：`bash .project/workwork.sh sync-check`
-
 最新同步: [.project/LAST_SYNC](.project/LAST_SYNC)
 
 ## 参与贡献
 
 欢迎参与项目！参考 [CONTRIBUTING.md](CONTRIBUTING.md) 进行贡献提交，或提 [Issue](https://github.com/GuGu-Perf/perfetto-docs-zh-cn/issues) 反馈问题。
 
-## 许可证
-
-[Apache 2.0 License](LICENSE)
 
 ## 致谢
 
 - voidice@gmail.com
 - zhuyong7@honor.com
 - xiaolu5@honor.com
+
+## 许可证
+
+[Apache 2.0 License](LICENSE)
