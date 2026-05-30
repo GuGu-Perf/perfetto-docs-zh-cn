@@ -150,7 +150,7 @@ EOF
 
 在它运行时，如果你跟随操作，请拍摄照片。
 
-使用 `adb pull /data/misc/perfetto-traces/trace ~/mem-trace` 拉取文件并上传到 [Perfetto UI](https://ui.perfetto.dev)。这将显示系统 [ION](#ion) 使用的总体统计信息，以及要展开的每个进程统计信息。向下滚动（或 Ctrl-F 搜索）到 `com.google.android.GoogleCamera` 并展开。这将显示相机的各种内存统计信息的 Timeline。
+使用 `adb pull /data/misc/perfetto-traces/trace ~/mem-trace` 拉取文件并上传到 [Perfetto UI](https://ui.perfetto.dev)。这将显示系统 ION 使用的总体统计信息，以及要展开的每个进程统计信息。向下滚动（或 Ctrl-F 搜索）到 `com.google.android.GoogleCamera` 并展开。这将显示相机的各种内存统计信息的 Timeline。
 
 ![Camera Memory Trace](/docs/images/trace-rss-camera.png)
 

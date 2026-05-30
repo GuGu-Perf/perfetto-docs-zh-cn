@@ -62,10 +62,14 @@ registerCoreNodes() {
 **ModifyColumnsNode** - 重命名/删除列
 **AddColumnsNode** - 通过 LEFT JOIN 和/或计算表达式从次源添加列
 **LimitAndOffsetNode** - 分页
+**CounterToIntervalsNode** - 将 counter 事件转换为时间间隔
+**MetricsNode** - 运行预定义的 trace metrics
+**VisualisationNode** - 将查询输出可视化为图表
+**TraceSummaryNode** - 渲染 trace 摘要数据
 
 ### 3. 多输入节点
 **UnionNode** - 组合来自多个源的行
-**JoinNode** - 通过 JOIN 条件组合列
+**JoinNode** - 通过 JOIN 条件组合列（默认 autoExecute=false；当 conditionType 为 'equality' 时切换为 true）
 **IntervalIntersectNode** - 查找重叠的时间间隔
 **FilterDuringNode** - 使用次间隔输入进行过滤
 **CreateSlicesNode** - 将来自两个次源的开始/结束事件配对到 Slice 中
@@ -92,7 +96,7 @@ registerCoreNodes() {
 - 在状态更改时触发查询分析
 - 通过 QueryExecutionService 管理执行流程
 
-**DataExplorer** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/data_explorer.ts`)
+**ResultsPanel** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/results_panel.ts`)
 - 显示查询结果的底部抽屉
 - 通过 SQLDataSource 进行服务器端分页
 - 基于列的过滤和排序
@@ -204,7 +208,7 @@ async processNode(node: QueryNode): Promise<void> {
 | false | false | 跳过 - 显示"运行查询"按钮 |
 | false | true | 分析 + 执行（用户点击） |
 
-自动执行禁用于：SqlSourceNode、IntervalIntersectNode、UnionNode、FilterDuringNode、CreateSlicesNode
+自动执行禁用于：SqlSourceNode（始终）、JoinNode（默认；等值连接时切换为 true）、FilterNode（在 'sql' 模式下）
 
 ### 状态管理
 
@@ -462,7 +466,7 @@ analyzeNode(node, engine) {
 - **node_actions.ts** — 用于节点→图交互的基于闭包的回调(`NodeActionHandlers`)
 
 ### 7. GraphCallbacks 接口(减少 Prop Drilling)
-14 个回调从 `data_explorer.ts` 流向 `Builder` → `Graph`:
+16 个回调从 `data_explorer.ts` 流向 `Builder` → `Graph`（14 个必需，2 个可选）：
 - `GraphCallbacks` 接口在 `graph.ts` 中定义，对所有 14 个回调进行分组
 - `BuilderAttrs` 有一个 `graphCallbacks: GraphCallbacks` 字段
 - Builder 将 `...attrs.graphCallbacks` 直接传播到 `Graph` 组件
@@ -491,7 +495,7 @@ analyzeNode(node, engine) {
 **UI 组件**：
 - `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/graph/graph.ts` - 可视化图画布(定义 `GraphCallbacks`)
 - `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/node_panel.ts` - 节点侧边栏
-- `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/data_explorer.ts` - 结果抽屉
+- `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/results_panel.ts` - 结果抽屉
 
 **工具**：
 - `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/graph_utils.ts` - 图遍历和连接管理

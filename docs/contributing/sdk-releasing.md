@@ -34,7 +34,7 @@ git fetch origin
 git checkout -b releases/v16.x -t origin/releases/v16.x
 ```
 
-继续[构建发布](#building-and-tagging-the-release)。
+继续[构建和标记发布](#tagging-the-release)。
 
 ## b) 提升次要版本
 
@@ -76,7 +76,7 @@ v16.0 - 2021-06-01:
  ...
 ```
 
-## 标记发布
+## {#tagging-the-release} 构建和标记发布
 
 1. 一旦发布的所有更改都已合并到发布分支中，
  为其创建并推送标记（"vX.Y"是新版本）。

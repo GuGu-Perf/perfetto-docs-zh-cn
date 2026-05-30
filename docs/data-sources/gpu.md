@@ -73,6 +73,8 @@ data_sources: {
 
 `counter_period_ns` 设置所需的采样间隔。
 
+或者，可以使用 `counter_names` 按名称选择 Counter。选择其中一种方式，不要两者同时使用。并非所有生产者都支持此方式——请检查 DataSource 描述符中的 `supports_counter_names`。`counter_names` 中可以使用 glob 模式按名称匹配多个 Counter；请检查描述符中的 `supports_counter_name_globs` 是否支持。
+
 ### GPU 内存
 
 每个进程的总 GPU 内存使用量通过 ftrace 收集：
@@ -149,6 +151,39 @@ data_sources: {
 }
 ```
 
+要更精细地控制对哪些 GPU 活动进行插桩，请使用 `instrumented_sampling_config` 而不是 `instrumented_sampling` 布尔值。这启用了一个按以下顺序应用的过滤器管道：
+
+1. **活动名称过滤**：如果 `activity_name_filters` 非空，则活动必须至少匹配一个过滤器。每个过滤器需要一个 `name_glob` 模式和一个可选的 `name_base`（默认为 `MANGLED_KERNEL_NAME`）。如果为空，所有活动通过此步骤。
+
+2. **TX 范围过滤**：如果 `activity_tx_include_globs` 非空，则活动必须落在匹配某个包含 glob 的 TX 范围（例如 CUDA 的 NVTX 范围）内。匹配 `activity_tx_exclude_globs` 的 TX 范围中的活动被排除（排除优先于包含）。TX 范围可以嵌套，活动在其嵌套层次结构中任何范围匹配时都算匹配。如果两者都为空，所有活动通过此步骤。
+
+3. **基于范围的采样**：如果 `activity_ranges` 非空，则仅对指定 skip/count 范围内的活动进行插桩。`skip` 默认为 0，`count` 默认为 UINT32_MAX（所有剩余活动）。如果为空，所有通过前述步骤的活动都被插桩。
+
+示例配置：仅对 demangled kernel 名称匹配 `"myKernel*"` 且在匹配 `"training*"` 的 TX 范围内的活动进行插桩，跳过前 10 个匹配活动然后插桩 5 个：
+
+```
+data_sources: {
+    config {
+        name: "gpu.counters"
+        gpu_counter_config {
+          counter_names: "sm__cycles_elapsed.avg"
+          counter_names: "sm__cycles_active.avg"
+          instrumented_sampling_config {
+            activity_name_filters {
+              name_glob: "myKernel*"
+              name_base: DEMANGLED_KERNEL_NAME
+            }
+            activity_tx_include_globs: "training*"
+            activity_ranges {
+              skip: 10
+              count: 5
+            }
+          }
+        }
+    }
+}
+```
+
 对于 GPGPU 使用场景，推荐使用 Counter 描述符模式 2：生产者发送通过 IID 引用的 `InternedGpuCounterDescriptor`，为每个可信序列提供独立的局部 Counter ID。这避免了模式 1 所需的全局协调，并自然地支持多个生产者和 GPU。有关两种模式的详细信息，请参阅 [gpu\_counter\_event.proto](/protos/perfetto/trace/gpu/gpu_counter_event.proto)。
 
 Counter 名称和 ID 由 GPU 生产者通过数据源描述符中的 `GpuCounterSpec` 发布。Counter 按组分类（SYSTEM、VERTICES、FRAGMENTS、PRIMITIVES、MEMORY、COMPUTE、RAY_TRACING），并包含度量单位和描述。
@@ -194,9 +229,9 @@ gpu_render_stage_event {
 
 这会创建一个从 memcpy 事件（event\_id 1）到 matmul kernel（event\_id 2）的流，在 Perfetto UI 中可视化依赖关系。
 
-### GPU Counter 分组
+### Counter 分组
 
-GPU counter 可以按自定义组（custom groups）进行组织，以覆盖或扩展固定的 `GpuCounterGroup` 枚举值（SYSTEM、VERTICES 等）。为此，将 `group_id` 设置为枚举值，并提供 `name` 和/或 `description`。
+Counter 分组被 Perfetto UI 用来将 Counter Track 组织成组。Counter 可以通过 `GpuCounterSpec.groups` 分配到内置分组（SYSTEM、VERTICES、FRAGMENTS、PRIMITIVES、MEMORY、COMPUTE、RAY_TRACING），也可以通过 `GpuCounterDescriptor` 中的 `GpuCounterGroupSpec` 消息定义自定义 Counter 分组：
 
 Counter 的组成员关系是通过 `GpuCounterSpec.groups`（固定枚举）和 `GpuCounterGroupSpec.counter_ids`（自定义分组）分配的组的并集。
 
@@ -237,3 +272,94 @@ gpu_render_stage_event {
     name: "matmul_kernel"
 }
 ```
+
+## UI Plugin
+
+Perfetto UI 内置了多个消费 GPU trace 数据的 Plugin。它们在标准工作区树的 `GPU` 组下注册 Track、分组和详情面板（对于进程级 Plugin，则在每个进程组下注册）。
+
+### dev.perfetto.Gpu
+
+基础 Plugin，为每个 GPU 布局一个 `GPU` 组，并用 `gpu_counter_track`、`gpu_render_stage`、`gpu_log`、`vulkan_events` 和 `graphics_frame_event` 系列的叶 Track 和汇总 Track 填充它。多 GPU 和多机 trace 被拆分为每个 GPU 的子组（当存在多台机器时附加机器标签）；在 `GpuCounterDescriptor` / `GpuCounterGroupSpec` 中声明的自定义 Counter 分组显示为 `Counters` 下的可折叠子组。
+
+![](/docs/images/gpu-tracks.png)
+
+### dev.perfetto.GpuByProcess
+
+呈现范围限定为单个进程且没有有意义的全局表示的 GPU 概念。例如，CUDA Stream 是一个进程级句柄：两个不同进程中相同的数字 `stream` ID 引用两个不相关的 Stream，因此将所有 Stream 显示在单个共享的 `GPU` 组下会产生误导。此 Plugin 将这些 Track 放置在每个所属进程下。
+
+对于 GPU Slice 带有 `device` 和 `stream` 启动参数的 trace（例如 CUDA、HIP），它将 `gpu_render_stage` Slice 嵌套在每个进程下，格式为 `<API> → Device #N → Context #N → Stream #N`，折叠只有一个值的任何级别。不携带这些参数的 Slice 回退到每个 `hw_queue_id` 一个 Track，以源硬件队列 Track 命名（通常为 `"Channel #N"`）。当进程跨越多个 GPU 时，叶 Track 嵌套在每个 GPU 的子组下。
+
+![](/docs/images/gpu-by-process.png)
+
+### com.meta.GpuCompute
+
+Compute kernel 深入分析。添加了三个选项卡，当选择计算类 `gpu_render_stage` Slice（即 `gpu_slice.render_stage_category = COMPUTE`）时会填充：
+
+- **Summary** — trace 中每个 kernel 启动的表格，可按持续时间、占用率和其他硬件指标排序。双击跳转到该 kernel 的详情视图。
+- **Details** — 每个部分的指标表格（Speed-of-Light、Launch Statistics、Occupancy、Workload Analysis），支持两个 kernel 之间的可选基线比较。
+- **Toolbar** — kernel 选择器、基线固定、术语切换（CUDA / OpenCL / 厂商提供）以及自动单位转换（bytes → KB, ns → s 等）。
+
+核心 Plugin 内置 CUDA 和 AMD 支持；其他厂商通过注册术语、指标部分、知名 metric ID 和分析提供程序的配套 Plugin 添加。参见 [com.meta.GpuCompute/README.md](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.meta.GpuCompute/README.md) 了解扩展 API。
+
+![](/docs/images/gpu-compute-summary.png)
+
+![](/docs/images/gpu-compute-details.png)
+
+## 示例查询
+
+### 运行时间最长的前 5 个 kernel 及其时间加权利用率
+
+此查询按持续时间对计算 kernel 进行排序，并为每个 kernel 计算 GPU `Utilization` Counter 在该 kernel 执行窗口内的时间加权平均值。`counter_leading_intervals` 将稀疏的 Counter 样本转换为 `(ts, dur, value)` 区间（每个样本的值持续到下一个样本），`_interval_intersect` 将这些区间与每个 kernel 的 `[ts, ts + dur)` 窗口进行裁剪，因此平均值按每个 Counter 值在 kernel 执行期间实际生效的时间加权。
+
+```sql
+INCLUDE PERFETTO MODULE counters.intervals;
+INCLUDE PERFETTO MODULE intervals.intersect;
+
+WITH
+  -- GPU Utilization Counter，展开为 (ts, dur, value) 区间。
+  -- 携带 ugpu 以便交集可以将每个 kernel 匹配到自己的 GPU。
+  utilization AS (
+    SELECT u.id, u.ts, u.dur, u.value, gct.ugpu
+    FROM counter_leading_intervals!((
+      SELECT c.id, c.ts, c.track_id, c.value
+      FROM counter c
+      JOIN gpu_counter_track gct ON gct.id = c.track_id
+      WHERE gct.name = 'Utilization'
+    )) u
+    JOIN gpu_counter_track gct ON gct.id = u.track_id
+  ),
+  -- 运行时间最长的 5 个计算 kernel（render_stage_category 2 = COMPUTE）。
+  top_kernels AS (
+    SELECT
+      s.id, s.ts, s.dur, s.name,
+      extract_arg(t.dimension_arg_set_id, 'ugpu') AS ugpu
+    FROM gpu_slice s
+    JOIN gpu_track t ON s.track_id = t.id
+    WHERE s.render_stage_category = 2 AND s.dur > 0
+    ORDER BY s.dur DESC
+    LIMIT 5
+  )
+SELECT
+  k.name AS kernel,
+  g.name AS gpu_name,
+  k.dur AS dur_ns,
+  -- 时间加权平均值：sum(value * overlap_dur) / kernel_dur。
+  SUM(u.value * ii.dur) / k.dur AS avg_utilization
+FROM top_kernels k
+LEFT JOIN gpu g ON g.id = k.ugpu
+JOIN _interval_intersect!((top_kernels, utilization), (ugpu)) ii
+  ON ii.id_0 = k.id
+JOIN utilization u ON u.id = ii.id_1
+GROUP BY k.id, k.name, g.name, k.dur
+ORDER BY k.dur DESC;
+```
+
+示例输出（双 GPU 训练 trace）：
+
+| kernel | gpu\_name | dur\_ns | avg\_utilization |
+|---|---|---|---|
+| matmul\_bwd\_kernel | NVIDIA A100-SXM4-80GB #1 | 180000 | 78.27 |
+| matmul\_bwd\_kernel | NVIDIA A100-SXM4-80GB #2 | 180000 | 77.25 |
+| matmul\_kernel     | NVIDIA A100-SXM4-80GB #1 | 125000 | 78.70 |
+| matmul\_kernel     | NVIDIA A100-SXM4-80GB #2 | 125000 | 78.83 |
+| softmax\_bwd\_kernel | NVIDIA A100-SXM4-80GB #1 | 110000 | 73.76 |

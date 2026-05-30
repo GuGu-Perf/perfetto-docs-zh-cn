@@ -18,11 +18,11 @@ Perfetto 提供了多种互补技术来调试上述内容：
 
 工具 | 语言 | 插桩内容 | 用途
 -----|----------|------|------
-[ART Heap Dumps](#java-managed-heap-dumps) | Java/Kotlin | 所有已分配对象的引用图 | 分解内存使用，查找泄漏。
-[Native Allocation Profiling](#native-c-c-rust-heap-profiling) | Native C/C++/Rust | `malloc` + `free` | 减少 native 分配流变，分解内存使用并查找 **profiling 开始后**的泄漏。
+[ART Heap Dumps](#art-heap-dumps) | Java/Kotlin | 所有已分配对象的引用图 | 分解内存使用，查找泄漏。
+[Native Allocation Profiling](#native-heap-profiling) | Native C/C++/Rust | `malloc` + `free` | 减少 native 分配流变，分解内存使用并查找 **profiling 开始后**的泄漏。
 [ART Allocation Profiling](/docs/data-sources/native-heap-profiler.md#java-heap-sampling) | Java/Kotlin | 对象分配 | 减少 Java/Kotlin 分配流变
 
-## Native (C/C++/Rust) Allocation Profiling (aka native heap profiling)
+## {#native-heap-profiling} Native (C/C++/Rust) Allocation Profiling (aka native heap profiling)
 
 C/C++/Rust 等 native 语言通常通过使用 libc 系列的 `malloc`/`free` 函数在最低级别分配和释放内存。Native heap profiling 通过_拦截_对这些函数的调用并注入跟踪已分配但未释放内存的调用栈的代码来工作。这允许跟踪每个分配的"代码来源"。malloc/free 可能是繁重堆进程中的性能热点：为了减轻 memory profiler 的开销，我们支持[采样](/docs/design-docs/heapprofd-sampling）以权衡准确性和开销。
 
@@ -169,10 +169,10 @@ tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
 
 ### 可视化你的第一个 heap profile
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/heap_profile-latest` 文件，并点击 UI 中标记为_"Heap profile"_的 UI track 中的 V 形标记。
+在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/heap_profile-latest` 文件，并点击 UI 中标记为_"Native heap profile"_的 UI track 中的 Slice。
 
-![Profile Diamond](/docs/images/profile-diamond.png)
-![Native Flamegraph](/docs/images/native-heap-prof.png)
+![heapprofd snapshots in the UI tracks](/docs/images/profile-slice-malloc.png)
+![heapprofd flamegraph](/docs/images/native-heap-prof.png)
 
 默认情况下，聚合火焰图显示按调用栈聚合的未释放内存（即尚未 free(） 的内存)。顶部的帧代表调用栈中的最早入口点(通常是 `main()` 或 `pthread_start()`)。当你向底部移动时，你将更接近最终调用 `malloc()` 的帧。
 

@@ -7,7 +7,7 @@ Perfetto 是一个开源的 SDK、守护进程和工具套件，使用 **tracing
 它包括：
 
 - **高性能 tracing 守护进程**，用于从单个机器上的多个进程捕获 tracing 信息到一个统一的 trace 文件中，以便离线分析和可视化。
-- **低开销 tracing SDK**，用于直接在用户空间对 C/C++ 代码的时序和状态变化进行 tracing。
+- **低开销 tracing SDK**，用于直接在用户空间对 C/C++ 代码的时序和状态变化进行 tracing。社区维护的 [Rust SDK](/docs/getting-started/rust-sdk.md) 也可用。
 - **Android 和 Linux 上丰富的系统级 Probe**，用于在 trace 期间捕获更广泛的系统级上下文（例如调度状态、CPU 频率、memory profiling、调用栈采样）。
 - **完全本地的、基于浏览器的 UI**，用于在 Timeline 上可视化大量复杂的、相互关联的数据。我们的 UI 适用于所有主流浏览器，不需要任何安装，可以离线工作，并且可以打开由其他（非 Perfetto） tracing 工具采集的 trace。
 - **强大的、基于 SQL 的分析库**，用于以编程方式分析 Timeline 上的大量复杂的、相互关联的数据，即使这些数据不是用 Perfetto 记录工具收集的。
@@ -28,7 +28,7 @@ Perfetto 从设计之初就作为 Android 操作系统和 Chrome 浏览器的默
 
 Perfetto 的其他常见用例包括：
 
-- **收集、分析和可视化应用内 trace**，用于调试 Windows、macOS 和基于 Linux 的嵌入式系统上的 C/C++ 应用和库中的功能和性能问题。
+- **收集、分析和可视化应用内 trace**，用于调试 Windows、macOS 和基于 Linux 的嵌入式系统上的 C/C++ 和 Rust 应用和库中的功能和性能问题。
 - **收集、分析和可视化 Linux 上的 heap profile**，用于调试 C/C++/Rust 应用和库的高内存使用问题。
 - **分析和可视化 Linux 上的 CPU profile（Linux perf profile）**，用于优化 C/C++/Rust 应用和库中的 CPU 使用。
 - **分析和可视化各种 profile 和 tracing 格式**。Perfetto 可以打开来自各种其他工具的 trace 和 profile 文件，允许你在许多数据源上使用 Perfetto UI 及其基于 SQL 的查询引擎，包括：

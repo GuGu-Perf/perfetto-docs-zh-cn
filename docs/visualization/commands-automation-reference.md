@@ -567,9 +567,9 @@ Workspaces 允许你通过将特定的 tracks 组织在一起来创建 trace 数
 
 这些稳定的自动化命令可以在多种上下文中使用：
 
-- **启动命令** - 加载 trace 时自动运行。请参阅 UI 自动化指南中的[启动命令](/docs/visualization/ui-automation.md#commands-system-overview)。
-- **宏** - 用于按需执行的命名命令序列。请参阅 UI 自动化指南中的[宏](/docs/visualization/ui-automation.md#commands-system-overview)。
-- **URL 深度链接** - 在 URL 或 postMessage 中嵌入命令。有关 URL 模式和 postMessage 集成，请参阅[深度链接](/docs/visualization/deep-linking-to-perfetto-ui.md#configuring-the-ui-with-startup-commands)。
+- **启动命令** - 加载 trace 时自动运行。请参阅 UI 自动化指南中的[启动命令](/docs/visualization/ui-automation.md#setting-up-startup-commands)。
+- **宏** - 用于按需执行的命名命令序列。请参阅 UI 自动化指南中的[宏](/docs/visualization/ui-automation.md#creating-macros)。
+- **URL 深度链接** - 在 URL 或 postMessage 中嵌入命令。有关 URL 模式和 postMessage 集成，请参阅[深度链接](/docs/visualization/deep-linking-to-perfetto-ui.md#startup-commands)。
 
 有关实用的自动化示例和技巧，请参阅 [UI 自动化指南](/docs/visualization/ui-automation.md)。
 

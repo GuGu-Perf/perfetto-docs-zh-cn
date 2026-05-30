@@ -7,7 +7,7 @@
 ## 动机
 
 Perfetto trace processor 是在单个 trace 上执行分析的事实标准方式。使用
-[trace processor Python API](/docs/analysis/trace-processor#python-api)，
+[trace processor Python API](/docs/analysis/trace-processor-python.md)，
 可以交互式地查询 traces、从这些结果绘制图表等。
 
 虽然对单个 trace 的查询在调试该 trace 中的特定问题或在理解领域的早期阶段很有用，但它很快就会变得受限。一个 trace 不太可能代表

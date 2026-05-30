@@ -85,7 +85,7 @@ tracebox -c config.pbtx --txt -o custom_trace.perfetto-trace
 :：用于系统范围 tracing 的 Probe(ftrace、/proc 轮询器)。
 
 `traced_relay`
-:：将 trace 数据中继到远程 tracing 服务。
+:：将 trace 数据中继到远程 tracing 服务。用于扩展跨机器的 Tracing 会话；参见 [多机架构](/docs/deployment/multi-machine-architecture.md) 了解设计，[多机录制](/docs/learning-more/multi-machine-tracing.md) 了解设置方法。
 
 `traced_perf`
 :：基于 Perf 的 CPU profiling 数据源。

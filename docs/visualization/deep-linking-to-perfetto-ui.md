@@ -193,7 +193,7 @@ const url = `https://ui.perfetto.dev/#!/?startupCommands=${encodeURIComponent(
 )}`;
 ```
 
-启动命令使用与 [UI 自动化文档](/docs/visualization/perfetto-ui.md#startup-commands) 中描述的相同的 JSON 格式，但在作为参数传递时必须进行 URL 编码。有关具有向后兼容性保证的稳定命令列表，请参阅
+启动命令使用与 [UI 自动化文档](/docs/visualization/ui-automation.md#setting-up-startup-commands) 中描述的相同的 JSON 格式，但在作为参数传递时必须进行 URL 编码。有关具有向后兼容性保证的稳定命令列表，请参阅
 [命令自动化参考](/docs/visualization/commands-automation-reference.md)。
 
 ## 源链接

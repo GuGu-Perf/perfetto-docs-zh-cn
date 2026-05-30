@@ -6,4 +6,4 @@
 # 更新方式:
 #   bash .project/workwork.sh sync-update
 
-95328907 2026-04-28 18:21:48 +0100 heap_profile: docs for android/host split + glibc preload fix (#5630)
+9b50320f 2026-05-25 22:21:41 +0100 docs: document GPU UI plugins and add example query (#6028)

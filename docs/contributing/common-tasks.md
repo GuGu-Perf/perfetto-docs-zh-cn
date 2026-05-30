@@ -20,7 +20,7 @@
 - 运行文件不能生成任何数据。内部只能有 `CREATE PERFETTO {FUNCTION|TABLE|VIEW|MACRO}` 语句。
 - 每个标准库对象的名称必须以 `{module_name}_` 开头，对于内部对象以下划线（`_`）为前缀。
  名称必须仅包含大小写字母和下划线。当包含模块时（使用 `INCLUDE PERFETTO MODULE`），内部对象不应被视为 API。
-- 每个表或视图都应该有 [架构](/docs/analysis/perfetto-sql-syntax.md#tableview-schema)。
+- 每个表或视图都应该有 [架构](/docs/analysis/perfetto-sql-syntax.md#schema)。
 
 #### 文档
 
@@ -120,9 +120,9 @@ WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
 
 ### 更新 `TRACE_PROCESSOR_CURRENT_API_VERSION`
 
-通常，你不必担心 UI 和 `trace_processor` 之间的版本偏差，因为它们在同一提交处一起构建。但是，当使用允许原生 `trace_processor` 实例与 UI 一起使用的 `--httpd` 模式时，可能会发生版本偏差。
+通常，你不必担心 UI 和 `trace_processor` 之间的版本偏差，因为它们在同一提交处一起构建。但是，当 `trace_processor` 以 HTTP RPC 模式（`trace_processor server http`）运行时，可能会发生版本偏差，该模式允许原生 `trace_processor` 实例与 UI 一起使用。
 
-常见情况是 UI 比 `trace_processor` 更新，并且依赖于新的表定义。在 `--httpd` 模式下使用旧版本的 `trace_processor` 时，UI 尝试查询不存在的表时会崩溃。为了避免这种情况，我们使用版本号。如果 `trace_processor` 报告的版本号低于 UI 构建时的版本号，我们会提示用户更新。
+常见情况是 UI 比 `trace_processor` 更新，并且依赖于新的表定义。在 HTTP RPC 模式下使用旧版本的 `trace_processor` 时，UI 尝试查询不存在的表时会崩溃。为了避免这种情况，我们使用版本号。如果 `trace_processor` 报告的版本号低于 UI 构建时的版本号，我们会提示用户更新。
 
 1. 转到 `protos/perfetto/trace_processor/trace_processor.proto`
 2. 增加 `TRACE_PROCESSOR_CURRENT_API_VERSION`

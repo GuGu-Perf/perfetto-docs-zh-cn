@@ -24,7 +24,7 @@ git clone https://github.com/google/perfetto
 #### 拉取依赖库和工具链
 
 ```bash
-tools/install-build-deps [--android] [--ui] [--linux-arm]
+tools/install-build-deps [--android] [--ui] [--linux-arm] [--rust]
 ```
 
 `--android` 将拉取 Android NDK、模拟器和构建 `target_os = "android"` 所需的其他依赖项。
@@ -32,6 +32,8 @@ tools/install-build-deps [--android] [--ui] [--linux-arm]
 `--ui` 将拉取构建 Web UI 所需的 NodeJS 和所有 NPM 模块。有关更多信息，请参阅下方的 [UI 开发](/docs/contributing/ui-getting-started.md) 部分。
 
 `--linux-arm` 将拉取交叉编译 Linux ARM/64 的 sysroots。
+
+`--rust` 将拉取构建 [Rust SDK](/docs/getting-started/rust-sdk.md) 所需的 Rust 工具链。Rust SDK 也可以通过 Cargo 使用系统 Rust 工具链（1.85+）构建，无需此标志。
 
 WARNING: 请注意，如果你使用 M1 或任何后续的 ARM Mac，你的 Python 版本至少应为 3.9.1，以解决
 [此 Python 错误](https://bugs.python.org/issue42704)。

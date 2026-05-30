@@ -10,6 +10,7 @@
 
     - [系统 Tracing](getting-started/system-tracing.md) {.tag-android .tag-linux}
     - [应用内 Tracing](getting-started/in-app-tracing.md) {.tag-cpp}
+    - [Rust SDK](getting-started/rust-sdk.md) {.tag-cpp-rust}
     - [Memory Profiling](getting-started/memory-profiling.md) {.tag-android .tag-linux}
     - [CPU Profiling](getting-started/cpu-profiling.md) {.tag-android .tag-linux}
     - [使用 atrace 插桩](getting-started/atrace.md) {.tag-android}
@@ -86,6 +87,7 @@
   - [可视化](#)
 
     - [Perfetto UI](visualization/perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [Data Explorer](visualization/data-explorer.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [打开大型 Trace](visualization/large-traces.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [深度链接](visualization/deep-linking-to-perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [调试 Track](analysis/debug-tracks.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
@@ -154,6 +156,7 @@
     - [分离模式](concepts/detached-mode.md) {.tag-android}
     - [拦截器](instrumentation/interceptors.md) {.tag-cpp}
     - [旧版（v1）指标](analysis/metrics.md) {.tag-android}
+    - [多机架构](deployment/multi-machine-architecture.md) {.tag-android .tag-linux}
     - [BigTrace（单机）](deployment/deploying-bigtrace-on-a-single-machine.md) {.tag-android .tag-perf}
     - [Kubernetes 上的 BigTrace](deployment/deploying-bigtrace-on-kubernetes.md) {.tag-android .tag-perf}
 

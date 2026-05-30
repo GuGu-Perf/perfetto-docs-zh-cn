@@ -62,7 +62,7 @@ with BatchTraceProcessor('foo:bar=1,baz=abc', config=config) as btp:
 
 ## 编写查询
 
-使用 batch trace processor 编写查询的方式与 [Python API](/docs/analysis/batch-trace-processor#python-api) 非常相似。
+使用 batch trace processor 编写查询的方式与 [Python API](/docs/analysis/trace-processor-python.md) 非常相似。
 
 例如，要获取用户态 slice 的数量：
 

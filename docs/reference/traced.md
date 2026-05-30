@@ -71,7 +71,7 @@ Perfetto 的架构旨在提高安全性和稳健性，以 `traced`
 - `--version`：打印版本号并退出。
 - `--set-socket-permissions
  <prod_group>:<prod_mode>:<cons_group>:<cons_mode>`：设置生产者和消费者套接字的组所有权和权限模式。这对于控制哪些用户和进程可以作为生产者或消费者连接到 `traced` 很重要。
-- `--enable-relay-endpoint`：通过 `traced_relay` 启用多机 tracing的端点。
+- `--enable-relay-endpoint`：通过 `traced_relay` 启用[多机 tracing](/docs/deployment/multi-machine-architecture.md)的端点。参见[多机采集](/docs/learning-more/multi-machine-tracing.md)了解主机侧配置。
 
 ## 内置生产者
 
