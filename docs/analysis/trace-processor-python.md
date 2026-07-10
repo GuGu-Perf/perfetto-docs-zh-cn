@@ -120,7 +120,8 @@ tp = TraceProcessor(trace='trace.perfetto-trace', config=config)
 
 - `add_sql_packages`：要加载的 PerfettoSQL 包列表。每个元素可以是字符串路径（目录名称成为包名称）或 `SqlPackage` 对象（允许指定自定义包名称）。这些包中的所有 SQL 模块都可以使用 `INCLUDE PERFETTO MODULE` PerfettoSQL 语句包含。
 - `verbose`：如果为 `True`，`trace_processor` 将向 stdout 打印详细输出。这对于调试和查看更详细的错误消息很有用。
-- `bin_path`: `trace_processor` 二进制文件的路径。如果未提供，将下载最新的预构建版本。
+- `bin_path`: `trace_processor` 二进制文件的路径。如果未提供，将下载并使用与已安装的 `perfetto` 包固定版本绑定的 `trace_processor` 版本。这可以保持结果的可重现性：升级二进制文件意味着升级软件包。
+- `fetch_latest_trace_processor`：如果为 `True`（且 `bin_path` 未设置），则从 `get.perfetto.dev` 获取最新的预构建版本，而不是与软件包绑定的固定版本。使用此选项可以始终运行最新的构建版本，但会牺牲可重现性。请注意，此选项是尽力而为的，在以不同方式获取二进制文件的平台（例如 Google3 内部，二进制文件始终来自内部基础设施）上可能会被忽略。
 
 ## API
 

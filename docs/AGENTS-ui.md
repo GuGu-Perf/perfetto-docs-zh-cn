@@ -248,6 +248,8 @@ async onTraceLoad(trace: Trace): Promise<void> {
 
 在代码审查期间一致地强制执行以下模式。遵循这些模式将显著加快审查过程。
 
+> **参见：[UI 审查反模式](ui-review-antipatterns.md)** — 一份更深入、分类的反模式目录，来源于维护者对贡献者 PR 的真实审查反馈（Mithril/渲染、状态、分层、插件/API 设计、widget、CSS、类型、错误处理、性能、PR 范围）。在编写或审查 UI 更改时参考它，可预先避免常见错误。
+
 ### TypeScript/JavaScript 风格
 
 **优先选择 `undefined` 而非 `null`:**

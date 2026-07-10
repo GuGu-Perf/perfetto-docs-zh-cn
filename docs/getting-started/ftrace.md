@@ -18,7 +18,7 @@ Perfetto 可以[配置][cfg-link]将一组 ftrace 事件记录为 perfetto trace
 
 查询引擎和 UI 依次具有 ftrace 事件的特定于域的解析。例如，原始上下文切换和唤醒事件在 UI 中转换为每个 CPU 和每个线程的调度 tracks，并由可查询的 SQL 表支持。
 
-TIP: 如果你只是想可视化内核函数的执行，perfetto 对 ftrace 内置的 `function_graph` tracer 具有内置的可视化，不需要任何额外的插桩。有关更多详细信息，请参阅[这些配置选项][funcgraph-cfg-link]。
+TIP: 如果你只是想可视化内核函数的执行，perfetto 对 ftrace 内置的 `function_graph` tracer 具有内置的可视化，不需要任何额外的插桩。有关更多详细信息，请参阅[function graph 数据源](/docs/data-sources/funcgraph.md)页面（或[这些配置选项][funcgraph-cfg-link]）。
 
 本页面分为三个部分：
 - [A部分][section-a-link]：涵盖创建一个带有静态 tracepoint 的示例内核模块，使用 perfetto 记录事件，以及在 perfetto UI 中查看基本事件数据。

@@ -75,6 +75,9 @@ perfetto - 捕获 traces
 `--clone-for-bugreport`
 :：只能与 `--clone` 或 `--clone-by-name` 一起使用。在克隆的 session 上禁用 `trace_filter`。
 
+`--add-attribute` _key[=value]_
+::：添加一个 [trace attribute](/protos/perfetto/common/trace_attributes.proto)，即描述 trace 的键值对。如果省略 `=value`，值为空字符串。属性在 Trace Processor 的 `metadata` 表中显示为 `trace_attribute.<key>` 行。
+
 
 ## 简单模式
 

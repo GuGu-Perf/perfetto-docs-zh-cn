@@ -71,7 +71,10 @@ Perfetto 的架构旨在提高安全性和稳健性，以 `traced`
 - `--version`：打印版本号并退出。
 - `--set-socket-permissions
  <prod_group>:<prod_mode>:<cons_group>:<cons_mode>`：设置生产者和消费者套接字的组所有权和权限模式。这对于控制哪些用户和进程可以作为生产者或消费者连接到 `traced` 很重要。
-- `--enable-relay-endpoint`：通过 `traced_relay` 启用[多机 tracing](/docs/deployment/multi-machine-architecture.md)的端点。参见[多机采集](/docs/learning-more/multi-machine-tracing.md)了解主机侧配置。
+- `--enable-relay-endpoint`：在由 `PERFETTO_PRODUCER_SOCK_NAME` 命名的每个生产者套接字（或默认生产者套接字）上暴露 [多机 tracing](/docs/deployment/multi-machine-architecture.md) 使用的 `RelayPort` 服务。这是多机设置的标准开关；请参阅[多机采集](/docs/learning-more/multi-machine-tracing.md)了解主机侧配置。
+
+    > **安全说明：** 当生产者套接字列表中混合了本地 AF_UNIX 套接字和远程套接字时，此标志也会在本地套接字上暴露 `RelayPort`。同时使用本地和远程生产者套接字的部署应使用下面的 `--enable-relay-endpoint-on` 来使 relay 端口脱离本地套接字。
+- `--enable-relay-endpoint-on <socket>`：与 `--enable-relay-endpoint` 类似，但仅在指定的生产者套接字上暴露 `RelayPort` 服务。`<socket>` 必须是 `PERFETTO_PRODUCER_SOCK_NAME` 中的条目之一（或默认生产者套接字）：该标志选择哪些现有的生产者套接字获得 `RelayPort`；它不会引入新的端点。可重复使用。
 
 ## 内置生产者
 

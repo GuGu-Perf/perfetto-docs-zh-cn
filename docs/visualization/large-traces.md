@@ -1,6 +1,6 @@
 # 可视化大型 trace
 
-浏览器通常限制站点可以使用的内存量。这会在可视化大型 trace 时导致问题。
+浏览器通常限制站点可以使用的内存量。这会在可视化大型 trace 时导致问题，包括[合并的多 trace session](/docs/visualization/merging-traces.md)，这些通常本身就很大。
 
 ## 使用 TraceProcessor 作为原生加速器
 

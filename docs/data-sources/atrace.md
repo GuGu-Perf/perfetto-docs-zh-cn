@@ -22,7 +22,7 @@ ATrace API 通过以下表面暴露：
 
 #### 插桩开销
 
-ATrace 插桩每个事件有 1-10us 的不可忽略的成本。这是因为每个事件涉及字符串化、如果来自托管执行环境则涉及 JNI 调用，以及用户空间 <-> 内核空间往返以将标记写入 `/sys/kernel/debug/tracing/trace_marker`（这是最昂贵的部分）。
+ATrace 插桩每个事件有 1-10us 的不可忽略的成本。这是因为每个事件涉及字符串化、如果来自托管执行环境则涉及 JNI 调用，以及用户空间 <-> 内核空间往返以将标记写入 `/sys/kernel/tracing/trace_marker`（这是最昂贵的部分）。
 
 鉴于新引入的 [Tracing SDK](/docs/instrumentation/tracing-sdk.md)，我们的团队正在研究 Android 的迁移路径。目前建议继续在 Android 上使用现有的 ATrace API。
 

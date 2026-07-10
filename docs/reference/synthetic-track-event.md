@@ -114,6 +114,8 @@ WHERE process.pid = 1234;
 "[将任意时间戳数据转换为 Perfetto](/docs/getting-started/converting.md)"
 指南中描述的异步 Slice 技术)。
 
+有关如何显式控制进程 Track 显示顺序的详细信息，请参阅[控制 Track 排序顺序](#controlling-track-sorting-order)。
+
 ### 将 Track 与线程相关联
 
 你可以创建明确与操作系统进程内特定线程关联的 Track。这是表示线程特定活动（如函数调用堆栈或线程本地 Counter）的最常见方式。
@@ -217,13 +219,19 @@ FROM thread_slice
 WHERE tid = 5678;
 ```
 
+有关如何显式控制进程内线程显示顺序的详细信息，请参阅[控制 Track 排序顺序](#controlling-track-sorting-order)。
+
 ## 高级 Track 自定义
 
 除了将 Track 与操作系统概念相关联之外，Perfetto 还提供了微调 Track 呈现方式和数据编码方式的方法。
 
 ### 控制 Track 排序顺序
 
-默认情况下，Perfetto UI 应用自己的启发式方法对 Track 进行排序（例如，按名称字母顺序，或按 Track UUID）。但是，对于复杂的自定义 trace，你可能希望明确定义同级 Track 在父 Track 下出现的顺序。这是使用父 Track `TrackDescriptor` 上的 `child_ordering` 字段和对于 `EXPLICIT` 排序使用子 Track `TrackDescriptor` 上的 `sibling_order_rank` 来实现的。
+默认情况下，Perfetto UI 应用自己的启发式方法对 Track 进行排序（例如，按名称字母顺序，或按 Track UUID）。但是，对于复杂的自定义 trace，你可能希望明确定义 Track 的出现顺序。此排序行为因你是排列标准自定义子 Track、进程还是进程内的线程而有所不同。
+
+#### 非 OS 作用域（子 Track）排序
+
+对于通过 `parent_uuid` 父化到另一个自定义 Track 的标准自定义 Track，使用父 Track `TrackDescriptor` 上的 `child_ordering` 字段和对于 `EXPLICIT` 排序使用子 Track `TrackDescriptor` 上的 `sibling_order_rank` 来实现。
 
 父 Track 上的此 `child_ordering` 设置仅影响其直接子 Track。
 
@@ -234,12 +242,37 @@ WHERE tid = 5678;
 - `CHRONOLOGICAL`：子 Track 根据其中每一个上发生的最早 `TrackEvent` 的时间戳排序。具有较早事件的 Track 首先出现。
 - `EXPLICIT`：子 Track 根据在各自 `TrackDescriptor` 中设置的 `sibling_order_rank` 字段排序。排名较低的首先出现。如果排名相等，或者如果未设置 `sibling_order_rank`，则决胜顺序未定义。
 
+#### 进程排序
+
+要显式控制 UI 如何显示顶级进程 Track 之间的相对顺序，你必须配置根 Track 描述符（`uuid = 0`）。
+
+1. 将根 Track 描述符（`uuid = 0`）上的 `process_ordering` 设置为 `PROCESS_ORDERING_EXPLICIT`。
+2. 在各个进程 `TrackDescriptor` 上定义 `sibling_order_rank`。排名较低的进程将首先出现。未指定的排名默认为 0。
+
+可用的 `process_ordering` 模式（在 `TrackDescriptor.ProcessOrdering` 中定义）：
+- `PROCESS_ORDERING_UNSPECIFIED`：默认值。UI 将使用自己的启发式方法。
+- `PROCESS_ORDERING_EXPLICIT`：按进程 Track 描述符的 `sibling_order_rank` 对进程进行排序。
+
+![进程排序](/docs/images/synthetic-track-event-process-order.png)
+
+#### 线程排序
+
+要显式控制 UI 如何显示进程组内线程 Track 之间的相对顺序，你必须配置根 Track 描述符（`uuid = 0`）。
+
+1. 将根 Track 描述符（`uuid = 0`）上的 `thread_ordering` 设置为 `THREAD_ORDERING_EXPLICIT`。
+2. 在各个线程 `TrackDescriptor` 上定义 `sibling_order_rank`。排名较低的线程将首先出现。未指定的排名默认为 0。
+
+可用的 `thread_ordering` 模式（在 `TrackDescriptor.ThreadOrdering` 中定义）：
+- `THREAD_ORDERING_UNSPECIFIED`：默认值。UI 将使用自己的启发式方法。
+- `THREAD_ORDERING_EXPLICIT`：按线程 Track 描述符的 `sibling_order_rank` 对线程进行排序。
+
+![线程排序](/docs/images/synthetic-track-event-thread-order.png)
+
 **注意：** UI 将这些视为强提示。虽然它通常尊重这些排序，但在某些情况下，UI 保留不按此顺序显示它们的权利；通常，如果用户明确请求此操作，或者 UI 对这些 Track 有特殊处理，则会发生这种情况。
 
 **Python 示例：演示所有排序类型**
 
-此示例定义了三个父 Track，每个 Track 演示不同的
-`child_ordering` 模式。
+此示例定义了三个父 Track，每个 Track 演示不同的 `child_ordering` 模式，同时在根 Track 上配置了显式的进程和线程排序。
 
 将以下 Python 代码复制到你的 `trace_converter_template.py` 脚本中的 `populate_packets(builder)` 函数中。
 
@@ -327,6 +360,52 @@ WHERE tid = 5678;
  add_instant_event(ts=3000, track_uuid=child_rank_neg5_uuid, event_name="事件排名 -5")
  add_instant_event(ts=3000, track_uuid=child_rank0_uuid, event_name="事件排名 0")
  # "显式排序父级"下的预期 UI 顺序:排名 -5、排名 0、排名 10
+
+ # --- 4. 进程和线程显式排序示例 ---
+ # 配置根 Track（uuid = 0）以启用显式进程和线程排序
+ packet = builder.add_packet()
+ root_desc = packet.track_descriptor
+ root_desc.uuid = 0
+ root_desc.process_ordering = TrackDescriptor.PROCESS_ORDERING_EXPLICIT
+ root_desc.thread_ordering = TrackDescriptor.THREAD_ORDERING_EXPLICIT
+
+ # 定义进程 A，排名为 5
+ process_a_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = process_a_uuid
+ desc.process.pid = 100
+ desc.process.process_name = "进程 A (排名 5)"
+ desc.sibling_order_rank = 5
+
+ # 定义进程 B，排名为 2（应出现在进程 A 之前）
+ process_b_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = process_b_uuid
+ desc.process.pid = 200
+ desc.process.process_name = "进程 B (排名 2)"
+ desc.sibling_order_rank = 2
+
+ # 在进程 A 下定义线程 A1，排名为 42
+ thread_a1_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = thread_a1_uuid
+ desc.thread.pid = 100
+ desc.thread.tid = 101
+ desc.thread.thread_name = "线程 A1 (排名 42)"
+ desc.sibling_order_rank = 42
+
+ # 在进程 A 下定义线程 A2，排名为 10（应出现在线程 A1 之前）
+ thread_a2_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = thread_a2_uuid
+ desc.thread.pid = 100
+ desc.thread.tid = 102
+ desc.thread.thread_name = "线程 A2 (排名 10)"
+ desc.sibling_order_rank = 10
 ```
 
 </details>

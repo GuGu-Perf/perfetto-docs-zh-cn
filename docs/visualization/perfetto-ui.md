@@ -9,6 +9,8 @@
 
 从文件资源管理器拖放 trace，或单击侧边栏中的"打开 trace 文件"以打开本地 trace 文件。
 
+选择或拖放多个文件会通过配置对话框将它们合并到一条共享时间线上：参见[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)。
+
 ## 导航时间轴
 
 使用 WASD 组合键缩放和平移时间轴。W 和 S 分别放大和缩小，A 和 D 分别向左和向右平移。
@@ -84,6 +86,16 @@ Omnibox 转换为命令面板。可以使用模糊匹配搜索命令。
 
 <video width="800" controls>
  <source src="https://storage.googleapis.com/perfetto-misc/finding-tracks.webm" type="video/webm">
+</video>
+
+## 过滤 Track
+
+单击时间轴工具栏中的过滤图标可以过滤时间轴上显示哪些 track。输入逗号分隔的术语按名称过滤 track，或使用下拉框仅显示属于特定进程或线程的 track。
+
+过滤器是非破坏性的：按"清除所有过滤器"可再次显示所有 track。过滤器激活时，过滤图标会变为填充状态。
+
+<video width="800" controls>
+ <source src="https://storage.googleapis.com/perfetto-misc/filtering-tracks.webm" type="video/webm">
 </video>
 
 ## 固定 Track

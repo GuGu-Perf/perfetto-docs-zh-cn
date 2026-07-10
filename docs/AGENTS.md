@@ -2,6 +2,12 @@
 
 本文档提供了在 Perfetto 代码库中开发的基本说明和最佳实践。遵循这些指南以确保一致性和质量。
 
+## 在哪里提交更改
+
+所有 Perfetto 更改必须提交到上游仓库 https://github.com/google/perfetto。
+
+**Google 同事注意：** 针对 google3 中的 `third_party/perfetto/` 或 Android 内部仓库中的 `external/perfetto` 发起的 Pull Request 或变更列表将**不会**被接受。要将更改上游化，请按照 [go/perfetto-github-instructions](http://go/perfetto-github-instructions) 中的说明操作，或联系 perfetto-team@google.com 寻求帮助。
+
 ## 概述
 
 perfetto 仓库包含几个项目。这些是主要项目：
@@ -236,6 +242,8 @@ out/linux_msan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName
 ```
 
 ## 创建拉取请求
+
+**注意：** 这是默认的 PR 工作流。如果用户有自己的创建和管理拉取请求的方式，请遵循该方式并跳过本节。
 
 创建拉取请求时，请遵循以下步骤：
 

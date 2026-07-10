@@ -9,7 +9,7 @@
   - [教程](#)
 
     - [系统 Tracing](getting-started/system-tracing.md) {.tag-android .tag-linux}
-    - [应用内 Tracing](getting-started/in-app-tracing.md) {.tag-cpp}
+    - [应用内 Tracing](getting-started/in-app-tracing.md) {.tag-cpp-rust}
     - [Rust SDK](getting-started/rust-sdk.md) {.tag-cpp-rust}
     - [Memory Profiling](getting-started/memory-profiling.md) {.tag-android .tag-linux}
     - [CPU Profiling](getting-started/cpu-profiling.md) {.tag-android .tag-linux}
@@ -19,12 +19,13 @@
     - [导入其他格式](getting-started/other-formats.md) {.tag-perf}
     - [转换为 Perfetto 格式](getting-started/converting.md) {.tag-perf}
 
-  - [实战指南](#)
+  - [Cookbooks](#)
 
+    - [本地 Android 录制](getting-started/local-android-trace-recording.md) {.tag-android}
     - [分析 Android Trace](getting-started/android-trace-analysis.md) {.tag-android}
+    - [Linux Tracing 配方](getting-started/linux-cookbook.md) {.tag-linux}
     - [周期性 Trace 快照](getting-started/periodic-trace-snapshots.md) {.tag-android .tag-linux}
-    - [开机 Tracing](case-studies/android-boot-tracing.md) {.tag-android}
-    - [OutOfMemoryError](case-studies/android-outofmemoryerror.md) {.tag-android}
+    - [在 Perfetto 中使用 AI](getting-started/using-ai.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
   - [案例研究](#)
 
@@ -40,11 +41,12 @@
 
   - [概念](#)
 
-    - [服务模型](concepts/service-model.md) {.tag-android .tag-linux .tag-cpp}
+    - [服务模型](concepts/service-model.md) {.tag-android .tag-linux .tag-cpp-rust}
     - [缓冲区和数据流](concepts/buffers.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
     - [Trace 配置](concepts/config.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
     - [时钟同步](concepts/clock-sync.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
-    - [并发 Tracing 会话](concepts/concurrent-tracing-sessions.md) {.tag-android .tag-linux .tag-cpp}
+    - [Trace 合并的工作原理](concepts/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [并发 Tracing 会话](concepts/concurrent-tracing-sessions.md) {.tag-android .tag-linux .tag-cpp-rust}
 
   - [采集](#)
 
@@ -53,7 +55,8 @@
     - [符号化与反混淆](learning-more/symbolization.md) {.tag-android .tag-linux}
     - [跨重启 Tracing](data-sources/previous-boot-trace.md) {.tag-android .tag-linux}
     - [自定义 Proto Extensions](instrumentation/extensions.md) {.tag-cpp .tag-android .tag-perf}
-    - [heapprofd API](instrumentation/heapprofd-api.md) {.tag-cpp}
+    - [heapprofd API](instrumentation/heapprofd-api.md) {.tag-cpp-rust}
+    - [多机器记录](learning-more/multi-machine-tracing.md) {.tag-android .tag-linux}
 
   - [数据源](#)
 
@@ -62,6 +65,7 @@
       - [CPU 调度](data-sources/cpu-scheduling.md) {.tag-android .tag-linux}
       - [系统调用](data-sources/syscalls.md) {.tag-android .tag-linux}
       - [CPU 调频](data-sources/cpu-freq.md) {.tag-android .tag-linux}
+      - [内核函数图追踪](data-sources/funcgraph.md) {.tag-android .tag-linux}
       - [GPU](data-sources/gpu.md) {.tag-android .tag-linux .tag-perf}
 
     - [内存](#)
@@ -78,18 +82,21 @@
       - [电池与功耗](data-sources/battery-counters.md) {.tag-android}
       - [Android Game Interventions](data-sources/android-game-intervention-list.md) {.tag-android}
       - [Android Aflags](data-sources/android-aflags.md) {.tag-android}
+      - [屏幕录制](data-sources/video-frames.md) {.tag-android}
 
   - [Tracing SDK](#)
 
-    - [Tracing SDK](instrumentation/tracing-sdk.md) {.tag-cpp}
-    - [Track Event](instrumentation/track-events.md) {.tag-cpp}
+    - [Tracing SDK](instrumentation/tracing-sdk.md) {.tag-cpp-rust}
+    - [Track Event](instrumentation/track-events.md) {.tag-cpp-rust}
 
   - [可视化](#)
 
     - [Perfetto UI](visualization/perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [在 Perfetto UI 中合并 trace](visualization/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [Data Explorer](visualization/data-explorer.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [打开大型 Trace](visualization/large-traces.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [深度链接](visualization/deep-linking-to-perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [嵌入 Perfetto UI](visualization/embedding-the-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [调试 Track](analysis/debug-tracks.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [Heap Dump 浏览器](visualization/heap-dump-explorer.md) {.tag-android}
 
@@ -117,6 +124,7 @@
       - [C++ 库](analysis/trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
       - [Python 库](analysis/trace-processor-python.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
       - [批量 Trace Processor](analysis/batch-trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+      - [使用 Trace Processor 合并 trace](analysis/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [Trace 汇总](analysis/trace-summary.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [从 Perfetto 转换](quickstart/traceconv.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
@@ -148,13 +156,15 @@
 
     - [合成 Track Event](reference/synthetic-track-event.md) {.tag-perf}
     - [内核 Track Event](reference/kernel-track-event.md) {.tag-android .tag-linux}
+    - [Trace Manifest 格式](reference/perfetto-manifest.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [扩展服务器协议](visualization/extension-server-protocol.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [嵌入 API](visualization/embedding-api-reference.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [Android 版本说明](reference/android-version-notes.md) {.tag-android}
 
   - [高级主题](#)
 
     - [分离模式](concepts/detached-mode.md) {.tag-android}
-    - [拦截器](instrumentation/interceptors.md) {.tag-cpp}
+    - [拦截器](instrumentation/interceptors.md) {.tag-cpp-rust}
     - [旧版（v1）指标](analysis/metrics.md) {.tag-android}
     - [多机架构](deployment/multi-machine-architecture.md) {.tag-android .tag-linux}
     - [BigTrace（单机）](deployment/deploying-bigtrace-on-a-single-machine.md) {.tag-android .tag-perf}

@@ -19,6 +19,18 @@
 
 NOTE: 本指南以 ftrace 事件为例进行记录，在 Linux 上通常需要以 root（或具有 `CAP_SYS_ADMIN`）身份运行 Producer 命令。IPC 命令本身不需要 root。
 
+## {#approaches} 选择方案
+
+实时中继（本指南涵盖的内容）是获取跨多台机器的单一 trace 的三种方式之一。哪种方式适合取决于录制时机器之间是否能够互相连接，以及你对生产者的控制程度：
+
+1. **作为单一 trace 录制（本指南）。** 每台 guest 上的 `traced_relay` 将生产者转发到 host 上单一的 `traced`，host 拥有 trace buffer 并在录制时对 guest 进行时钟同步。具有最佳保真度（跨机器时钟同步是实测而非假设），但在录制期间需要机器之间有实时的网络路径。
+
+2. **独立录制并预先分配机器 ID。** 每台机器录制自己的 trace，但 SDK 生产者初始化时具有唯一的 `machine_id`（C++ SDK 中的 `TracingInitArgs::machine_id`，C SDK 中的 `PerfettoProducerBackendInitArgsSetMachineId()`）。后续合并文件无需配置：每个数据包已经表明了它来自哪台机器，trace 通过系统时间进行对齐。参见[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md#no-config)。
+
+3. **独立录制，后续合并。** 每台机器录制普通的 trace；录制时无需协调。机器归属和 trace 中未携带的任何时钟关系在合并时提供，可以通过 [Perfetto UI](/docs/visualization/merging-traces.md) 交互式提供，或通过 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 文件提供。这是最灵活的选择，也是唯一适用于已存在 trace 的方式。
+
+这三种方式在 trace 模型中产生相同的结果：一个 trace、一个 Timeline、每个机器一行 [`machine` 表][machine-table]记录。它们也可以组合使用，例如将来自不同站点的两个中继录制的 trace 合并。
+
 ## 用法
 
 ### 步骤 1：在 host 上启动 `traced`，监听 TCP
@@ -32,6 +44,15 @@ PERFETTO_PRODUCER_SOCK_NAME=0.0.0.0:20001 \
 
 `PERFETTO_PRODUCER_SOCK_NAME` 将 Producer Socket 从默认的 UNIX 路径重新绑定到远程机器可达的 TCP 监听器。`--enable-relay-endpoint` 使该 Socket 除了接受普通本地 Producer 连接外，还接受 `traced_relay` 连接。
 
+对于需要在 TCP 中继 Socket 旁边保留本地 AF_UNIX Producer Socket 的部署 — 以便 host 侧的非特权生产者和远程 `traced_relay` 客户端使用不同的 Socket — 请在 `PERFETTO_PRODUCER_SOCK_NAME` 中同时列出两者，并使用更细粒度的 `--enable-relay-endpoint-on` 形式，它指定应承载 `RelayPort` 的 Socket 名称：
+
+```bash
+PERFETTO_PRODUCER_SOCK_NAME=/tmp/perfetto-producer,0.0.0.0:20001 \
+  tracebox traced --enable-relay-endpoint-on=0.0.0.0:20001
+```
+
+在此形式下，本地 UNIX Socket 继续为非特权生产者提供服务，且永远不会接受中继调用，这使得 `RelayPort` 服务无法从本地应用访问。该标志从已在 `PERFETTO_PRODUCER_SOCK_NAME` 中列出的 Producer Socket 中选择 — 它不会引入新的端点，因此指定的 Socket 必须出现在环境变量中。
+
 保持此进程运行。
 
 ### 步骤 2：在 host 上启动 `traced_probes`
@@ -43,7 +64,7 @@ PERFETTO_PRODUCER_SOCK_NAME=127.0.0.1:20001 \
   sudo -E tracebox traced_probes
 ```
 
-重新绑定 `traced` 监听器的同一环境变量也告诉本地 Producer 去哪里连接——没有它，`traced_probes` 仍会尝试默认的 UNIX Socket 并失败。`sudo -E` 在 ftrace 所需的权限提升过程中保留环境变量。
+重新绑定 `traced` 监听器的同一环境变量也告诉本地 Producer 去哪里连接——没有它，`traced_probes` 仍会尝试默认的 UNIX Socket 并失败。`sudo -E` 在 ftrace 所需的权限提升过程中保留环境变量。（如果你在步骤 1 中使用了 `--enable-relay-endpoint-on` 形式，则省略环境变量：默认的 UNIX Producer Socket 仍在运行，`traced_probes` 将在无需任何额外配置的情况下连接到它。）
 
 ### 步骤 3：在 guest 上启动 `traced_relay`
 
@@ -136,6 +157,7 @@ GROUP BY cpu.machine_id;
 ## 下一步
 
 * [多机器架构](/docs/deployment/multi-machine-architecture.md)——原理：`traced_relay`、机器标识和跨内核时钟同步如何协同工作。
+* [使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)——后期替代方案：当无法使用实时网络路径时，将独立录制的 trace 合并到一个 Timeline 上。
 * [PerfettoSQL：入门](/docs/analysis/perfetto-sql-getting-started.md)——用于按 `machine_id` 跨 `cpu`、`thread` 和 `process` 切片生成的 Trace。
 * [Trace Processor](/docs/analysis/trace-processor.md)——当记录可重复时，将分析嵌入脚本或流水线。
 

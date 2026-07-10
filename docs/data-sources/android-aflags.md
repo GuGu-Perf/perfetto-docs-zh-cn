@@ -32,7 +32,6 @@ ts | package | name | value | permission
 ---|---------|------|-------|-----------
 12345 | perfetto.flags | buffer_clone_preserve_read_iter | enabled | read-only
 12345 | perfetto.flags | save_all_traces_in_bugreport | enabled | read-write
-12345 | perfetto.flags | track_event_incremental_state_clear_not_destroy | enabled | read-only
 12345 | perfetto.flags | use_lockfree_taskrunner | enabled | read-write
 
 以下是查找值被从默认值覆盖的 flag 的示例（有助于调试行为与干净构建不一致的原因）：

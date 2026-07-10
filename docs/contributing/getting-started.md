@@ -8,6 +8,16 @@
 
 **先决条件：** git 和 python3。
 
+在全新的 Debian/Ubuntu 安装（包括 WSL 2）上，还需要一些额外的系统软件包。`tools/install-build-deps` 使用 `curl` 下载工具链，使用 `python3 -m venv` 设置 Python 环境，而封闭的 clang 工具链将使用系统 libc 头文件进行编译：
+
+```sh
+sudo apt install curl python3-venv build-essential
+```
+
+没有 `build-essential`（特别是 `libc6-dev`），构建将失败并显示
+`fatal error: 'features.h' file not found`
+（参见 [#405](https://github.com/google/perfetto/issues/405)）。
+
 ```sh
 # 克隆 Perfetto 仓库并进入目录
 git clone https://github.com/google/perfetto.git

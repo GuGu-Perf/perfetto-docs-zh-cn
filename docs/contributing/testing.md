@@ -122,14 +122,18 @@ TIP: 查询差异测试预期只有单个查询，该查询在整个文件中产
 
 ```python
 class DiffTestBlueprint:
-  trace: Union[Path, Json, Systrace, TextProto]
+  trace: Union[Path, Json, Systrace, TextProto, Zip, Tar]
   query: Union[str, Path, Metric]
-  out: Union[Path, Json, Csv, TextProto]
+  out: Union[Path, Json, Csv, TextProto, ExpectedError]
 ```
 
 _Trace_ 和 _Out_：对于 `Path` 以外的每种类型，对象的内容将被视为文件内容，因此必须遵循相同的规则。
 
+_Zip_ 和 _Tar_：trace 也可以是直接从 dict 内联组装的归档文件，按键为归档中的路径。每个成员可以是 `str`（直接写入，例如 JSON trace 或 systrace）、`TextProto`（序列化为二进制 proto trace）或 `Path`/`DataPath`（外部文件的原始字节）。这是 [trace 合并](/docs/analysis/merging-traces.md) 和 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 处理测试的方式；示例参见 `diff_tests/parser/trace_manifest/`。
+
 _Query_：对于 metric 测试，只需提供 metric 名称。对于查询测试，可以是原始 SQL 语句，例如 `"SELECT * FROM SLICE"`，或 `.sql` 文件的路径。
+
+_ExpectedError_：设置 `out=ExpectedError('error substring')` 会反转测试：当且仅当加载 trace 失败且 `trace_processor_shell` 打印的错误消息包含给定子字符串时，测试才通过。使用此方式测试严格的解析/导入错误，即预期整个 trace 加载会失败的情况。查询仍然是必需的，但永远不会被执行。
 
 NOTE: 运行 `tools/diff_test_trace_processor.py` 之前，需要先构建 `trace_processor_shell` 及相关 proto 描述符。最简单的方法是在首次和每次更改 Trace Processor 代码时运行 `tools/ninja -C <out directory>`。
 

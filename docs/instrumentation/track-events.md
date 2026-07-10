@@ -323,9 +323,7 @@ TRACE_EVENT("cat", "name"[, track][, timestamp]
  });
  ```
 
- |time_in_nanoseconds| 默认应为 uint64_t。要支持自定义时间戳类型，
- 应该定义 |perfetto::TraceTimestampTraits<MyTimestamp>::ConvertTimestampToTraceTimeNs|。
- 有关更多详细信息，请参阅 |ConvertTimestampToTraceTimeNs|。
+   `time_in_nanoseconds` 默认是 trace 时钟上的 `uint64_t`。要传递自己的时间戳类型，或在不同时钟上的时间戳，请参阅[自定义时间戳和时钟](#custom-timestamps-and-clocks)。
 
 3. 任意数量的 debug 注解：
 
@@ -541,6 +539,104 @@ int64_t value = 1234;
 // 稍后，在该时间点发出样本。
 TRACE_COUNTER("category", "MyCounter", timestamp, value);
 ```
+
+### 自定义时间戳和时钟
+
+默认情况下，任何接受时间戳的 `TRACE_EVENT`、`TRACE_COUNTER` 或类似宏都期望一个在 Perfetto 默认 trace 时钟上的 `uint64_t` 纳秒数（与 `perfetto::TrackEvent::GetTraceTimeNs()` 相同的时钟）。有两种自定义方式：
+
+1. 传递你自己的时间戳*类型*（例如像 Chromium 的 `base::TimeTicks` 这样的不透明包装器），而不是原始的 `uint64_t`。
+2. 传递位于与默认 trace 时钟*不同的时钟域*上的时间戳。
+
+两者都由同一个扩展点驱动：`perfetto::TraceTimestampTraits` 模板。通过为你的类型特化它并定义静态的 `ConvertTimestampToTraceTimeNs` 函数，你教会 SDK 如何将你的类型转换为 `perfetto::TraceTimestamp`：
+
+```C++
+namespace perfetto {
+
+// 表示某个时钟上的时间点：一个值加上它所依据的时钟。
+struct TraceTimestamp {
+  uint32_t clock_id;  // 参见 builtin_clock.proto 中的 BuiltinClock。
+  uint64_t value;     // 始终以纳秒为单位。
+};
+
+}  // namespace perfetto
+```
+
+`value` 必须始终以纳秒为单位。`clock_id` 选择时钟域并遵循以下范围（参见 [`clock_snapshot.proto`](/protos/perfetto/trace/clock_snapshot.proto)）：
+
+- `[1, 63]`：内置时钟，参见 [`builtin_clock.proto`](/protos/perfetto/common/builtin_clock.proto)。
+- `[64, 127]`：用户定义的、序列作用域内的时钟。这些仅对发出时钟快照的同一线程（`TraceWriter`）发出的数据包有效。
+- `[128, MAX]`：保留供将来使用。
+
+#### Trace 时钟上的自定义时间戳类型
+
+如果你的时间戳已经在默认 trace 时钟上，并且你只想传递自定义类型，请特化 trait 并将 `perfetto::TrackEvent::GetTraceClockId()` 报告为时钟：
+
+```C++
+// 你的代码库使用的不透明时间戳类型。
+class MyTimestamp {
+ public:
+  explicit MyTimestamp(uint64_t ns) : ns_(ns) {}
+  uint64_t ns() const { return ns_; }
+
+ private:
+  uint64_t ns_;
+};
+
+namespace perfetto {
+
+template <>
+struct TraceTimestampTraits<MyTimestamp> {
+  static TraceTimestamp ConvertTimestampToTraceTimeNs(const MyTimestamp& ts) {
+    return {static_cast<uint32_t>(TrackEvent::GetTraceClockId()), ts.ns()};
+  }
+};
+
+}  // namespace perfetto
+```
+
+有了这个 trait 在作用域内，`MyTimestamp` 可以传递到任何需要时间戳的地方：
+
+```C++
+TRACE_EVENT_INSTANT("category", "Event", MyTimestamp{123456789});
+TRACE_EVENT("category", "Scope", MyTimestamp{123456789});
+```
+
+#### 自定义时钟上的时间戳
+
+如果你的时间戳是依据一个*不是*trace 时钟的时钟（例如硬件计数器，或运行在不同偏移量下的时钟），你必须告诉 Trace Processor 该时钟如何与 trace 时间相关联。通过在发出任何引用它的事件**之前**，发出一个将你的时钟映射到参考时钟的 `ClockSnapshot` 来实现。快照每个时钟（每个 `TraceWriter`）只需要发出一次。
+
+```C++
+// 在序列作用域范围 [64, 127] 中选择一个时钟 ID，或使用内置时钟。
+static constexpr uint32_t kMyClockId = 64;
+
+// 在任何使用 kMyClockId 的事件之前发出时钟快照。
+perfetto::TrackEvent::Trace([](perfetto::TrackEvent::TraceContext ctx) {
+  auto packet = ctx.NewTracePacket();
+  packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+  packet->set_timestamp_clock_id(
+      static_cast<uint32_t>(perfetto::TrackEvent::GetTraceClockId()));
+
+  auto* clock_snapshot = packet->set_clock_snapshot();
+
+  // 参考时钟：默认 trace 时钟及其当前值。
+  auto* reference_clock = clock_snapshot->add_clocks();
+  reference_clock->set_clock_id(
+      static_cast<uint32_t>(perfetto::TrackEvent::GetTraceClockId()));
+  reference_clock->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+
+  // 你的时钟在同一时刻的值。Trace Processor 使用这两个
+  // (clock, timestamp) 对将你的时钟对齐到 trace Timeline 上。
+  auto* my_clock = clock_snapshot->add_clocks();
+  my_clock->set_clock_id(kMyClockId);
+  my_clock->set_timestamp(MyClockNow());
+});
+
+// 从现在开始，事件可以使用 kMyClockId 上的时间戳。
+TRACE_EVENT_INSTANT("category", "Event",
+                    perfetto::TraceTimestamp{kMyClockId, MyClockNow()});
+```
+
+时钟对齐本身由 Trace Processor 离线解析，因此发出的事件只需携带原始的 `(clock_id, value)` 对。如果你将时钟包装在自定义类型中，可以结合两种技术：从你的 `TraceTimestampTraits` 特化中返回 `{kMyClockId, value}`。
 
 ### Interning
 

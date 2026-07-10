@@ -1,22 +1,32 @@
 # 符号化与反混淆
 
-本文档描述如何将采集的 trace 中的原始指令地址和混淆的 Java/Kotlin 名称转换为人类可读的函数名、源代码位置和类/方法名。这适用于任何采集调用栈的 DataSource：native heap profiler、基于 perf 的 CPU profiler、Java heap profiler、ART 方法 Trace 等。
+本文档描述如何将采集的 trace 中的原始指令地址和混淆的 Java/Kotlin 名称转换为人类可读的函数名、源代码位置和类/方法名。
 
-在本指南中，你将学习如何：
-
-- 使用 `traceconv bundle` 一键丰富 trace（推荐）。
-- 使用传统的 `traceconv symbolize` / `traceconv deobfuscate` 命令生成并附加符号/反混淆数据。
-- 了解符号文件在磁盘上的定位方式（Build ID 查找顺序）。
-- 诊断最常见的"could not find library" / "only one frame shown"错误。
-
-本文档中使用的两个定义：
+正确的方法取决于**你拥有哪种类型的 trace**，因此本页按这一问题组织。本文档中使用的两个定义：
 
 - **符号化（Symbolization）**：使用被 profile 进程中加载的未剥离 ELF 二进制文件（或等效的 Breakpad 符号文件），将 native 指令地址映射回函数名、源文件和行号。
 - **反混淆（Deobfuscation）**：使用构建时生成的 `mapping.txt`，将 R8/ProGuard 发出的混淆 Java/Kotlin 名称（例如 `fsd.a`）映射回原始标识符。
 
-只要你仍然有匹配的二进制文件和 mapping 文件，你**不需要**重新采集即可获得符号或反混淆名称。
+## 你需要哪种工作流？ {#which-workflow}
 
-## {#option-1-traceconv-bundle} 方式 1：`traceconv bundle`（推荐）
+根据你的 trace 匹配以下类别之一并点击链接。选择错误的工作流是符号"不起作用"的最常见原因。关键经验法则：**用户空间**符号在主机上离线解析（`traceconv bundle`），而**内核**符号始终在设备上录制时解析（Perfetto 故意不存储绝对内核地址，以避免泄露
+[KASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization)）。
+
+| 你的 trace 包含&hellip; | 示例 | 你需要什么 |
+| --- | --- | --- |
+| **调用栈** | Native heap profiler、`traced_perf` / Linux perf CPU 采样、ART 堆转储 | [符号化与反混淆](#callstacks)。用户空间帧离线解析（`traceconv bundle`）；内核帧在设备上自动符号化。 |
+| **内核 ftrace 事件** | `function_graph` 追踪、`sched_blocked_reason`、kprobes | [录制时 `symbolize_ksyms`](#ftrace)。这些地址**无法**事后符号化。 |
+| **用户空间事件名称** | atrace slice 名称、ART 方法追踪 | 目前[不支持](#userspace-event-names)离线反混淆；在插桩时发出可读名称。 |
+
+## 调用栈：符号化和反混淆 {#callstacks}
+
+这适用于任何采集调用栈的 DataSource：native heap profiler、基于 perf 的 CPU profiler（`traced_perf` 和导入的 Linux `perf` 数据）以及 ART 分配 profiler。
+
+这些数据源记录原始的**用户空间**指令地址（在 Android 上还包括混淆的 Java/Kotlin 帧），你可以在**录制后**使用以下步骤在主机上解析。只要你仍然有匹配的二进制文件和 mapping 文件，你**不需要**重新采集即可获得用户空间符号或反混淆名称。
+
+调用栈还可能包含**内核**帧，它们的处理方式不同；请参阅本节末尾的[调用栈中的内核帧](#callstack-kernel-frames)。
+
+### {#option-1-traceconv-bundle} 方式 1：`traceconv bundle`（推荐）
 
 `traceconv bundle` 是一个一键命令，它接受一个 trace 并生成一个**丰富化的 trace**：原始 trace 加上分析它所需的所有符号和反混淆数据，打包在单个文件中。
 
@@ -146,9 +156,9 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 
 如果你需要此功能，请在 [GitHub issue #5534](https://github.com/google/perfetto/issues/5534) 上 +1，以便我们评估需求并确定优先级。
 
-## 故障排除
+### 故障排除
 
-### 找不到库
+#### 找不到库
 
 在对 Profile 进行符号化时，你可能会看到如下消息：
 
@@ -160,3 +170,54 @@ Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so
 检查 `somelib.so` 是否存在于某个搜索路径下（`--symbol-paths`、`PERFETTO_BINARY_PATH` 或自动发现的位置）。然后使用 `readelf -n /path/to/somelib.so` 比较磁盘上的 Build ID 与消息中报告的 Build ID。如果它们不匹配，磁盘上的副本是不同于设备上的构建，无法使用。
 
 使用 `--verbose` 重新运行 `traceconv bundle` 会打印尝试的每个路径，这通常可以清楚地表明文件是完全缺失还是找到了但 Build ID 不匹配。
+
+### 调用栈中的内核帧 {#callstack-kernel-frames}
+
+采样的调用栈可能包含**内核**帧（例如使用 `callstack_sampling { kernel_frames: true }` 进行 perf 采样）。与上述用户空间帧不同，这些帧在**设备上录制时**自动从 `/proc/kallsyms` 符号化 &mdash; 本节中的离线工具不会处理它们。
+
+为了使内核帧具有名称，录制必须能够读取 `/proc/kallsyms`，这需要以 root 身份运行或降低 `kptr_restrict`：
+
+```bash
+echo 0 | sudo tee /proc/sys/kernel/kptr_restrict
+```
+
+如果内核帧显示为十六进制地址，这是录制时的权限问题，你必须重新录制。这与下面的[内核 ftrace 事件](#ftrace)具有相同的 KASLR 限制，但请注意两者使用不同的机制：调用栈内核帧**不**使用 `symbolize_ksyms` ftrace 选项 &mdash; 该标志仅影响 ftrace 事件。
+
+## 内核 ftrace 事件：`symbolize_ksyms` {#ftrace}
+
+如果你正在进行**系统 Tracing** 并在预期出现内核函数名的地方看到原始十六进制地址 &mdash; 例如在
+[函数图 Tracing](/docs/data-sources/funcgraph.md) 中，在不可中断休眠
+[调度阻塞](/docs/case-studies/scheduling-blockages.md) 的 `blocked_function` 字段中，或在 kprobe 事件中 &mdash; 修复方法**不是**离线符号化。
+
+这些内核地址通过在 ftrace 配置中启用 `symbolize_ksyms` 在**录制时**解析：
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            symbolize_ksyms: true
+            # ... 你的 ftrace_events / function_graph 配置 ...
+        }
+    }
+}
+```
+
+这会读取设备上的 `/proc/kallsyms`，并将（偏移后的）符号表嵌入 trace 中。它要求 `traced_probes` 以 root 身份运行或手动降低 `kptr_restrict`。
+
+WARNING: `traceconv bundle` 和上述离线符号器**无法**恢复内核符号。Perfetto 故意不在 trace 中存储绝对内核地址，因为这样做会破坏
+[KASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization) 并泄露内核内存布局。符号名称在设备上进行了偏移处理，因此可以在不泄露绝对地址的情况下工作。如果你忘记设置 `symbolize_ksyms`，必须重新录制。
+
+此标志仅适用于 ftrace **事件**。在采样调用栈中捕获的内核帧另有处理方式；参见[调用栈中的内核帧](#callstack-kernel-frames)。
+
+## 用户空间事件名称：atrace 和 ART 方法追踪 {#userspace-event-names}
+
+某些数据源记录的是人类可读的**名称字符串**而非地址或栈帧。当这些字符串被混淆时（例如 R8 混淆的类名），**没有离线机制可以反混淆它们** &mdash; 名称必须在插桩时以可读形式发出。这与[调用栈部分](#callstacks)中的 Java/Kotlin **栈帧**反混淆不同，后者仅适用于堆转储和采样调用栈。
+
+目前影响两种情况：
+
+- **atrace / 用户空间 slice 名称**：[atrace](/docs/data-sources/atrace.md) slice 名称（以及出现在 `TRACE_EVENT` 字面值中的其他字符串）会逐字记录。没有事后映射步骤。
+- **ART 方法追踪**：ART 方法追踪捕获的方法名称不会经过 ProGuard/R8 反混淆路径，因此混淆的构建将显示混淆的方法名称。
+
+基于 `mapping.txt` 的反混淆路径原则上可行但目前尚未实现。相关支持正在讨论中；参见
+[GitHub issue #6391](https://github.com/google/perfetto/issues/6391) 了解背景并表达兴趣。

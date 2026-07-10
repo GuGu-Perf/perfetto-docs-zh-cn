@@ -4,7 +4,7 @@ NOTE: **heapprofd 需要 Android 10 或更高版本**
 
 Heapprofd 是一个跟踪 Android 进程在给定时间范围内的堆分配和释放的工具。生成的 profile 可用于将内存使用归因于特定的调用堆栈，支持混合的 native 和 java 代码。该工具可供 Android 平台和应用程序开发人员用于调查内存问题。
 
-默认情况下，该工具记录使用 malloc/free（或 new/delete）进行的 native 分配和释放。它可以配置为记录 java 堆内存分配：请参见下面的 [Java 堆采样](#java-heap-sampling)。
+默认情况下，该工具记录使用 malloc/free（或 new/delete）进行的 native 分配和释放。它可以配置为记录 java 堆内存分配：请参见下面的 [ART allocation profiling](#art-allocation-profiling)。
 
 在调试 Android 构建上，你可以 profile 所有应用程序和大多数系统服务。在"user"构建上，你只能对具有 debuggable 或 profileable 清单标志的应用程序使用它。
 
@@ -167,19 +167,19 @@ https://cs.android.com/android/platform/superproject/main/+/main:system/sepolicy
 </manifest>
 ```
 
-## {#java-heap-sampling} Java Allocation Profiling (Churn Profiling)
+## {#art-allocation-profiling} ART Allocation Profiling (Churn Profiling)
 
-NOTE: **Java 分配 profiling 在 Android 12 或更高版本上可用**
+NOTE: **ART allocation profiling 在 Android 12 或更高版本上可用**
 
-NOTE: **Java 分配 profiling 不得与 [Heap dumps](/docs/data-sources/java-heap-profiler.md) 混淆**
+NOTE: **ART allocation profiling 不得与 [Heap dumps](/docs/data-sources/java-heap-profiler.md) 混淆**
 
 Heapprofd 可以配置为跟踪 Java 分配而不是 native 分配。
 * 通过在 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中添加 `heaps: "com.android.art"`。
 * 通过向 [`tools/heap_profile android`](/docs/reference/heap_profile-cli) 的调用添加 `--heaps com.android.art`。
 
-与 java heap dumps（显示活动对象快照的保留图）不同，但与 native heap profiles 类似，java 堆样本显示整个 profile 随时间分配的调用堆栈。
+与 ART heap dumps（显示活动对象快照的保留图）不同，但与 native heap profiles 类似，ART allocation samples 显示整个 profile 随时间分配的调用堆栈。
 
-Java 堆样本仅显示创建对象时的调用堆栈，而不显示删除或垃圾回收对象时的调用堆栈。
+ART allocation samples 仅显示创建对象时的调用堆栈，而不显示删除或垃圾回收对象时的调用堆栈。
 
 ![javaheapsamples](/docs/images/java-heap-samples.png)
 
@@ -188,7 +188,7 @@ Java 堆样本仅显示创建对象时的调用堆栈，而不显示删除或垃
 * **总分配大小**：在此调用堆栈上从 profiling 开始到此点分配的字节数。字节可能已被释放或未释放，工具不跟踪该内容。
 * **总分配计数**：在此调用堆栈上从 profiling 开始到此点分配的对象数。对象可能已被释放或未释放，工具不跟踪该内容。
 
-Java 堆样本对于理解内存流变很有用，显示代码哪些部分的大分配归因于的调用堆栈以及来自 ART 运行时的分配类型。
+ART allocation samples 对于理解内存流变很有用，显示代码哪些部分的大分配归因于的调用堆栈以及来自 ART 运行时的分配类型。
 
 ## DEDUPED 帧
 

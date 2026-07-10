@@ -6,4 +6,4 @@
 # 更新方式:
 #   bash .project/workwork.sh sync-update
 
-9b50320f 2026-05-25 22:21:41 +0100 docs: document GPU UI plugins and add example query (#6028)
+371815d1 2026-07-10 14:35:47 +0100 docs: merge Android boot & OOM pages into recording cookbook (#6661)

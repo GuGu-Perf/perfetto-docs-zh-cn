@@ -2,6 +2,47 @@
 
 本页将带你了解一些真实世界的示例，介绍如何使用 SQL 和 Perfetto UI 的更高级功能来分析问题。
 
+## 使用 AI 进行 trace 分析 {#using-ai}
+
+NOTE: **Googlers**：请使用 [go/perfetto-ai-skills](http://go/perfetto-ai-skills)
+和
+[go/perfetto-ai-skills-android-memory](http://go/perfetto-ai-skills-android-memory)
+替代公开的设置说明。
+
+安装了 Perfetto skill 的 AI 编程助手（[设置说明](using-ai.md)）能够远超本页中的示例：它可以从连接的设备录制 trace，用自然语言回答关于 CPU、调度和启动的即兴问题，以及按照专用工作流进行内存调试。
+
+### 即兴问题
+
+```
+> 找出 trace.pftrace 中 com.example.myapp 的不可中断休眠的主要原因。
+
+> 此 trace 中哪个进程的峰值内存使用最高？
+```
+
+### 内存调试
+
+针对内存泄漏、OOM、内存抖动和分配热点路径的引导式工作流。
+
+```
+> 调查 /tmp/heap_dump.pftrace 中的对象保留和潜在泄漏。
+
+> 分析 /tmp/native_heap.pftrace 中的原生堆分配并识别内存增长热点路径。
+
+> 从已连接设备录制 com.example.app 的 Java 堆转储，并找出是什么在保持内存存活。
+```
+
+助手会在需要时录制 trace，运行经过测试的 SQL 来提取支配路径、原生调用栈或分配摘要，然后在你的工作区中搜索可疑的类并指出确切的文件和行来修复。
+
+### 批量聚类（大量 trace）
+
+对于设备群中的 OOM 激增，聚类工作流会在批量堆转储中找到共同的泄漏特征。
+
+```
+> 这里有 40 个 ~/dumps/ 中 com.example.app 的堆转储。聚类内存归因路径并确定共同的根因。
+```
+
+助手从每个 trace 中提取支配路径，将其归一化为规范类链，对其进行聚类（TF-IDF + K-Means），并折叠包装链，从而获得简短的根因列表而不是每个转储的噪音。
+
 ## 查找 slices
 
 演示内容：

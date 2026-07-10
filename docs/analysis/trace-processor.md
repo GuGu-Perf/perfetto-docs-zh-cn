@@ -69,6 +69,8 @@ ts                   dur                  name
 ...
 ```
 
+提示：trace 文件也可以是一个包含多个 trace 的 ZIP 或 TAR 归档文件：它们会被合并到一条时间线上。参见[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)。
+
 或者，要查看所有 Counter 的值：
 
 ```sql

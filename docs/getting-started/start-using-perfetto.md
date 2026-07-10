@@ -98,6 +98,8 @@ TAB: AOSP/OEM/合作伙伴平台开发者
     - **教程**：[可视化 Android bugreport](/docs/getting-started/other-formats.md#bugreport-format)
   - 你可以可视化 `adb logcat` 输出以及 trace 数据。Perfetto 也可以配置为将 logcat 直接包含到新的 trace 中。
     - **教程**：[可视化 adb logcat](/docs/getting-started/other-formats.md#logcat-format)
+  - 多个相关的 trace 文件（来自两个设备，或应用 trace 与系统 trace 并排）可以作为合并后的 trace 在共享 Timeline 上一起打开。
+    - **教程**：[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)
 
 ### {#android-optimizing-performance} 优化性能和解决延迟问题
 
@@ -135,8 +137,8 @@ Perfetto 还提供了专门用于调查和归因内存使用的工具：
 
 - **如何找出哪些 Java/Kotlin 对象使用最多内存或识别潜在泄漏？** Java/Kotlin 堆转储提供了特定时间点托管堆上所有对象的快照。你可以分析它来查看对象计数、大小和保留路径（什么使对象保持存活），帮助你找到内存泄漏或意外大的对象。
 
-  - **教程**：[录制内存 profile（Java/JVM 堆转储）](/docs/getting-started/memory-profiling.md)
-  - **参考**：[Java 堆转储数据源](/docs/data-sources/java-heap-profiler.md)
+  - **教程**：[录制内存 profile（ART 堆转储）](/docs/getting-started/memory-profiling.md)
+  - **参考**：[ART 堆转储数据源](/docs/data-sources/java-heap-profiler.md)
 
 - **我的代码中原生（C/C++）内存分配在哪里？** 对于原生代码，heap profiling 跟踪 `malloc` 和 `free` 调用（或 C++ 中的 `new`/`delete`），将分配归因于特定的函数调用栈。这有助于识别高原生内存使用或频繁分配和释放的区域。
 

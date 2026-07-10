@@ -20,7 +20,7 @@ Perfetto 从设计之初就作为 Android 操作系统和 Chrome 浏览器的默
 
 - **Android 系统级 trace**，用于调试和定位 Android 平台和 Android 应用中的功能和性能问题。Perfetto 适用于调试例如启动缓慢、丢帧（jank）、动画故障、低内存终止、应用无响应（ANR）和一般的异常行为。
 
-- **Android 上的 Java 堆转储和原生 heap profile**，用于分别调试和定位 Android 平台和 Android 应用中 Java/Kotlin 代码和 C++ 代码的高内存使用问题。
+- **Android 上的 ART 堆转储和原生 heap profile**，用于分别调试和定位 Android 平台和 Android 应用中 Java/Kotlin 代码和 C++ 代码的高内存使用问题。
 - **Android 上的调用栈采样 profiling**，用于调试和定位 Android 平台和 Android 应用中 C++/Java/Kotlin 代码的高 CPU 使用问题。
 - **Chrome 浏览器 trace**，用于调试和定位浏览器、V8、Blink 中的问题，在高级用例中，还可以定位网站本身的问题。
 

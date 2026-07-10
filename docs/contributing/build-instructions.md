@@ -27,6 +27,12 @@ git clone https://github.com/google/perfetto
 tools/install-build-deps [--android] [--ui] [--linux-arm] [--rust]
 ```
 
+在全新的 Debian/Ubuntu 安装（包括 WSL 2）上，首先安装以下系统软件包。`install-build-deps` 使用 `curl` 和 `python3 -m venv`，而封闭的 clang 工具链将使用 `build-essential` 提供的系统 libc 头文件进行编译（没有它们，构建将失败并显示 `fatal error: 'features.h' file not found`，参见 [#405](https://github.com/google/perfetto/issues/405)）：
+
+```bash
+sudo apt install curl python3-venv build-essential
+```
+
 `--android` 将拉取 Android NDK、模拟器和构建 `target_os = "android"` 所需的其他依赖项。
 
 `--ui` 将拉取构建 Web UI 所需的 NodeJS 和所有 NPM 模块。有关更多信息，请参阅下方的 [UI 开发](/docs/contributing/ui-getting-started.md) 部分。
@@ -148,7 +154,7 @@ Windows 上支持以下目标：
  Googlers：有关详细信息，请参阅 [go/perfetto-win](http://go/perfetto-win)。
 - `perfetto_unittests` / `perfetto_integrationtests`：虽然它们仅支持 Windows 上支持的代码子集（例如没有 ftrace）。
 
-不可能从 Windows 构建 Perfetto UI。
+无法从 Windows 原生构建 Perfetto UI。但是，你可以使用 [WSL 2](https://learn.microsoft.com/zh-cn/windows/wsl/about) 从 Windows 构建，在 WSL 环境中按照 Linux 说明操作即可。
 
 #### 先决条件
 

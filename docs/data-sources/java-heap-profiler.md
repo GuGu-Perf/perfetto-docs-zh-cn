@@ -8,15 +8,15 @@ NOTE: Perfetto ART Heap Dumps 与标准 JVM / HPROF heap dumps 不同。与 HPRO
 
 与 [heap profiles](native-heap-profiler.md) 相反，heap dumps 报告 Java 对象的完整保留图但不报告调用堆栈。在 heap dump 中记录的信息的形式为：_对象 X 通过其名为 Z 的类成员保留对象 Y，该对象 Y 大小为 N 字节_。
 
-Heap dumps 不得与 [Java Allocation Profiling](native-heap-profiler.md#java-heap-sampling) 采集的 profile 混淆，后者记录分配事件/调用堆栈。
+Heap dumps 不得与 [ART Allocation Profiling](native-heap-profiler.md#art-allocation-profiling) 采集的 profile 混淆，后者记录分配事件/调用堆栈。
 
 ## UI
 
 在单击进程的 _"Heap Profile"_ track 中的菱形后，堆图转储在 UI 中显示为火焰图。每个菱形对应一个堆转储。
 
-![进程 track 中的 Java 堆转储](/docs/images/profile-diamond.png)
+![进程 track 中的 ART 堆转储](/docs/images/profile-diamond.png)
 
-![Java 堆转储的火焰图](/docs/images/java-heap-graph.png)
+![ART 堆转储的火焰图](/docs/images/java-heap-graph.png)
 
 某些对象的 native 大小在火焰图中表示为额外的子节点，前缀为 "[native]"。额外节点算作一个额外对象。这仅在 Android 13 或更高版本上可用。
 
@@ -72,7 +72,7 @@ FROM android_heap_graph_class_summary_tree;
 
 ## TraceConfig
 
-Java 堆转储数据源通过 trace 配置的 [JavaHprofConfig](/docs/reference/trace-config-proto.autogen#JavaHprofConfig) 部分进行配置。
+ART heap dump 数据源通过 trace 配置的 [JavaHprofConfig](/docs/reference/trace-config-proto.autogen#JavaHprofConfig) 部分进行配置。
 
 ```protobuf
 data_sources {

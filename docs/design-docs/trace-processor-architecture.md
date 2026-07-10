@@ -85,7 +85,7 @@ context()->reader_registry->RegisterTraceReader<SystraceTraceParser>(kSystraceTr
 - JSON：带有状态机的增量 JSON 解析
 - Proto：带有基于字段的路由的模块化数据包处理
 - Systrace：逐行文本处理
-- 档案(ZIP/TAR)：提取并委托的容器格式
+- 档案(ZIP/TAR)：提取并委托的容器格式。成员按固定优先级顺序处理（首先处理 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 成员，该成员配置跨文件[合并](/docs/concepts/merging-traces.md)：机器归属和时钟关系）
 
 ### 2. TraceSorter：：Stream<T> 模式
 每种格式定义自己的事件类型并创建类型化流：

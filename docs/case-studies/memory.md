@@ -5,7 +5,7 @@
 - 使用 `dumpsys meminfo` 获取内存使用的高级概览。
 - 理解 Linux 内存管理的基础知识。
 - 使用 Perfetto 调查随时间变化的内存使用情况。
-- 分析 native heap profile 和 Java heap dump 以识别内存泄漏。
+- 分析 native heap profile 和 ART heap dump 以识别内存泄漏。
 
 ## 前置条件
 
@@ -357,7 +357,7 @@ Wrote profile to /tmp/tmpup3QrQprofile
 This can be viewed using https://ui.perfetto.dev.
 ```
 
-我们还可以在分配开始因 [java.lang.OutOfMemoryError](/docs/case-studies/android-outofmemoryerror.md) 而失败时收集对象图的快照。
+我们还可以在分配开始因 [java.lang.OutOfMemoryError](/docs/getting-started/local-android-trace-recording.md#oom-heap-dump) 而失败时收集对象图的快照。
 
 ### 查看数据
 

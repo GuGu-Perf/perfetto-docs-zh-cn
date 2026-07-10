@@ -84,6 +84,25 @@ int main(int argc, char** argv) {
 
 现在你已经准备好使用 Trace 事件为你的应用程序进行插桩了。
 
+## 可选功能
+
+整合后的 SDK 附带两个可选功能。它们默认关闭；通过在 SDK 的 include 路径下放入名为 `perfetto_sdk_config.h` 的头文件并在其中定义相应的宏来启用：
+
+```C++
+// perfetto_sdk_config.h
+#define PERFETTO_SDK_ENABLE_ZLIB 1   // 可选
+#define PERFETTO_SDK_ENABLE_RE2  1   // 可选
+```
+
+`build_config.h` 通过 `__has_include` 检测该文件并从中读取宏定义；无需 cflag 管道配置。这两个功能相互独立 — 可以设置其中之一、两者都设置或都不设置。
+
+| 宏 | 链接 | 系统头文件 | 功能说明 |
+| --- | --- | --- | --- |
+| `PERFETTO_SDK_ENABLE_ZLIB` | `-lz` | `zlib.h` | 在进程内后端上遵循 `TraceConfig.compression_type = COMPRESSION_TYPE_DEFLATE`，使得通过 `TracingSession::Setup(cfg, fd)` 写入的 `.pftrace` 文件经过 zlib 压缩。没有该宏时，该字段会被静默忽略。 |
+| `PERFETTO_SDK_ENABLE_RE2` | `-lre2` | `re2/re2.h` | 将 `base::Regex` 使用的默认 `std::regex` 后端替换为 [RE2](https://github.com/google/re2)，后者在处理大规模输入时显著更快（例如用于 `TraceConfig` 的数据源/生产者名称过滤）。 |
+
+启用时，相应的系统头文件也必须从 include 路径可达；在 Debian/Ubuntu 上为 `zlib1g-dev` / `libre2-dev`，在 Fedora 上为 `zlib-devel` / `re2-devel`。
+
 ## 自定义数据源 vs Track 事件
 
 SDK 提供两个抽象层来注入tracing 数据，它们彼此构建，在代码复杂度和表现力之间进行权衡：[Track 事件](#track-events）和[自定义数据源](#custom-data-sources)。
@@ -211,6 +230,35 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 });
 ```
 
+#### 报告多个相似事物（例如每个 GPU 一个） {#reporting-many-similar-things}
+
+数据源的标识是其 C++ 类型，而不是传递给 `Register()` 的名称。对同一个类调用两次 `Register()`（即使使用不同名称）不会创建第二个数据源；额外的注册会被忽略（并记录日志）。
+
+```C++
+// 不可行：相同的 C++ 类型，因此第二个 Register() 被丢弃，
+// 选择了 "com.example.gpu1" 的会话永远不会启动。
+GpuDataSource::Register(MakeDescriptor("com.example.gpu0"));
+GpuDataSource::Register(MakeDescriptor("com.example.gpu1"));
+```
+
+要报告同一事物的多个实例（例如每个 GPU 一组计数器）：
+
+1. **推荐：注册一次，添加维度。** 从单个数据源为每个实体发出一个数据包流，使用其各自的 [track](/docs/instrumentation/track-events.md) 或 id 字段标记每个实体，并从 `OnSetup()` 接收到的 `DataSourceConfig` 中选择要录制的实例。这种方式可以扩展到运行时发现的任意数量。
+
+2. **为每个实例使用不同的 C++ 类型。** 每个模板实例化都是一个不同的类型，因此也是一个不同的数据源。使用非类型模板参数可以避免任何标记样板代码：
+
+   ```C++
+   template <int GpuIndex>
+   class GpuDataSource : public perfetto::DataSource<GpuDataSource<GpuIndex>> {
+     ...
+   };
+
+   GpuDataSource<0>::Register(MakeDescriptor("com.example.gpu0"));
+   GpuDataSource<1>::Register(MakeDescriptor("com.example.gpu1"));
+   ```
+
+   这些类型必须在编译时已知，并且每个都会占用进程中所有数据源共享的 `kMaxDataSources`（=32）槽位中的一个。
+
 如果有必要，`Trace()` 方法可以访问自定义数据源状态（上面示例中的 `my_custom_state`）。这样做会获取互斥锁以确保在另一个线程上调用 `Trace()` 方法时不会销毁数据源（例如，因为停止了追踪）。例如：
 
 ```C++
@@ -235,6 +283,8 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 主要优点是，通过完全在进程内运行，它不需要任何特殊的操作系统特权，被 profile 进程可以控制追踪会话的生命周期。
 
 此模式在 Android、Linux、MacOS 和 Windows 上受支持。
+
+TIP: 当多个进程内 trace（例如来自分布式系统中不同机器的）后续需要[合并为一个 trace](/docs/analysis/merging-traces.md) 时，在初始化 SDK 时为每台机器设置唯一的 `TracingInitArgs.machine_id`：每个数据包都会标记其来源，合并后的 trace 无需进一步配置即可保持每台机器的数据分离。
 
 ### 系统模式
 

@@ -2,7 +2,7 @@
 
 在本指南中，你将学习如何：
 
-- 使用 Perfetto 记录 native 和 Java heap profiles。
+- 使用 Perfetto 记录 native 和 ART（Java/Kotlin）heap profiles。
 - 在 Perfetto UI 中可视化和 profile heap profiles。
 - 了解不同的 memory profiling 模式以及何时使用它们。
 

@@ -51,7 +51,7 @@ TraceBuffer 中的一切都由该 key 标识。
 - TraceBuffer 只输出完全形成的 packets，这些是有效的
   protobuf 编码的 TracePacket 消息。缺少 fragments、缺少 patches 或无效的 packets 将被丢弃。
 - 数据丢失总是通过
-  `TracePacket.previous_packet_dropped` 标志进行 tracking 和报告。
+  `TracePacket.previous_packet_dropped` 字段（一个 `DataLossReason` 位掩码：非零表示已丢弃，TraceBufferV2 设置各位来标识丢弃原因）进行 tracking 和报告。
 - TraceBuffer 非常努力地避免_隐藏_有效数据：缺少 fragment
   或其他类似的协议违规不应使序列的其余数据无效。
 - 序列的 packets 总是以 FIFO 顺序读回，与写入顺序相同。

@@ -108,6 +108,8 @@ python traceconv MODE [OPTIONS] [input_file] [output_file]
 
 NOTE: `bundle` 需要输入和输出的真实文件路径 — 它不接受 stdin/stdout。
 
+输出的 TAR 是标准的[trace archive](/docs/getting-started/other-formats.md#trace-archives)：UI 和 Trace Processor 可以直接打开它，同样的机制也支持[trace 合并](/docs/analysis/merging-traces.md)。
+
 ### `symbolize` / `deobfuscate`（高级）
 
 用于无法使用 `bundle` 的流水线的底层构建块。每个都将 Packet 流（符号或反混淆映射）发送到单独的输出文件：

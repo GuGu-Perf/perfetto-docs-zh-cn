@@ -141,8 +141,8 @@ ftrace_cpu_overrun_e 7 data_loss trace 0
 在 trace proto 级别，此路径中的丢失记录为：
 
 - 在 [`TraceStats.BufferStats.trace_writer_packet_loss`][BufferStats]中。
-- 在 [`TracePacket.previous_packet_dropped`][TracePacket]中。
- 注意:每个数据源发出的第一个数据包也被标记为 `previous_packet_dropped=true`。这是因为服务无法判断那是否是真正的第一个数据包，或者在此之前的所有内容都已丢失。
+- 在 [`TracePacket.previous_packet_dropped`][TracePacket]中。这是一个 `DataLossReason` 位掩码：非零值意味着该序列上之前的数据包被丢弃，并且（对于 TraceBufferV2）各位标识了丢弃原因。
+  注意:每个数据源发出的第一个数据包也被标记为已丢弃（值为 1）。这是因为服务无法判断那是否是真正的第一个数据包，或者在此之前的所有内容都已丢失。
 
 在 TraceProcessor SQL 级别，此数据在 `stats` 表中可用：
 ```sql

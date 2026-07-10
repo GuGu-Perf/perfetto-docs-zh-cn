@@ -9,6 +9,14 @@
 tools/install-build-deps --ui
 ```
 
+在全新的 Debian/Ubuntu 安装（包括 WSL 2）上，首先安装构建所依赖的系统软件包：
+
+```bash
+sudo apt install curl python3-venv build-essential
+```
+
+无法从 Windows 原生构建 UI，但可以通过 [WSL 2](https://learn.microsoft.com/zh-cn/windows/wsl/about) 从 Windows 构建——在 WSL 环境中按照 Linux 说明操作即可。
+
 ### 构建 UI
 
 ```bash
