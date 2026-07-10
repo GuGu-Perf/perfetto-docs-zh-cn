@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfetto UI Review 反模式 - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="Perfetto UI Review 反模式 - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/ui-review-antipatterns">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/rust-sdk.html">Rust SDK</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">Cookbooks</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/local-android-trace-recording.html">本地 Android 录制</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/linux-cookbook.html">Linux Tracing 配方</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">周期性 Trace 快照</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/using-ai.html">在 Perfetto 中使用 AI</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/concepts/merging-traces.html">Trace 合并的工作原理</a></li>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/multi-machine-tracing.html">多机器记录</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/funcgraph.html">内核函数图追踪</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/video-frames.html">屏幕录制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/merging-traces.html">在 Perfetto UI 中合并 trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/data-explorer.html">Data Explorer</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-the-ui.html">嵌入 Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/merging-traces.html">使用 Trace Processor 合并 trace</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-manifest.html">Trace Manifest 格式</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-api-reference.html">嵌入 API</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/deployment/multi-machine-architecture.html">多机架构</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/developer-tools.html">开发者工具</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="doc" data-md-file="/docs/ui-review-antipatterns">
+    <h1>Perfetto UI Review 反模式</h1><p>这是一份 UI 反模式及推荐替代方案的规范目录，<strong>源自真实的 code-review
+反馈</strong>——维护者在对其他贡献者提交的 <code>ui/src/</code> pull request 中反复给出的意见。</p>
+<p><strong>目的：</strong> 供 AI agent（或人类）在 <em>code-review 或编写代码时</em> 阅读，
+以便我们预先避免跨贡献反复出现的错误和无效假设，而不是在每个 PR 中
+反复讨论。</p>
+<p>如何使用：</p>
+<ul>
+<li>每个条目格式为 <strong>❌ 反模式 → ✅ 修复</strong>，附带一行 <em>原因</em> 以及一个或多个
+可供查阅完整上下文的历史 PR 编号（<code>#NNNN</code>）。</li>
+<li>🔁 标记表示跨<strong>多个</strong> PR 反复出现的规则——应给予最大权重；
+这些是维护者最强烈、最反复表达的偏好。</li>
+<li>本文补充（并深入于）<a href="/perfetto-docs-zh-cn/docs/AGENTS-ui.html"><code>AGENTS-ui.md</code></a> 中的
+&quot;Code Review Pet Peeves&quot; 部分。当两者重叠时，两者都是权威的。</li>
+</ul>
+<blockquote>
+<p>元原则，几乎贯穿以下所有内容：<strong>不要过度工程化，重用已有的东西，
+状态只存一处，让失败可见。</strong>有疑问时，选择更简单、更小、更无聊的变更。</p>
+</blockquote>
+<hr>
+<h2><a name="1-mithril-" class="anchor" href="#1-mithril-"></a>1. Mithril 与渲染</h2><ul>
+<li><p>🔁 <strong>❌ 手动调用 <code>m.redraw()</code> / <code>raf.scheduleFullRedraw()</code> → ✅ 依赖自动
+重绘。</strong>Mithril 在 (1) 它注册的 DOM 事件处理器和 (2) trace-processor
+查询完成后会自动安排重绘。手动重绘仅在真正带外异步
+（<code>setTimeout</code>、<code>fetch</code>、<code>yield</code>）时需要。提交代码中的<em>绝大多数</em>手动
+重绘都是不必要的——删除它们。如果你认为需要手动重绘，首先找出 UI 为何
+不更新；这通常指向别处的真正 bug，而非缺少重绘。当确实需要时，在事件
+发生点调用 <code>m.redraw()</code>（它不依赖于 <code>app</code>），而非
+<code>app.raf.scheduleFullRedraw()</code>。
+<em>(#4769, #4464, #4357, #4226, #3999, #3693, #3124, #2615, #1097, #5595, #5436, #5284, #5243)</em></p>
+</li>
+<li><p>🔁 <strong>❌ 将 <code>attrs</code>、设置或查询结果缓存到私有成员字段中 → ✅ 每次新鲜
+读取。</strong>Mithril 将 <code>attrs</code> 传递给 <code>oncreate</code>/<code>onupdate</code>/<code>view</code>；从那里
+使用它们。设置存储已具有缓存支持——每次访问都读值，确保用户更改时
+不会过时。展示组件必须容忍其数据源每帧都可能变化。
+<em>(#3857, #6031, #4737)</em></p>
+</li>
+<li><p><strong>❌ <code>requestAnimationFrame</code> / <code>setTimeout</code> 时机 hack，希望 DOM 在&quot;下一帧&quot;
+就绪 → ✅ 使用恰当的渲染后回调。</strong>用 rAF 规避 <code>ResizeObserver</code> 循环警告
+是代码异味——重构为正确的渲染后回调。
+<em>(#5595, #5243, #4226, #3780, #3522, #2486)</em></p>
+</li>
+</ul>
+<hr>
+<h2><a name="2-" class="anchor" href="#2-"></a>2. 状态管理</h2><ul>
+<li><p>🔁 <strong>❌ 将异步数据加载到组件的本地状态中 → ✅ 使用 <code>AsyncLimiter</code> 或
+<code>AsyncContent</code> 模式。</strong>加载 trace 处理器查询结果、网络 fetches 或慢速
+wasm 调用到本地状态会导致竞态条件（陈旧数据覆盖新鲜数据）。改用
+<code>AsyncLimiter</code>（在 <code>oncreate</code> 中排队，在 <code>onremove</code> 中取消，每次 render
+渲染陈旧数据时使用 <code>retainOn</code>），或在
+<code>TrackEventDetailsPanel.load()</code> 中加载，它自动取消过期的加载。使用
+<code>AsyncLimiter.isRunning</code> 而非自定义标志来守卫并发。（注意：<code>isFresh</code>
+始终为 <code>true</code>，除非你使用了 <code>retainOn</code> 键。）
+<em>(#4464, #4582, #4737, #5436, #4192)</em></p>
+</li>
+<li><p><strong>❌ 维护需要手动保持同步的派生状态 → ✅ 从单一数据源派生。</strong>不要通过
+匹配选项来反向推导状态——持久化实际选择（例如 preset <em>名称</em>）并重新
+应用它。为异构项使用统一的 selection 列表，而非平行的 selection 状态。
+<em>(#3693, #3780, #3999)</em></p>
+</li>
+<li><p>🔁 <strong>❌ 将 UI 时间戳/持续时间存储为 JS <code>number</code> → ✅ 使用 <code>bigint</code>。</strong>JS
+number 是 double，在 trace time 的大动态范围内会丢失精度。将 SQL 时间列
+类型化为 <code>LONG</code>/<code>LONG_NULL</code>，使其物化为 <code>bigint</code>（无需手动 <code>BigInt()</code> /
+无精度损失），并使用 <code>Time.fromRaw()</code> 而非强制转换。
+<em>(#2503, #4767, #4769)</em></p>
+</li>
+<li><p><strong>❌ 按人类可读的显示名称查询行 → ✅ 按稳定的有类型列查询</strong>（例如
+<code>type = &#39;suspend_resume&#39;</code>，而非 <code>name = &quot;Suspend/Resume Latency&quot;</code>）。
+显示字符串是脆弱的。*(#2149)*</p>
+</li>
+<li><p><strong>❌ 忘记在 <code>onActivate()</code>、<code>onTraceLoad()</code> 或其他生命周期方法中 await
+异步函数调用。</strong>调用异步方法而不 await 或 .then() 的正当理由极为罕见，
+因为这会创建 fire-and-forget 语义，导致竞态。如果确实需要，必须用注释
+记录。*(#2353, #1758)*</p>
+</li>
+<li><p><strong>❌ 为可关闭提示/持久化布局使用临时 <code>localStorage</code> 键 → ✅ 使用设置
+系统</strong>（并用 Zod 解析未知的持久化对象，使新增字段可选以保证向后兼容）。
+让 banner 可永久关闭；将一次性提示与永久可发现的按钮配对，而非重复的
+侵入式 banner。*(#5761, #2772, #3660, #3185)*</p>
+</li>
+</ul>
+<hr>
+<h2><a name="3-" class="anchor" href="#3-"></a>3. 架构与分层</h2><ul>
+<li><p>🔁 <strong>❌ <code>src/core</code> 或 <code>public/</code> API 接口中的厂商/产品/plugin 特定代码 →
+✅ 将特定逻辑推入 plugin；保持核心接口通用。</strong>这是错误的分层。同样
+适用于 chrome：不要向共享侧边栏添加 plugin 特定部分——通过 subtab/submenu
+将导航保留在 plugin 自己的页面内。将 plugin 特定常量（track kind）、
+工厂和 schema 保留在所属 plugin 内。
+<em>(#5284, #5153, #1624, #1241)</em></p>
+</li>
+<li><p><strong>❌ 将纯粹的通用库代码（track 实现、面板）包装为 plugin → ✅ 放入
+<code>src/core</code> 或 <code>src/public</code>。</strong>Plugin 用于外部或可选功能。通用功能不应
+是可选的；如果一个核心 tab 依赖于某项功能，它就不该是一个 plugin。
+<em>(#5153, #4991, #4844)</em></p>
+</li>
+<li><p><em><em>❌ 依赖整体 <code>App</code> / <code>TraceContext</code> 对象 → ✅ 只依赖所需的具体接口
+（<code>TraceImpl</code>、<code>SelectionManager</code>、<code>TimelineController</code> 等）。这使得
+测试更容易并防止意外耦合。</em>(#4769, #4613, #3331, #1190)</em></p>
+</li>
+</ul>
+<hr>
+<h2><a name="4-track-track-" class="anchor" href="#4-track-track-"></a>4. Track 与 Track 事件</h2><ul>
+<li><p><strong>❌ 除 <code>async</code> slice 之外的任何东西使用 <code>ChromeSliceTrack</code> 基类 → ✅
+选择正确的 track 基类</strong>（<code>ProcessCounterTrack</code> 用于 counter、
+<code>ThreadStateTrack</code> 用于调度状态、<code>AsyncSliceTrack</code> 用于 async slice）。
+每个基类提供正确的渲染和交互语义。*(#5595, #5436, #5243)*</p>
+</li>
+<li><p><strong>❌ Track 类型注册缺失或类型名称不一致 → ✅ 注册每个新 track 类型且
+名称一致。</strong>Track 类型名称必须跨 <code>TrackDescriptor.type</code> 和 UI 注册
+保持一致；使用 <code>registerTrack</code>。
+<em>(#5436, #5595, #5243, #4278, #5188)</em></p>
+</li>
+</ul>
+<hr>
+<h2><a name="5-sql-" class="anchor" href="#5-sql-"></a>5. SQL 与查询</h2><ul>
+<li><p>🔁 <strong>❌ 直接写裸 SQL 字符串 → ✅ 尽可能使用 stdlib 表/视图/函数；必要
+时使用 <code>perfetto-query-lang</code> DSL。</strong>DSL 提供参数化、类型安全和构建时
+检查。*(#4769, #5436, #5243, #5182, #4487, #3237)*</p>
+</li>
+<li><p><strong>❌ 查询中使用 <code>SELECT *</code> 的 <code>MATERIALIZED</code> 视图 → ✅ 仅物化所需列。</strong>
+MATERIALIZED 视图会在 trace 加载时物化所有列，即使 UI 只需要其中一列
+也是如此，这会浪费内存。*(#5182, #4487)*</p>
+</li>
+<li><p><strong>❌ 连接复杂查询时在 JS 代码中手动拼接 SQL 和参数 → ✅ 在 DSL 中完全
+组合查询。</strong>避免 SQL 注入和参数错配。*(#4487)*</p>
+</li>
+</ul>
+<hr>
+<h2><a name="6-css-" class="anchor" href="#6-css-"></a>6. CSS 与样式</h2><ul>
+<li><p><strong>❌ 硬编码颜色 → ✅ 使用主题变量</strong>（<code>--pf-*</code>、<code>--pf-colour-*</code>，
+<code>theme.ts</code> 中的 Material Design 色调板）。仅在绝对必要时指定背景颜色，
+以保持 UI 可主题化。*(#2615, #5153, #4991, #4185, #1097)*</p>
+</li>
+<li><p><strong>❌ 通过字符串拼接/模板字面量构建 <code>classNames</code> → ✅ 使用 <code>classNames()</code>
+工具函数。</strong><em>(#3693, #2615, #1406)</em></p>
+</li>
+<li><p><strong>❌ 冗余声明（font-family/size、<code>cursor</code>、对 <code>pre</code>/<code>code</code>/<code>button</code> 的
+全局元素重置）→ ✅ 让它们继承 / 删除重复。</strong>不要对页面元素设置
+<code>font-family</code>——让它从根继承以便主题生效。
+<em>(#5222, #3121, #2826, #2394)</em></p>
+</li>
+<li><p><strong>❌ 一次性 CSS 变量 / 将功能样式堆积到共享全局 SCSS 文件中 → ✅ 内联
+值；以聚合 import 启动一个专属根 SCSS。</strong><em>(#1097, #5243)</em></p>
+</li>
+<li><p><strong>杂项布局技巧：</strong> <code>align-items: baseline</code> 对齐 widget 文本基线；
+<code>align-self: center</code> 对齐偏移的图标（不要更改容器）；<code>box-shadow</code> 用于
+focus 轮廓（避免加粗边框引起的布局偏移）；将 <code>&lt;input&gt;</code> 嵌套在其
+<code>&lt;label&gt;</code> 内以获得原生无障碍/点击行为；固定高度可滚动菜单以避免异步
+加载时的闪烁；避免使用 <code>&lt;strong&gt;</code> 和 translate/transform 悬停技巧来
+强调。*(#5222, #3121, #3946, #3844, #3817, #2615, #2093)*</p>
+</li>
+</ul>
+<hr>
+<h2><a name="7-typescript-" class="anchor" href="#7-typescript-"></a>7. TypeScript 与类型</h2><ul>
+<li><p>🔁 <strong>❌ <code>null</code> → ✅ <code>undefined</code>。</strong>代码库在此处严格一致；使用 <code>?:</code> 可选
+语法。唯一允许的 <code>null</code> 是查询结果中的 SQL <code>NULL</code>——即便如此，在 UI
+代码中也优先映射为 <code>undefined</code>。*(#4192, #3599, #3188, #1389)*</p>
+</li>
+<li><p>🔁 <strong>❌ 类型断言（<code>as</code>）和非空断言 <code>!</code> → ✅ 让 TS 窄化类型，或大声断言
+不变量。</strong>TS 在 <code>.filter</code>、<code>Object.entries</code> 等之后会窄化；不要断言
+本身是 <code>unknown</code> 的类型。将对无类型数据的大量断言替换为 Zod 解析。
+使用 <code>assertExists(x)</code> 而非 <code>x!</code>，使开发者错误的 null 立即失败。使用
+<code>LONG</code>/<code>LONG_NULL</code> + <code>Time.fromRaw()</code> 而非强制转换 SQL 值。在可用时
+传递具体实现类型（<code>TraceImpl</code>）以避免下游强制转换。不要将查找包装在
+<code>Object(...)</code> 中——它会将类型抹除为 <code>any</code>；改为给查找表添加类型。
+<em>(#4767, #4890, #4769, #4653, #4613, #3331, #2580)</em></p>
+</li>
+<li><p>🔁 <strong>❌ 扁平接口带许多始终可选的字段，其有效组合未被强制执行 → ✅ 基于
+<code>kind</code>/<code>status</code>/<code>type</code> 标签的可辨识联合类型</strong>（与共享字段交叉）。让
+类型系统强制每个变体需要哪些字段。*(#4192, #3331)*</p>
+</li>
+<li><p>🔁 **❌ 可变数组参数 → ✅ <code>readonly T[]</code>**（包括 getter/setter 中）用于
+不修改的集合。将接口 attrs 标记为 <code>readonly</code>。
+<em>(#3188, #3058, #2039)</em></p>
+</li>
+<li><p><strong>❌ 穷举 <code>switch</code> 的 default 中缺少 <code>assertUnreachable()</code> → ✅ 添加它</strong>，
+使编译器在添加新的联合类型 case 时报错。*(#2615, #1565)*</p>
+</li>
+<li><p><strong>❌ 用新的包装接口重复已有类型，或将数据路由通过宽泛/通用接口再重新
+解析 → ✅ 直接返回已有/正确的特定类型</strong>（例如返回 <code>QueryResult</code>；
+返回 <code>AndroidInputEventSource</code> 而非解析回来的通用 args）。在接受普通
+<code>number</code> 的 API 上去掉品牌类型（<code>SliceSqlId</code>）。
+<em>(#4844, #4767, #4729)</em></p>
+</li>
+<li><p><strong>❌ <code>== null</code> 比较 / 通用 <code>==</code> / 过早合并到 sentinel 值 → ✅
+<code>if (!x)</code>、<code>x ?? 0</code>、nullish 运算符。</strong>注意 JS falsy 陷阱：<code>0</code> 和
+<code>null</code>/<code>undefined</code> 都是 falsy——通过 <code>(number|null)[]</code> 携带 <code>null</code>，
+将真实的 <code>0</code> 显式显示，而非将其渲染为空白。
+<em>(#1582, #1389, #1376)</em></p>
+</li>
+<li><p><strong>较小类型规范：</strong>没有 <code>await</code> 的函数不要标记 <code>async</code>；添加
+<code>declare global { interface Window {...} }</code> 扩充以注入到 <code>window</code>
+（不要强制转换）；在类型繁重的代码中为中间变量添加显式注解；不要强制
+接口属性为 getter（使用普通 <code>readonly</code>）；不要冗余初始化构造函数始终
+赋值的字段；当其他分支返回值时，优先使用显式 <code>return undefined</code> 而非
+裸 <code>return</code>；避免将数字键通过字符串来回转换；不要无意中扩大成员的
+可见性（<code>private</code>→<code>public</code>）；不要添加始终被提供的可选参数。Zod schema
+必须镜像实际的嵌套数据形状。
+<em>(#4278, #4192, #2644, #2615, #1763, #2897, #5222, #3058)</em></p>
+</li>
+</ul>
+<hr>
+<h2><a name="8-" class="anchor" href="#8-"></a>8. 命名与约定</h2><ul>
+<li><p>🔁 <strong>ID 遵循既定约定。</strong>设置/注册 ID：反向 DNS，核心属 <code>dev.perfetto.*</code>，
+外部 plugin 使用贡献者组织的命名空间（<code>com.meta.*</code>、<code>com.android.*</code>）。
+命令 ID：省略冗余的 plugin 名称，使用稳定的命名空间化动词形式，以便
+命令可在 plugin 之间移动。<strong>不要将设置的 ID 与 plugin 名称绑定</strong>——
+与 plugin 无关的 ID 使其可在不丢失用户保存值的情况下重定位。不要对仅在
+你自己的 plugin 内注册的内容过度命名空间化。
+<em>(#5787, #5761, #3362, #3259, #2036, #4653, #4767, #5436)</em></p>
+</li>
+<li><p>🔁 <strong>变量/成员使用 camelCase；文件名使用 <code>snake_case</code>；不使用匈牙利
+命名法。</strong>不使用 <code>snake_case</code> 变量（<code>trace_processor_id</code>），不使用
+缩写前缀（<code>uMachineIds</code> → <code>uniqueMachineIds</code>），私有方法不使用前导
+下划线，仅在参数有意未使用时添加下划线前缀。
+<em>(#2615, #1155, #1913, #1389, #1565, #4737)</em></p>
+</li>
+<li><p><strong>以事物本身/所做的事情命名，在合适的抽象层级。</strong>只显示（从不切换）的
+函数命名为 <code>showX</code>，而非 <code>toggleX</code>。一次性 init 函数命名为
+<code>load</code>/<code>initialize</code>，而非 <code>build</code>（读起来像每帧 Mithril 辅助函数）。
+Widget 使用标准术语命名（<code>treemap</code>、<code>scatterplot</code>），而非
+<code>treemap_chart</code>。当 widget 范围扩大时重命名它。当上下文中所有内容都
+已有限定词时，删除冗余限定词。不在一个标识符中使用两个同义词
+（<code>canvas</code>/<code>container</code>）。布尔值以其守卫的内容命名
+（<code>isProcessingQueue</code>，而非 <code>isProcessing</code>）。如果预期复用，按通用
+概念命名字段。使命令名称自解释/可发现。
+<em>(#3169, #4192, #4761, #4729, #4278, #1406, #1302, #4380, #5566)</em></p>
+</li>
+<li><p><strong>机械约定：</strong>每个新文件包含版权头（新文件使用当前年份；编辑时不要
+改动年份）；仓库内模块使用相对 import 标识符；使用 <code>//</code> 行注释在行上方
+或右侧，不使用 <code>/* */</code>；运行 <code>ui/format-sources</code>（不要手动格式化）；
+检查新默认快捷键是否与现有全局快捷键冲突。
+<em>(#2394, #4582, #4769)</em></p>
+</li>
+</ul>
+<hr>
+<h2><a name="9-" class="anchor" href="#9-"></a>9. 错误处理</h2><ul>
+<li><p>🔁 <strong>❌ 吞掉错误（空 <code>catch</code>、<code>console.warn</code>、返回 <code>undefined</code>）→ ✅
+让失败可见。</strong>控制台消息在实践中会被忽略。对于<strong>开发者错误，让它崩溃</strong>
+（保留 stacktrace + 分析）；对于<strong>预期失败，向用户显示消息</strong>（例如
+<code>showModal</code>）。空 catch 会在重构期间静默吞噬拼写错误。
+<em>(#4582, #4344, #4192)</em></p>
+</li>
+<li><p><strong>❌ 在异常引发处捕获 → ✅ 冒泡到合适的粒度。</strong>让调用方的循环捕获并跳过
+失败项，而非在辅助函数内部逐项吞噬。考虑返回 <code>Result&lt;T&gt;</code>（StatusOr 风格）
+以强制调用方显式处理失败。*(#4192)*</p>
+</li>
+<li><p><strong>❌ 宽泛的 <code>try</code> 块 → ✅ 仅包裹实际可能抛出的调用</strong>，而非周围的设置
+代码。*(#4192)*</p>
+</li>
+<li><p>🔁 <strong>❌ 非空 <code>!</code> / 静默回退到全局默认值 → ✅ 对开发者错误不变量使用
+<code>assertExists()</code>。</strong>例如 <code>assertExists(canvasElement)</code>——绝不意外回退到
+<code>document</code>；对不可能状态使用 <code>assertExists(queue.shift())</code> 而非防御性
+的 <code>if (!blob) continue</code>。*(#4994, #4761, #2580, #1302)*</p>
+</li>
+<li><p><strong>❌ 无超时的网络 fetches / 阻塞核心流程 → ✅ 使用 <code>fetchWithTimeout</code> /
+<code>orTimeout</code> 并显示软错误。</strong>不要依赖浏览器的约 5 分钟默认超时；核心
+路径上的细粒度延迟 fetches 有&quot;UI 在流程中悄悄停止工作&quot;的风险。（也不
+要过于激进地设置超时——10 秒以上，人们会使用热点网络。）
+<em>(#4192)</em></p>
+</li>
+<li><p><strong>❌ <code>try/catch</code> 没有明确处理的目标，或对预期的空条件发出警告 → ✅
+保持明确。</strong>不要对首次运行的 <code>localStorage</code> 状态缺失发出警告。在确认
+失败路径已被处理之前，不要<em>移除</em>可能失败查询周围的已有 try/catch 守卫
+（这可能导致非 Google 环境出错）。*(#2615, #4115, #1513)*</p>
+</li>
+<li><p><strong>❌ 一行有问题就中止整个批次 → ✅ 跳过/丢弃该行并继续。</strong>确保处理器在
+处理中途抛出异常时不会使共享状态不一致。*(#2897, #1302)*</p>
+</li>
+</ul>
+<hr>
+<h2><a name="10-" class="anchor" href="#10-"></a>10. 性能</h2><ul>
+<li><strong>虚拟化：</strong>对不需要可变行高且高度受限的 grid 启用虚拟化；保留 grid
+自己的滚动包装器（<code>pf-sql-table</code>）使其可以虚拟化——不要让整个详情 shell
+滚动。如果对查询进行虚拟滚动很慢，先物化一个支持表（datagrid 本身不
+物化任何内容）。*(#3455, #3423, #5276)*</li>
+</ul>
+<hr>
+<h2><a name="11-pr-" class="anchor" href="#11-pr-"></a>11. PR 规范与范围</h2><ul>
+<li><p>🔁 <strong>❌ 将不相关的重构、附带重命名、多余字段、空白调整捆绑到一个功能
+PR 中 → ✅ 保持 diff 最小化并限定在其目的范围内。</strong>不相关的变更增加
+噪音，使回归难以发现。瞄准 MVP；将重构和大型 mock 拆分到单独的 PR 中。
+不要重命名未做其他更改的文件中的变量/标识符。
+<em>(#5222, #4641, #3736, #2666, #5649, #3170)</em></p>
+</li>
+<li><p>🔁 <strong>❌ 死代码/推测性代码 → ✅ YAGNI。</strong>删除未使用的函数、参数、循环
+计数器和&quot;以防万一&quot;的代码行（通过删除并确认行为不变来验证）。删除
+遗留的 <code>console.log()</code>——删除代码而非记录 &quot;not implemented&quot;。
+<em>(#5222, #5436, #1389, #1097)</em></p>
+</li>
+<li><p><strong>添加新 plugin/组件时，附带一个包含联系方式的 <code>OWNERS</code> 文件。</strong>
+<em>(#5284)</em></p>
+</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="docs-footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
