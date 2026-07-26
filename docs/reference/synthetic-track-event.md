@@ -100,8 +100,6 @@
 
 </details>
 
-```
-
 ![将 Track 与进程相关联](/docs/images/synthetic-track-event-process-counter.png)
 
 你可以在 Perfetto UI 的 Query 选项卡中使用 SQL 或使用 [Trace Processor](/docs/analysis/getting-started.md) 查询与进程关联的 Counter 数据：
@@ -415,7 +413,7 @@ WHERE tid = 5678;
 
 ![控制 Track 排序顺序](/docs/images/synthetic-track-event-sorting.png)
 
-## {#controlling-track-merging} 控制 Track 合并
+### {#controlling-track-merging} 控制 Track 合并
 
 默认情况下，Perfetto UI 合并共享相同名称的 Track。这通常是用于分组相关异步事件的所需行为。但是，在某些情况下，你需要更明确的控制。你可以使用 `TrackDescriptor` 中的 `sibling_merge_behavior` 和 `sibling_merge_key`
 字段覆盖此默认合并逻辑。
@@ -431,7 +429,7 @@ WHERE tid = 5678;
 - `SIBLING_MERGE_BEHAVIOR_NONE`：防止 Track 与其任何同级合并。
 - `SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`：合并具有相同 `sibling_merge_key` 字符串的同级 Track。
 
-### Python 示例：防止合并
+#### Python 示例：防止合并
 
 在此示例中，我们创建两个具有相同名称的 Track。通过将其
 `Sibling_merge_behavior` 设置为 `SIBLING_MERGE_BEHAVIOR_NONE`，我们确保它们
@@ -481,7 +479,7 @@ WHERE tid = 5678;
 
 ![防止合并](/docs/images/synthetic-track-event-no-merge.png)
 
-### Python 示例：按键合并
+#### Python 示例：按键合并
 
 在此示例中，我们创建两个具有不同名称但相同
 `sibling_merge_key` 的 Track。通过将其 `Sibling_merge_behavior` 设置为
@@ -588,7 +586,7 @@ WHERE tid = 5678;
 
 ![共享 Y 轴](/docs/images/synthetic-track-event-share-y-axis.png)
 
-### 添加 Track 描述：
+### 添加 Track 描述
 
 你可以向任何 Track 添加人类可读的描述，以提供有关其包含数据的更多上下文。在 Perfetto UI 中，当用户单击 Track 名称旁边的帮助图标时，此描述会出现在弹出窗口中。这对于解释 Track 代表什么、其事件的含义或应如何解释它特别有用，尤其是在复杂的自定义 trace 中。
 

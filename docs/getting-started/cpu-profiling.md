@@ -30,45 +30,45 @@
 duration_ms: 10000
 
 buffers: {
- size_kb: 40960
- fill_policy: DISCARD
+  size_kb: 40960
+  fill_policy: DISCARD
 }
 
 # sample per-cpu counts of instructions and cycles
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- frequency: 1000
- counter: SW_CPU_CLOCK
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- followers { counter: HW_CPU_CYCLES }
- followers { counter: HW_INSTRUCTIONS }
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        frequency: 1000
+        counter: SW_CPU_CLOCK
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      followers { counter: HW_CPU_CYCLES }
+      followers { counter: HW_INSTRUCTIONS }
+    }
+  }
 }
 
 # include scheduling data via ftrace
 data_sources: {
- config: {
- name: "linux.ftrace"
- ftrace_config: {
- ftrace_events: "sched/sched_switch"
- ftrace_events: "sched/sched_waking"
- }
- }
+  config: {
+    name: "linux.ftrace"
+    ftrace_config: {
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "sched/sched_waking"
+    }
+  }
 }
 
 # include process names and grouping via procfs
 data_sources: {
- config: {
- name: "linux.process_stats"
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+  config: {
+    name: "linux.process_stats"
+    process_stats_config {
+      scan_all_processes_on_start: true
+    }
+  }
 }
 ```
 
@@ -149,50 +149,50 @@ Android 注意:该示例使用"com.android.settings"作为示例，但要成功�
 duration_ms: 10000
 
 buffers: {
- size_kb: 40960
- fill_policy: DISCARD
+  size_kb: 40960
+  fill_policy: DISCARD
 }
 
 # periodic sampling per cpu, unwinding callstacks if
 # "com.android.settings" is running.
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- counter: SW_CPU_CLOCK
- frequency: 100
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- callstack_sampling {
- scope {
- target_cmdline: "com.android.settings"
- }
- kernel_frames: true
- }
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        counter: SW_CPU_CLOCK
+        frequency: 100
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      callstack_sampling {
+        scope {
+          target_cmdline: "com.android.settings"
+        }
+        kernel_frames: true
+      }
+    }
+  }
 }
 
 # include scheduling data via ftrace
 data_sources: {
- config: {
- name: "linux.ftrace"
- ftrace_config: {
- ftrace_events: "sched/sched_switch"
- ftrace_events: "sched/sched_waking"
- }
- }
+  config: {
+    name: "linux.ftrace"
+    ftrace_config: {
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "sched/sched_waking"
+    }
+  }
 }
 
 # include process names and grouping via procfs
 data_sources: {
- config: {
- name: "linux.process_stats"
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+  config: {
+    name: "linux.process_stats"
+    process_stats_config {
+      scan_all_processes_on_start: true
+    }
+  }
 }
 ```
 
@@ -289,22 +289,22 @@ python3 traceconv profile --perf /tmp/trace.pb
 INCLUDE PERFETTO MODULE linux.perf.samples;
 
 SELECT
- -- 调用栈的 id。在此上下文中，调用栈是直到根的唯一帧集。
- id,
- -- 此调用栈的父调用栈的 id。
- parent_id,
- -- 此调用栈的帧的函数名称。
- name,
- -- 包含帧的映射的名称。这可以是 native 二进制文件、库、JAR 或 APK。
- mapping_name,
- -- 包含函数的文件的名称。
- source_file,
- -- 文件中函数所在的行号。
- line_number,
- -- 以此函数为叶帧的样本数。
- self_count,
- -- 以此函数出现在调用栈上任何位置的样本数。
- cumulative_count
+  -- 调用栈的 id。在此上下文中，调用栈是直到根的唯一帧集。
+  id,
+  -- 此调用栈的父调用栈的 id。
+  parent_id,
+  -- 此调用栈的帧的函数名称。
+  name,
+  -- 包含帧的映射的名称。这可以是 native 二进制文件、库、JAR 或 APK。
+  mapping_name,
+  -- 包含函数的文件的名称。
+  source_file,
+  -- 文件中函数所在的行号。
+  line_number,
+  -- 以此函数为叶帧的样本数。
+  self_count,
+  -- 以此函数出现在调用栈上任何位置的样本数。
+  cumulative_count
 FROM linux_perf_samples_summary_tree;
 ```
 
