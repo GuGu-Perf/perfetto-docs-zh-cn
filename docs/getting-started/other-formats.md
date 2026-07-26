@@ -262,7 +262,7 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 - **Perfetto UI & Trace Processor：** Perfetto 的 Trace Processor 可以解析 `perf script` 生成的文本输出。
   - 此导入器的主要重点是 **CPU 样本及其关联的调用栈**。
-  - 当解析此类数据时，它会填充 Perfetto 的标准 profiling 表（例如，`cpu_profile_stack_sample_table` 用于样本，`stack_profile_callsite`、`stack_profile_frame`、`stack_profile_mapping` 用于调用栈信息）。
+  - 当解析此类数据时，它会填充 Perfetto 的标准 profiling 表（例如，`cpu_profile_stack_sample` 用于样本，`stack_profile_callsite`、`stack_profile_frame`、`stack_profile_mapping` 用于调用栈信息）。
   - 这允许将 `perf script` 输出的 CPU profile 数据在 Perfetto UI 中可视化为火焰图，并使用 SQL 进行查询。
 - **限制：**
   - `perf script` 的输出格式根据传递的参数（例如，使用 `-F` 标志）非常灵活。Perfetto 的解析器可能期望样本的常见或默认输出结构。高度定制或不寻常的 `perf script` 文本输出可能无法正确或完全解析。

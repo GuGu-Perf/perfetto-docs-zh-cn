@@ -109,10 +109,10 @@ tools/ninja -C <out directory>
 tools/diff_test_trace_processor.py <out directory>/trace_processor_shell
 ```
 
-TIP: 查询差异测试预期只有单个查询，该查询在整个文件中产生输出（通常在末尾）。
+TIP: 每个产生输出的语句都会打印其结果集，连续的结果集之间用一个空行分隔。
 调用 `SELECT RUN_METRIC('metric file')` 可能会混淆此检查，因为此查询会生成一些隐藏输出。
-为了解决此问题，如果查询只有名为 `suppress_query_output` 的列，即使它有输出，也将被忽略(例如，
-`SELECT RUN_METRIC('metric file') as suppress_query_output`)
+为了解决此问题，如果查询的唯一列名为 `suppress_query_output`，则其输出将被忽略（例如，
+`SELECT RUN_METRIC('metric file') as suppress_query_output`）
 
 ### 添加新的差异测试
 

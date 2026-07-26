@@ -54,8 +54,7 @@
   `AsyncLimiter`（在 `oncreate` 中排队，在 `onremove` 中取消，每次 render
   渲染陈旧数据时使用 `retainOn`），或在
   `TrackEventDetailsPanel.load()` 中加载，它自动取消过期的加载。使用
-  `AsyncLimiter.isRunning` 而非自定义标志来守卫并发。（注意：`isFresh`
-  始终为 `true`，除非你使用了 `retainOn` 键。）
+  `AsyncLimiter.isRunning` 而非自定义标志来守卫并发。
   *(#4464, #4582, #4737, #5436, #4192)*
 
 - **❌ 维护需要手动保持同步的派生状态 → ✅ 从单一数据源派生。**不要通过

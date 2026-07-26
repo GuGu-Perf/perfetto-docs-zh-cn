@@ -124,7 +124,7 @@ Common flags (apply to all commands):
 
 #### {#subcommand-query} `query` — 运行 SQL
 
-加载 trace，运行一个或多个以 `;` 分隔的 SQL 语句，将结果打印到标准输出，然后退出。SQL 可以作为内联位置参数提供、通过 `-f/--query-file` 从文件读取，或通过 stdin 管道传入（通过将 `-` 传递给 `--query-file` 或在未指定 SQL 时通过管道传入）：
+加载 trace，运行一个或多个以 `;` 分隔的 SQL 语句，将结果打印到标准输出，然后退出。每个语句的结果集都作为 CSV 打印，连续的结果集之间用一个空行分隔（因为所有字符串值都加了引号，所以空行可以明确地标示结果集边界）。SQL 可以作为内联位置参数提供、通过 `-f/--query-file` 从文件读取，或通过 stdin 管道传入（通过将 `-` 传递给 `--query-file` 或在未指定 SQL 时通过管道传入）：
 
 ```bash
 # 1. 内联查询。

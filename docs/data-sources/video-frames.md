@@ -5,15 +5,14 @@
 添加每个屏幕的时间线 track，在浏览器中解码它们。你可以悬停在 track
 上预览帧、像播放视频一样回放帧，以及点击任意帧将其与下方的 track 对齐。
 
-它会录制屏幕的实际内容，因此仅适用于 `userdebug`（debuggable）设备，
-任何包含此内容的 trace 都是敏感的：它精确地显示了屏幕上的内容。
+它会录制屏幕的实际内容，因此任何包含此内容的 trace 都是敏感的：它精确地显示了屏幕上的内容。在 `userdebug`（debuggable）设备上，它可以开箱即用。在 `user`（production）build 上，它默认被禁用，必须先用一个 system property 解锁 — 参见 [`user` build 的前提条件](#prerequisite-on-user-builds)。
 
 本指南涵盖：
 
 - [工作原理及成本](#how-it-works-and-what-it-costs) —
   帧如何进入 trace，以及对设备的开销。
-- [采集屏幕视频](#capturing-display-video)：三种开启方式 —
-  设备端开关、录制页面以及可完全控制质量和大小的原始配置。
+- [采集屏幕视频](#capturing-display-video)：首先在 `user` build 上设置 property，
+  然后三种开启方式 — 设备端开关、录制页面以及可完全控制质量和大小的原始配置。
 - [查看屏幕视频](#viewing-display-video)：时间线 track、
   悬停预览帧以及保持时间线同步地回放采集内容。
 
@@ -32,7 +31,17 @@ trace 中 — 屏幕每次变化产生一帧 — UI 在浏览器中将其解码�
 
 ## 采集屏幕视频
 
-有三种方式开启屏幕视频采集，从最简单到最多控制。
+有三种方式开启屏幕视频采集，从最简单到最多控制。在 `user` build 上，还需要先设置一个每次启动只需设置一次的 property — 参见下方的前提条件。
+
+### `user` build 的前提条件 {#prerequisite-on-user-builds}
+
+在 `userdebug`（debuggable）设备上，屏幕视频采集开箱即用，你可以跳过此步骤。在 `user`（production）build 上，它默认被禁用：首先通过 ADB 设置一个 system property 来解锁。
+
+```
+adb shell setprop debug.tracing_video_allowed true
+```
+
+此 property **不是持久化的** — 下次重启时会被清除。设备重启后，你必须再次设置它才能采集屏幕视频。一旦设置，以下任何方式都可以采集：设备端开关、录制页面或原始配置。
 
 ### 在设备上，使用 System Tracing
 
@@ -75,6 +84,7 @@ data_sources {
       scale: 0.5
       format: FORMAT_H264
       key_frame_interval_secs: 2
+      bitrate_bps: 8000000  # 8 Mbps
       max_stream_size_bytes: 67108864  # 64 MiB per display
     }
   }
@@ -86,6 +96,7 @@ data_sources {
 | `scale` | 采集前应用于每个屏幕分辨率的比例因子，例如 `0.5` 为一半大小或 `0.25` 为四分之一。较低的比例意味着更少的编码器负载和更小的 trace，但会牺牲细节。 |
 | `format` | `FORMAT_H264`（默认）或 `FORMAT_HEVC`。HEVC 在相同质量下产生更小的流，但设备必须支持 HEVC 编码才能采集，浏览器必须支持 HEVC 解码才能预览。 |
 | `key_frame_interval_secs` | 关键帧的发射频率。较小的值使定位更流畅但增大 trace；较大的值更紧凑但拖拽较慢。 |
+| `bitrate_bps` | 目标编码器 bitrate，单位为 bit/s。Trace 大小大致等于 bitrate × 时长，因此这在固定分辨率下权衡质量与大小（与 `scale` 不同，`scale` 会降低分辨率）。未设置时，设备使用默认值。 |
 | `max_stream_size_bytes` | 每个屏幕的发送字节数上限。当屏幕达到上限时，其流被拆除（记录大小上限错误），而非无限增长。未设置时，设备默认每屏幕 256 MiB 的上限。 |
 
 ## 大小限制
@@ -130,3 +141,43 @@ issue 上评论和点赞以便进行优先级排序：
 （最高 2×）地回放。
 
 ![回放屏幕视频采集，video-frames track 固定在顶部：详情面板中解码的预览从设置屏幕前进到启动器，同时帧号和时间戳更新。](../images/video_frames/05-playback.gif)
+
+### 从命令行导出为 .mp4
+
+`tools/trace_video_conv.py` 使用 ffmpeg 将 trace 中捕获的视频提取为 `.mp4`（编码后的帧按原样复制，不会重新编码）。它需要 `ffmpeg` 在 `PATH` 中；`trace_processor` 会自动下载，或传递 `--trace-processor` 以使用本地构建。
+
+```bash
+# 列出 trace 中的视频流。
+tools/trace_video_conv.py TRACE.perfetto-trace --list
+
+# 将整个视频转换为 .mp4。
+tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4
+
+# 剪辑到时间范围（trace ts，纳秒），或剪辑到查询选择的任何内容
+# （查询返回 `ts` 列，以及可选的 `dur`）。
+tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 --start <ts> --end <ts>
+tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 \
+    --query "SELECT ts, dur FROM slice WHERE name = 'my_cuj'"
+
+# 慢动作（0.5x）或 2 倍快放。
+tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4 --speed 0.5
+
+# 两个 trace 并排，每个都带标题（默认为文件名）。
+tools/trace_video_conv.py before.perfetto-trace --compare after.perfetto-trace \
+    -o compare.mp4 --title Before --title2 After
+```
+
+| 选项 | 描述 |
+| --- | --- |
+| `-o, --output` | 输出 `.mp4` 路径。 |
+| `--list` | 列出 trace 的视频流并退出。 |
+| `--display-id` | 用于多显示器 trace 时选择哪个流。 |
+| `--start`, `--end` | 剪辑到时间范围，单位为 trace `ts` 纳秒。 |
+| `--query` | 剪辑到 SQL 查询选择的区域（返回 `ts`，可选 `dur`）。 |
+| `--speed` | 输出播放速度：`2` = 两倍速，`0.5` = 慢动作。 |
+| `--compare` | 第二个 trace，放在右侧进行并排比较。 |
+| `--display-id2` | 用于 `--compare` trace 的流选择。 |
+| `--start2`, `--end2` | 剪辑 `--compare` trace 的时间范围。 |
+| `--query2` | 剪辑 `--compare` trace 的 SQL 选择区域。 |
+| `--title`, `--title2` | 第一个和第二个视频的标题（默认：文件名）。 |
+| `--trace-processor` | 本地 `trace_processor` 构建路径（否则会自动下载）。 |

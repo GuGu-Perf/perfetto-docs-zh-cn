@@ -262,14 +262,14 @@ function getValue(): string | null { return null; }
 function getValue(): string | undefined { return undefined; }
 ```
 
-**对不应修改的数组使用 `ReadonlyArray<T>`:**
+**对不应修改的数组使用 `readonly T[]`:**
 
 ```typescript
 // 不好
 function process(items: string[]): void { ... }
 
 // 好
-function process(items: ReadonlyArray<string>): void { ... }
+function process(items: readonly string[]): void { ... }
 ```
 
 **使用 `classNames()` 实用程序构建 CSS 类字符串：**

@@ -135,7 +135,7 @@ Slices 可以表示的常见示例包括：
 1.  定义一个 **track**，你的 slices 将出现在其中。这是使用 `TrackDescriptor` 数据包完成的。对于基本自定义数据，你可以创建一个不绑定到特定进程或线程的通用 track。
 2.  对于数据中的每个事件，发出 `TrackEvent` 数据包以标记 slice 的开始和结束。
 
-### Python 示例
+### Python 示例：基本 Slices
 
 假设你有表示任务的数据，具有名称、开始时间和结束时间。以下是如何将它们转换为自定义 track 上的 Perfetto slices。此第一个示例将显示不同的、非嵌套的 slices 和单个 instant 事件。
 
@@ -220,7 +220,7 @@ WHERE track.name = 'My Custom Data Timeline';
 
 Perfetto UI 将直观地嵌套这些 slices，使层次结构清晰。
 
-### Python 示例
+### Python 示例：嵌套 Slices
 
 此示例演示在自定义 track 上创建多个嵌套 slices 堆栈。packets 按时间戳顺序发出以正确表示嵌套。我们将在 `populate_packets` 中定义一个小的帮助函数 `add_event` 以减少样板代码。
 
@@ -304,7 +304,7 @@ Perfetto 对此进行建模的方式是将每个并发的、可能重叠的操�
 Perfetto UI 将组合或视觉上合并具有相同名称的 tracks。这是约定，可以由用户控制。有关更多详细信息，请参阅有关控制合并的部分：
 [synthetic track event reference docs](/docs/reference/synthetic-track-event.md#controlling-track-merging)。
 
-### Python 示例
+### Python 示例：异步 Slices
 
 假设我们正在跟踪活动网络连接。每个连接都是一个独立的异步事件。我们将给所有连接 tracks 相同的名称以鼓励 UI 对它们进行分组。我们将使用帮助函数来定义 tracks 和添加事件。
 
@@ -382,7 +382,7 @@ Counters 可以表示的常见示例包括：
 1.  为你的 counter 定义一个 `TrackDescriptor`。此 track 需要一个 `uuid`、一个 `name`，重要的是，它的 `counter` 字段应该被填充。这告诉 Perfetto 将此 track 视为 counter。
 2.  发出带有 `type: TYPE_COUNTER` 的 `TrackEvent` packets。每个这样的 packet 应该有一个 `timestamp` 和一个 `counter_value`(可以是整数或双精度浮点数)。
 
-### Python 示例
+### Python 示例：Counters
 
 假设我们想要跟踪随时间变化的未完成网络请求的数量。
 
@@ -460,7 +460,7 @@ Perfetto UI 将绘制箭头连接共享共同 `flow_id` 的 slices，使依赖�
 **替代方案：Correlation IDs** 对于属于相同逻辑操作但不是因果连接的事件，请考虑使用 correlation IDs 代替或除了 flows。Correlation IDs 将相关事件视觉上分组（例如，使用一致的颜色）而不暗示因果关系。有关详细信息，请参阅高级指南中的
 [Linking Related Events with Correlation IDs](/docs/reference/synthetic-track-event.md#linking-related-events-with-correlation-ids）部分。
 
-### Python 示例
+### Python 示例：Flows
 
 让我们建模一个简单的系统，其中"Request Handler" track 将工作调度到"Data Processor" track。我们将使用 flows 将请求调度链接到其处理，然后将处理完成链接回处理程序确认完成。
 
@@ -558,7 +558,7 @@ JOIN slice AS slice_in ON flow.slice_in = slice_in.id;
 
 Perfetto UI 通常会将这些渲染为可展开的树。
 
-### Python 示例
+### Python 示例：Track Hierarchies
 
 让我们创建一个层次结构：
 
@@ -754,7 +754,7 @@ WHERE track.name LIKE '%Request%' OR track.name LIKE '%Service%'
 ORDER BY slice.ts;
 ```
 
-## 向事件添加调试注解
+## {#debug-annotations} 向事件添加调试注解
 
 调试注解允许你将任意键值数据附加到任何 `TrackEvent`。它们在你检查 Perfetto UI 中的各个事件时出现，对于提供关于特定 slices 或 instants 期间发生情况的额外上下文非常有用。
 
@@ -961,7 +961,7 @@ WHERE track.name = 'Nested Debug Annotations';
 本指南涵盖内联调用栈，非常适合入门。对于重复的调用栈或需要二进制映射信息时，请改用
 [interned callstacks](/docs/reference/synthetic-track-event.md#callstacks)。
 
-### Python 示例
+### Python 示例：Inline Callstacks
 
 每个帧包括函数名称，以及可选的源文件和行号。
 
@@ -1058,6 +1058,9 @@ NOTE: 帧从最外层(堆栈底部，例如 `main()`)到最内层（堆栈顶部
 
 ![Inline Callstacks Area Select](/docs/images/inline-callstacks-flamegraph.png)
 
+默认情况下，每个调用栈在火焰图中只计数一次。如果要为每次出现赋予一个值（例如分配的字节数），请参见
+[Weighted Callstacks and Custom Measures](/docs/reference/synthetic-track-event.md#callstack-weights)。
+
 ## 添加 Trace 级别元数据
 
 有时你想附加的数据不属于任何特定的事件、slice 或 track，而是描述整个 trace，比如 build ID、生成 trace 的工具版本或采集它的机器主机名。Perfetto 的
@@ -1080,7 +1083,7 @@ NOTE: 仅支持字符串和 64 位整数值。如果相同的 key 被多次设�
 
 除了写入数据包外，还可以在录制 trace 时通过 `perfetto --add-attribute key=value` 设置属性；两者最终都会出现在相同的 `trace_attribute.*` 行中。Trace archive 还可以通过 [trace manifest](/docs/reference/perfetto-manifest.md#attributes) 的 `attributes` 部分进行注释，该部分使用自己的 `manifest_attribute.*` 命名空间。
 
-### Python 示例
+### Python 示例：Trace Metadata
 
 将以下 Python 代码复制到 `trace_converter_template.py` 脚本中的 `populate_packets(builder)` 函数中。
 

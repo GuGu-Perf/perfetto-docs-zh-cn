@@ -8,10 +8,13 @@
 - 在 `TracePacket` 中使用 `TrackEvent` 有效负载创建具有各种类型的 Slice(简单、嵌套、异步)、Counter 和流程的自定义 Track
 - 用于生成 trace 的 Python 脚本模板（`trace_converter_template.py`），并且此处提供的 Python 示例旨在在其 `populate_packets(builder)` 函数中使用。
 
-本指南目前将专注于高级 `TrackEvent` 功能，例如：
+本指南涵盖高级 `TrackEvent` 功能，分为以下几个领域：
 
-- 将你的 Timeline 数据与操作系统（OS）进程和线程相关联，以实现更丰富的集成。
-- 显式 Track 排序和数据驻留，以优化 trace 大小和细节。
+- **将 Track 与 OS 概念相关联：** 将 Timeline 数据附加到操作系统（OS）进程和线程，以实现更丰富的集成。
+- **自定义 Track 显示：** 控制 UI 如何排序、合并和呈现 Track。
+- **Interning：** 通过去重频繁重复的字符串和调用栈来减小 trace 大小。
+- **用额外数据丰富事件：** callstack weight、correlation ID，以及通过 proto 扩展定义的完全自定义类型字段。
+- **处理大型 trace：** 将 packet 流式传输到磁盘以保持低内存使用。
 
 虽然 `TrackEvent` 是表示 Timeline 数据的主要方法，但 `TracePacket` 是一个多功能容器。将来，本指南可能会扩展以涵盖其他对合成 trace 生成有用的 `TracePacket` 有效负载。
 
@@ -39,7 +42,7 @@
 
 还建议将 `timestamp` 添加到包含进程的 `TrackDescriptor` 的 `TracePacket` 中。这尤其重要，当 trace 包含来自其他源的数据（例如，来自内核的调度信息）时。与"全局"Track 不同，这些 Track 类型可能会与其他数据源交互，因此具有时间戳可确保 Trace Processor 可以准确地将描述符排序到正确的位置。
 
-#### Python 示例
+#### Python 示例：进程范围的 Counter
 
 假设你想发出一个自定义 Counter（例如，"活动数据库连接"）并让它出现在名为 "MyDatabaseService" 且 PID 为 1234 的特定进程下。
 
@@ -97,7 +100,7 @@
 
 </details>
 
-如果你只有符号化的函数名称，则仅使用驻留的函数名称 ID 调用 `add_frame(...)`：例如，`add_frame(packet.interned_data, FRAME_MAIN, FUNC_MAIN)`。
+```
 
 ![将 Track 与进程相关联](/docs/images/synthetic-track-event-process-counter.png)
 
@@ -134,7 +137,7 @@ WHERE process.pid = 1234;
 
 与进程 Track 类似，还建议将 `timestamp` 添加到包含线程的 `TrackDescriptor` 的 `TracePacket` 中。这尤其重要，当 trace 包含来自其他源的数据（例如，来自内核的调度信息）时。与"全局"Track 不同，这些 Track 类型可能会与其他数据源交互，因此具有时间戳可确保 Trace Processor 可以准确地将描述符排序到正确的位置。
 
-**Python 示例：特定于线程的 Slice**
+#### Python 示例：特定于线程的 Slice
 
 此示例定义了一个属于进程 "MyApplication" (PID 1234) 的线程 "MainWorkLoop" (TID 5678)。然后，它直接在此线程的 Track 上发出几个 Slice。为了清晰起见，我们还定义了进程本身的 Track，尽管线程 Track 的关联主要通过其 `pid` 和 `tid`
 字段进行。
@@ -221,15 +224,15 @@ WHERE tid = 5678;
 
 有关如何显式控制进程内线程显示顺序的详细信息，请参阅[控制 Track 排序顺序](#controlling-track-sorting-order)。
 
-## 高级 Track 自定义
+## 自定义 Track 显示
 
-除了将 Track 与操作系统概念相关联之外，Perfetto 还提供了微调 Track 呈现方式和数据编码方式的方法。
+除了将 Track 与操作系统概念相关联之外，Perfetto 还提供了微调 Track 在 UI 中呈现方式的方法：同级 Track 如何排序和合并、counters 如何共享其比例，以及 Track 如何向用户描述。
 
 ### 控制 Track 排序顺序
 
 默认情况下，Perfetto UI 应用自己的启发式方法对 Track 进行排序（例如，按名称字母顺序，或按 Track UUID）。但是，对于复杂的自定义 trace，你可能希望明确定义 Track 的出现顺序。此排序行为因你是排列标准自定义子 Track、进程还是进程内的线程而有所不同。
 
-#### 非 OS 作用域（子 Track）排序
+#### Child Track 排序
 
 对于通过 `parent_uuid` 父化到另一个自定义 Track 的标准自定义 Track，使用父 Track `TrackDescriptor` 上的 `child_ordering` 字段和对于 `EXPLICIT` 排序使用子 Track `TrackDescriptor` 上的 `sibling_order_rank` 来实现。
 
@@ -270,7 +273,7 @@ WHERE tid = 5678;
 
 **注意：** UI 将这些视为强提示。虽然它通常尊重这些排序，但在某些情况下，UI 保留不按此顺序显示它们的权利；通常，如果用户明确请求此操作，或者 UI 对这些 Track 有特殊处理，则会发生这种情况。
 
-**Python 示例：演示所有排序类型**
+#### Python 示例：演示所有排序类型
 
 此示例定义了三个父 Track，每个 Track 演示不同的 `child_ordering` 模式，同时在根 Track 上配置了显式的进程和线程排序。
 
@@ -412,13 +415,132 @@ WHERE tid = 5678;
 
 ![控制 Track 排序顺序](/docs/images/synthetic-track-event-sorting.png)
 
+## {#controlling-track-merging} 控制 Track 合并
+
+默认情况下，Perfetto UI 合并共享相同名称的 Track。这通常是用于分组相关异步事件的所需行为。但是，在某些情况下，你需要更明确的控制。你可以使用 `TrackDescriptor` 中的 `sibling_merge_behavior` 和 `sibling_merge_key`
+字段覆盖此默认合并逻辑。
+
+这允许你：
+
+- **防止合并**： 强制 Track（即使具有相同名称）始终单独显示。
+- **按键合并**： 强制 Track 根据自定义密钥合并，无论它们的名称如何。
+
+`Sibling_merge_behavior` 字段可以设置为以下值之一：
+
+- `SIBLING_MERGE_BEHAVIOR_BY_TRACK_NAME`(默认)：合并具有相同 `name` 的同级 Track。
+- `SIBLING_MERGE_BEHAVIOR_NONE`：防止 Track 与其任何同级合并。
+- `SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`：合并具有相同 `sibling_merge_key` 字符串的同级 Track。
+
+### Python 示例：防止合并
+
+在此示例中，我们创建两个具有相同名称的 Track。通过将其
+`Sibling_merge_behavior` 设置为 `SIBLING_MERGE_BEHAVIOR_NONE`，我们确保它们
+始终在 UI 中显示为不同的 Track。
+
+<details>
+<summary><b>单击展开/折叠 Python 代码</b></summary>
+
+```python
+ TRUSTED_PACKET_SEQUENCE_ID = 9003
+
+ # --- 定义 Track UUID ---
+ track1_uuid = 1
+ track2_uuid = 2
+
+ # 定义 TrackDescriptor 的辅助函数
+ def define_custom_track(track_uuid, name):
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = track_uuid
+ desc.name = name
+ desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_NONE
+
+# 1. 定义 Track
+    define_custom_track(track1_uuid, "我的独立 Track")
+    define_custom_track(track2_uuid, "我的独立 Track")
+
+    # 添加 Slice 事件的辅助函数
+    def add_slice_event(ts, event_type, event_track_uuid, name=None):
+ packet = builder.add_packet()
+ packet.timestamp = ts
+ packet.track_event.type = event_type
+ packet.track_event.track_uuid = event_track_uuid
+ if name:
+ packet.track_event.name = name
+ packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+
+ # 2. 向 Track 添加事件
+ add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="Slice 1")
+ add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
+
+ add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="Slice 2")
+ add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
+```
+
+</details>
+
+![防止合并](/docs/images/synthetic-track-event-no-merge.png)
+
+### Python 示例：按键合并
+
+在此示例中，我们创建两个具有不同名称但相同
+`sibling_merge_key` 的 Track。通过将其 `Sibling_merge_behavior` 设置为
+`SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`，我们指示 UI 将它们
+合并到单个视觉 Track 中。合并组的名称将取自其中一个 Track(通常是具有较低 UUID 的 Track)。
+
+<details>
+<summary><b>单击展开/折叠 Python 代码</b></summary>
+
+```python
+ TRUSTED_PACKET_SEQUENCE_ID = 9004
+
+ # --- 定义 Track UUID ---
+ track1_uuid = 1
+ track2_uuid = 2
+
+ # 定义 TrackDescriptor 的辅助函数
+ def define_custom_track(track_uuid, name, merge_key):
+ packet = builder.add_packet()
+ desc = packet.track_descriptor
+ desc.uuid = track_uuid
+ desc.name = name
+ desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY
+ desc.sibling_merge_key = merge_key
+
+# 1. 定义具有相同合并密钥的 Track
+    define_custom_track(track1_uuid, "HTTP GET", "conn-123")
+    define_custom_track(track2_uuid, "HTTP POST", "conn-123")
+
+    # 添加 Slice 事件的辅助函数
+    def add_slice_event(ts, event_type, event_track_uuid, name=None):
+ packet = builder.add_packet()
+ packet.timestamp = ts
+ packet.track_event.type = event_type
+ packet.track_event.track_uuid = event_track_uuid
+ if name:
+ packet.track_event.name = name
+ packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+
+ # 2. 向 Track 添加事件
+ add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="GET /data")
+ add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
+
+ add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="POST /submit")
+ add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
+```
+
+</details>
+
+![按键合并](/docs/images/synthetic-track-event-merge-by-key.png)
+
+
 ### 在 Counters 之间共享 Y 轴
 
 在可视化多个 Counter Tracks 时，让它们共享相同的 Y 轴范围通常很有用。这允许轻松比较它们的值。Perfetto 通过 `CounterDescriptor` 中的 `y_axis_share_key` 字段支持此功能。
 
 所有具有相同 `y_axis_share_key` 和相同父 Track 的 Counter Tracks 将在 UI 中共享它们的 Y 轴范围。
 
-**Python 示例：共享 Y 轴**
+#### Python 示例：共享 Y 轴
 
 在此示例中，我们创建两个具有相同 `y_axis_share_key` 的 Counter Tracks。这将导致它们在 Perfetto UI 中使用相同的 Y 轴范围进行渲染。
 
@@ -472,7 +594,7 @@ WHERE tid = 5678;
 
 要添加描述，只需在 Track 的 `TrackDescriptor` 中设置可选的 `description` 字段。
 
-#### Python 示例
+#### Python 示例：Track 描述
 
 此示例定义了两个 Track：一个设置了 `description` 字段，一个没有，以说明 UI 中的差异。
 
@@ -531,11 +653,7 @@ WHERE tid = 5678;
 
 ![添加 Track 描述](/docs/images/synthetic-track-event-description.png)
 
-## 高级事件写入
-
-本节涵盖了专业用例的高级 TrackEvent 功能，包括数据优化技术和事件链接机制。
-
-### 驻留数据以优化 trace 大小
+## 驻留数据以优化 trace 大小
 
 驻留是一种通过仅在 trace 中发出一次频繁重复的字符串（如事件名称或类别）来减少 trace 文件大小的技术。对这些字符串的后续引用使用紧凑的整数标识符（"驻留 ID"或 `iid`）。当你有许多事件共享相同名称或其他基于字符串的属性时，这特别有用。
 
@@ -555,7 +673,7 @@ WHERE tid = 5678;
  _使用_这些已建立的驻留条目（或向现有的有效字典添加更多条目）的数据包将设置
  `TracePacket.SEQ_NEEDS_INCREMENTAL_STATE`。
 
-**Python 示例：驻留事件名称**
+#### Python 示例：驻留事件名称
 
 此示例显示如何为事件名称定义驻留字符串，然后多次使用它。
 
@@ -865,6 +983,172 @@ WHERE tid = 5678;
 
 ![驻留调用堆栈](/docs/images/synthetic-track-event-interned-callstack.png)
 
+## 用额外数据丰富事件
+
+除了名称和时间戳之外，每个事件还可以携带额外数据：改变 callstack 如何聚合到火焰图的 weight、将相关事件链接在一起的 correlation ID，以及通过你自己的 protobuf schema 定义的完全自定义类型字段。
+
+### {#callstack-weights} Weighted Callstacks and Custom Measures
+
+默认情况下，附加到事件的每个 callstack 在聚合到火焰图时只计数一次：这就是 **Samples** measure。然而，通常每次出现应该贡献不同的量：该 stack 分配的字节数、归因于它的延迟，等等。
+
+`TrackEvent` 上的 `callstack_weight` 字段为记录在该事件上的 callstack 附加一个可选的加性值。它适用于 inline callstacks 和 interned callstacks（`callstack_iid`），以及 begin 和 end 事件：
+
+```protobuf
+message TrackEvent {
+  // ...
+  oneof callstack_field {
+    InlineCallstack callstack = 55;
+    uint64 callstack_iid = 56;
+  }
+  optional double callstack_weight = 57;
+}
+```
+
+需要记住的关键规则：**加权聚合只包含设置了 `callstack_weight` 的事件；加权和未加权样本永远不会混合。** 如果你的某些事件设置了 weight 而其他事件没有，则 "Weight" measure 只覆盖加权事件，而 "Samples" 继续计数所有事件。要获得有意义的加权火焰图，请在每个事件上（在给定 track 上）都设置 weight，或都不设置。
+
+除了 weight 之外，附加到携带 callstack 的事件的任何**数字参数**都可以在 UI 中用作额外的火焰图 measure。这包括 [debug annotations](/docs/getting-started/converting.md#debug-annotations) 和来自 [proto 扩展](#proto-extensions) 的整数/双精度字段 — 任何最终作为 `args` 表中数字条目的内容。这让单个事件流可以携带多个并行 measure：例如，allocation profiler 可以使用 `callstack_weight` 表示字节数，使用 `objects` debug annotation 表示对象数量。
+
+#### Python 示例：Weighted Callstacks
+
+此示例模拟一个简单的 allocation profiler：每个 slice 记录分配的 callstack，`callstack_weight` 设置为分配的字节数，以及两个额外的每事件 measure — 一个统计分配对象数量的 `objects` debug annotation，以及一个记录分配耗时的 `alloc_stats.latency_us` proto 扩展字段。
+
+该扩展使用 [使用 Proto 扩展附加自定义类型字段](#proto-extensions) 中描述的双文件描述符设置。如果你只需要 weight 和 debug annotation，可以跳过两个 `.proto` 文件并删除 Python 代码中与扩展相关的行。
+
+**文件 1 — `alloc_stats.proto`**（数据模式，编译为 Python 绑定）：
+
+```protobuf
+syntax = "proto2";
+package com.acme;
+
+message AcmeAllocStats {
+  optional double latency_us = 1;
+}
+```
+
+**文件 2 — `alloc_stats_extension.proto`**（扩展 hook，编译为嵌入 trace 的描述符集）：
+
+```protobuf
+syntax = "proto2";
+import "protos/perfetto/trace/perfetto_trace.proto";
+import "alloc_stats.proto";
+package com.acme;
+
+message AcmeAllocStatsExtension {
+  extend perfetto.protos.TrackEvent {
+    optional AcmeAllocStats alloc_stats = 9950;
+  }
+}
+```
+
+```bash
+protoc --python_out=. alloc_stats.proto
+protoc -I. --include_imports \
+       --descriptor_set_out=alloc_stats_extension.desc \
+       alloc_stats_extension.proto
+```
+
+然后将以下 Python 代码复制到 `trace_converter_template.py` 脚本中的 `populate_packets(builder)` 函数。
+
+<details>
+<summary><b>单击展开/折叠 Python 代码</b></summary>
+
+```python
+    from alloc_stats_pb2 import AcmeAllocStats
+
+    ALLOC_TRACK_UUID = 24681357
+
+    # alloc_stats_extension.proto 中声明的字段编号。
+    ALLOC_STATS_FIELD_NUMBER = 9950
+
+    def _varint(n):
+        out = bytearray()
+        while n >= 0x80:
+            out.append((n & 0x7f) | 0x80)
+            n >>= 7
+        out.append(n)
+        return bytes(out)
+
+    def set_alloc_stats(track_event, latency_us):
+        """将 alloc_stats 扩展字段（wire type 2）附加到事件上。"""
+        stats = AcmeAllocStats(latency_us=latency_us)
+        tag = (ALLOC_STATS_FIELD_NUMBER << 3) | 2
+        payload = stats.SerializeToString()
+        track_event.MergeFromString(_varint(tag) + _varint(len(payload)) + payload)
+
+    def emit_alloc(ts, event_type, name=None, frames=None, alloc_bytes=None,
+                   objects=None, latency_us=None):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = ALLOC_TRACK_UUID
+        if name is not None:
+            packet.track_event.name = name
+        if frames:
+            for function in frames:
+                frame = packet.track_event.callstack.frames.add()
+                frame.function_name = function
+        if alloc_bytes is not None:
+            packet.track_event.callstack_weight = alloc_bytes
+        if objects is not None:
+            annotation = packet.track_event.debug_annotations.add()
+            annotation.name = "objects"
+            annotation.int_value = objects
+        if latency_us is not None:
+            set_alloc_stats(packet.track_event, latency_us)
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+
+    # 1. 嵌入描述符集，以便 Trace Processor 可以解码扩展。
+    desc_packet = builder.add_packet()
+    with open('alloc_stats_extension.desc', 'rb') as f:
+        desc_packet.extension_descriptor.extension_set.ParseFromString(f.read())
+
+    # 2. 定义 Track
+    packet = builder.add_packet()
+    packet.track_descriptor.uuid = ALLOC_TRACK_UUID
+    packet.track_descriptor.name = "Allocations"
+
+    # 3. 发出分配 slice。每个携带：
+    #    - 分配发生位置的 inline callstack
+    #    - callstack_weight: 分配的字节数
+    #    - "objects" debug annotation: 分配的对象数量
+    #    - "alloc_stats.latency_us" 扩展字段: 分配延迟
+    allocations = [
+        (1000, 1400, ["main", "ParseInput", "AllocateBuffer"], 4096, 1, 12.5),
+        (1600, 2100, ["main", "ParseInput", "AllocateBuffer"], 8192, 2, 30.2),
+        (2300, 2600, ["main", "ParseInput", "DecodeString"], 256, 8, 5.1),
+        (2800, 3400, ["main", "RenderOutput", "AllocateBuffer"], 2048, 1, 15.7),
+        (3600, 3900, ["main", "RenderOutput", "FormatText"], 512, 16, 3.9),
+        (4100, 4500, ["main", "RenderOutput", "FormatText"], 1024, 32, 8.4),
+    ]
+    for begin_ts, end_ts, frames, alloc_bytes, objects, latency_us in allocations:
+        emit_alloc(
+            ts=begin_ts,
+            event_type=TrackEvent.TYPE_SLICE_BEGIN,
+            name=frames[-1],
+            frames=frames,
+            alloc_bytes=float(alloc_bytes),
+            objects=objects,
+            latency_us=latency_us,
+        )
+        emit_alloc(ts=end_ts, event_type=TrackEvent.TYPE_SLICE_END)
+```
+
+</details>
+
+运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 trace 并对 `Allocations` track 进行区域选择。"Track Event Callstacks" 标签页中的火焰图默认使用 **Weight** measure，前提是至少有一个选中的样本设置了 `callstack_weight`；否则回退到 **Samples**：
+
+![Weighted Callstacks](/docs/images/synthetic-track-event-callstack-weight.png)
+
+measure 选择器（火焰图左上角的下拉菜单）允许你在内置 measure 之间切换并添加新的 measure。"Add measure..." 打开一个可搜索列表，包含所选事件上找到的每个数字参数。Debug annotations 显示为 `debug.` 前缀（本例中为 `debug.objects`），而 proto 扩展字段显示在其字段名（`alloc_stats.latency_us`）下：
+
+![Callstack Measure Picker](/docs/images/synthetic-track-event-callstack-measures.png)
+
+选择一个会将其添加为 measure：然后火焰图会像 weight 一样聚合该参数在所选 callstack 中的值。下面是按 `debug.objects` 测量的相同选择 — 注意火焰图的形状如何变化，因为 `RenderOutput` 分配的对象比 `ParseInput` 多得多，尽管分配的字节数更少：
+
+![Callstacks by Objects](/docs/images/synthetic-track-event-callstack-objects.png)
+
+与 `callstack_weight` 一样，只有实际拥有该参数的样本才会包含在该 measure 中。
+
 ### 使用关联 ID 链接相关事件
 
 关联 ID 提供了一种视觉上将属于同一逻辑操作的 Slice 链接起来的方法，即使它们没有因果连接。与代表直接因果关系的流程不同，关联 ID 对共享公共上下文或属于同一高级操作的事件进行分组。
@@ -892,7 +1176,7 @@ Perfetto 支持三种类型的关联标识符：
  [驻留数据以优化 trace 大小](#interning-data-for-trace-size-optimization)
  有关驻留的详细信息)
 
-#### Python 示例
+#### Python 示例：Correlation IDs
 
 此示例通过模拟跨越多个服务 Track 的两个单独请求的处理的不同阶段来演示使用整数标识符的关联 ID。
 
@@ -1017,7 +1301,7 @@ protoc -I. --include_imports \
        acme_extension.proto
 ```
 
-#### Python 示例
+#### Python 示例：设置扩展字段
 
 扩展有效负载作为 protobuf 线字节写入 `TrackEvent` — 一个长度分隔的字段（线类型 2），其值是数据消息的序列化字节。
 
@@ -1093,124 +1377,6 @@ SELECT
 FROM slice
 WHERE EXTRACT_ARG(slice.arg_set_id, 'request_metadata.request_id') IS NOT NULL;
 ```
-
-## {#controlling-track-merging} 控制 Track 合并
-
-默认情况下，Perfetto UI 合并共享相同名称的 Track。这通常是用于分组相关异步事件的所需行为。但是，在某些情况下，你需要更明确的控制。你可以使用 `TrackDescriptor` 中的 `sibling_merge_behavior` 和 `sibling_merge_key`
-字段覆盖此默认合并逻辑。
-
-这允许你：
-
-- **防止合并**： 强制 Track（即使具有相同名称）始终单独显示。
-- **按键合并**： 强制 Track 根据自定义密钥合并，无论它们的名称如何。
-
-`Sibling_merge_behavior` 字段可以设置为以下值之一：
-
-- `SIBLING_MERGE_BEHAVIOR_BY_TRACK_NAME`(默认)：合并具有相同 `name` 的同级 Track。
-- `SIBLING_MERGE_BEHAVIOR_NONE`：防止 Track 与其任何同级合并。
-- `SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`：合并具有相同 `sibling_merge_key` 字符串的同级 Track。
-
-### Python 示例：防止合并
-
-在此示例中，我们创建两个具有相同名称的 Track。通过将其
-`Sibling_merge_behavior` 设置为 `SIBLING_MERGE_BEHAVIOR_NONE`，我们确保它们
-始终在 UI 中显示为不同的 Track。
-
-<details>
-<summary><b>单击展开/折叠 Python 代码</b></summary>
-
-```python
- TRUSTED_PACKET_SEQUENCE_ID = 9003
-
- # --- 定义 Track UUID ---
- track1_uuid = 1
- track2_uuid = 2
-
- # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_NONE
-
-# 1. 定义 Track
-    define_custom_track(track1_uuid, "我的独立 Track")
-    define_custom_track(track2_uuid, "我的独立 Track")
-
-    # 添加 Slice 事件的辅助函数
-    def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
-
- # 2. 向 Track 添加事件
- add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="Slice 1")
- add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
-
- add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="Slice 2")
- add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
-```
-
-</details>
-
-![防止合并](/docs/images/synthetic-track-event-no-merge.png)
-
-### Python 示例：按键合并
-
-在此示例中，我们创建两个具有不同名称但相同
-`sibling_merge_key` 的 Track。通过将其 `Sibling_merge_behavior` 设置为
-`SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`，我们指示 UI 将它们
-合并到单个视觉 Track 中。合并组的名称将取自其中一个 Track(通常是具有较低 UUID 的 Track)。
-
-<details>
-<summary><b>单击展开/折叠 Python 代码</b></summary>
-
-```python
- TRUSTED_PACKET_SEQUENCE_ID = 9004
-
- # --- 定义 Track UUID ---
- track1_uuid = 1
- track2_uuid = 2
-
- # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name, merge_key):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY
- desc.sibling_merge_key = merge_key
-
-# 1. 定义具有相同合并密钥的 Track
-    define_custom_track(track1_uuid, "HTTP GET", "conn-123")
-    define_custom_track(track2_uuid, "HTTP POST", "conn-123")
-
-    # 添加 Slice 事件的辅助函数
-    def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
-
- # 2. 向 Track 添加事件
- add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="GET /data")
- add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
-
- add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="POST /submit")
- add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
-```
-
-</details>
-
-![按键合并](/docs/images/synthetic-track-event-merge-by-key.png)
 
 ## {#handling-large-traces-with-streaming} 使用流处理大型 trace
 

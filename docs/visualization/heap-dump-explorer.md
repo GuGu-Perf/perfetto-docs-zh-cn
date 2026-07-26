@@ -123,9 +123,14 @@ Overview 是默认着陆页，汇总 dump 信息：
 
 - **常规信息。** 可达实例数和 dump 中的堆列表（通常是 `app`、`zygote`、`image`）。
 - **按堆保留的字节数。** 每个堆的 Java、native 和总大小，顶部有总计行。使用此信息查看问题是在 Java 堆上、native 内存中还是两者都有。
+- **Out of Memory Error**（仅限 OOM dump）。对于由 `OutOfMemoryError` 触发的 dump，会细分失败的分配 — 分配大小、距离堆增长限制的空闲余量，以及原始错误消息。分配 stack 本身位于 [Callstack](#callstack) 标签页。
 - **重复的 Bitmap / 字符串 / 原始数组。** 按内容哈希分组的重复内容。每行显示副本数量和浪费的字节数；点击 _Copies_ 打开相关标签页并按该组过滤。
 
 ![Overview 标签页：General Information（跨 app/image/zygote 堆的 437,681 个可达实例），Bytes Retained by Heap（总计 24.4 MiB，app 堆上 1.5 MiB），以及一个重复 Bitmap 组，同一 128×128 图像的 12 个副本浪费 785.8 KiB。](/docs/images/heap_docs/04-overview.png)
+
+对于在 `OutOfMemoryError` 时捕获的 dump，Out of Memory Error 卡片位于 Bytes Retained by Heap 下方：
+
+![OOM dump 的 Overview 标签页。Bytes Retained by Heap 下方，Out of Memory Error 卡片显示 Allocation size 10.00 MB、Free until OOM 8.91 MB 以及原始 ART 错误消息。](/docs/images/heap_docs/18-overview-oom.png)
 
 ## Flamegraph
 
@@ -327,6 +332,20 @@ Arrays 标签页列出原始数组（`byte[]`、`int[]`、`long[]`、...）及�
 ![Arrays 标签页按 Shallow 排序，Content Hash 列可见；按哈希过滤返回共享相同字节的每个数组。](/docs/images/heap_docs/11-arrays.png)
 
 两个常见用途：找到支持图像或序列化缓冲区的大型重复 `byte[]`，以及从容器对象跳转到持有其数据的原始数组。
+
+## Callstack
+
+Callstack 标签页仅在较新 Android 版本上由 `OutOfMemoryError` 触发的 dump 中有数据；在其他任何 dump 上它都是空的。它显示触发 OOM 的线程的 Java 分配 stack — 请求堆无法满足的分配的路径 — 以 [flamegraph](#flamegraph) 小部件展示，上方是失败分配的细分。
+
+![OOM dump 的 Callstack 标签页。Out of Memory Error 网格显示 Allocation size 10.00 MB、Free until OOM 8.91 MB 和原始 ART 错误消息；下方分配 stack 从 java.lang.Thread.run 向下到 MainActivity.triggerOOM。](/docs/images/heap_docs/17-callstack.png)
+
+网格细分失败信息：
+
+- **Allocation size** — 无法满足的分配大小。
+- **Free until OOM** — 堆增长限制前仍然可用的字节数；失败时刻的余量。
+- **Error message** — 来自 ART 的原始 `OutOfMemoryError` 字符串。
+
+stack 告诉你失败点*分配了什么*；其他标签页告诉你*已经保留了什么*。在余量充足的情况下进行大分配是分配点问题；在几乎没有余量的情况下进行 modest 分配是保留问题 — 从 [Dominators](#dominators) 或 [Flamegraph](#flamegraph) 追查。
 
 ## 从火焰图跳转
 

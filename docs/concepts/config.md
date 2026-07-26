@@ -201,6 +201,82 @@ perfetto -c config.bin -o trace_file.perfetto-trace
 
 总结：要捕获长 trace，只需设置 `write_into_file:true`，设置一个长的 `duration_ms`，并使用 32MB 或更大的内存缓冲区大小。
 
+## {#compression} 压缩 trace
+
+tracing service 可以在写入 trace 时对其进行压缩。这能显著减小磁盘上的文件大小（以及从设备拉取的数据量），但会以 tracing 期间额外的 CPU 开销为代价。默认情况下压缩是关闭的，需要从 TraceConfig 中启用。
+
+Perfetto 读取器会透明地解压缩：压缩后的 trace 可以直接在 [Perfetto UI](/docs/visualization/perfetto-ui.md) 和 Trace Processor 中打开，无需手动操作。
+
+### 选择 codec
+
+设置 `compression` 字段，通过填充哪个子消息来选择 codec：
+
+- **zstd** — 推荐。在相似速度下比 deflate 产生更小的 trace。
+- **deflate**（zlib）— 较旧的 codec，保留用于兼容。
+
+<?tabs?>
+
+TAB: zstd（推荐）
+
+```protobuf
+# 省略 trace config 的其余部分（buffers、data_sources 等）。
+
+compression {
+  zstd {}
+}
+```
+
+TAB: deflate
+
+```protobuf
+# 省略 trace config 的其余部分（buffers、data_sources 等）。
+
+compression {
+  deflate {}
+}
+```
+
+</tabs?>
+
+### 调整 zstd level
+
+zstd 提供压缩 level，用 CPU 换取更小的文件：
+
+```protobuf
+compression {
+  zstd {
+    level: 9
+  }
+}
+```
+
+- 范围是 `1`（最快）到 `22`（最小）。超过最大值的 level 会被钳制。
+- `0` 或未设置使用 zstd 默认值（`3`），对大多数 trace 来说是一个不错的平衡。
+- 负 level 也是有效的，会选择更快、压缩率更低的模式。
+
+### 跨 service 版本兼容性
+
+`compression` 在 Perfetto v58（Android 26Q3+）中添加。service 只读取它知道的 codec，并选择**字段号最大**的那个，因此单个 config 可以同时面向新旧 service：同时设置两者，v58+ 使用 `zstd`（字段 2），而旧 service 回退到 `deflate`（字段 1）。
+
+```protobuf
+compression {
+  deflate {}
+  zstd {}
+}
+```
+
+在 `compression` 之前存在的 service 使用现已弃用的 `compression_type`（仅 deflate）。它仍然会被遵守，但当两者都设置时，`compression` 优先。
+
+NOTE: 只有当对应的构建标志启用时（`enable_perfetto_zlib`、`enable_perfetto_zstd`），codec 才会被编译进去。未启用它的构建——尤其是进程内 SDK backend——会忽略该请求并输出未压缩的 trace。参见 [SDK 构建标志](/docs/instrumentation/tracing-sdk.md)，了解在直接从应用写入 trace 时如何启用压缩。
+
+### 在 Perfetto 外部读取压缩 trace
+
+如果你需要原始未压缩的 protobuf（例如用于非 Perfetto 工具），可以使用 `traceconv` 展开压缩后的 packet：
+
+```bash
+./traceconv decompress_packets trace.perfetto-trace trace.decompressed
+```
+
 ## 数据源特定配置
 
 除了 trace 全局配置参数外，trace 配置还定义了数据源特定的行为。在 proto 模式级别，这在 `TraceConfig` 的 `DataSourceConfig` 部分中定义：

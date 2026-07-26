@@ -86,22 +86,26 @@ int main(int argc, char** argv) {
 
 ## 可选功能
 
-整合后的 SDK 附带两个可选功能。它们默认关闭；通过在 SDK 的 include 路径下放入名为 `perfetto_sdk_config.h` 的头文件并在其中定义相应的宏来启用：
+整合后的 SDK 附带三个可选功能。它们默认关闭；通过在 SDK 的 include 路径下放入名为 `perfetto_sdk_config.h` 的头文件并在其中定义相应的宏来启用：
 
 ```C++
 // perfetto_sdk_config.h
 #define PERFETTO_SDK_ENABLE_ZLIB 1   // 可选
+#define PERFETTO_SDK_ENABLE_ZSTD 1   // 可选
 #define PERFETTO_SDK_ENABLE_RE2  1   // 可选
 ```
 
-`build_config.h` 通过 `__has_include` 检测该文件并从中读取宏定义；无需 cflag 管道配置。这两个功能相互独立 — 可以设置其中之一、两者都设置或都不设置。
+`build_config.h` 通过 `__has_include` 检测该文件并从中读取宏定义；无需 cflag 管道配置。这些功能相互独立 — 可以设置任意组合，或都不设置。
 
 | 宏 | 链接 | 系统头文件 | 功能说明 |
 | --- | --- | --- | --- |
-| `PERFETTO_SDK_ENABLE_ZLIB` | `-lz` | `zlib.h` | 在进程内后端上遵循 `TraceConfig.compression_type = COMPRESSION_TYPE_DEFLATE`，使得通过 `TracingSession::Setup(cfg, fd)` 写入的 `.pftrace` 文件经过 zlib 压缩。没有该宏时，该字段会被静默忽略。 |
+| `PERFETTO_SDK_ENABLE_ZLIB` | `-lz` | `zlib.h` | 在进程内后端上启用 deflate (zlib) codec，遵循 `TraceConfig.compression { deflate {} }`（以及旧版 `compression_type = COMPRESSION_TYPE_DEFLATE`），使得通过 `TracingSession::Setup(cfg, fd)` 写入的 `.pftrace` 文件被压缩。没有该宏时，该字段会被静默忽略。 |
+| `PERFETTO_SDK_ENABLE_ZSTD` | `-lzstd` | `zstd.h` | 在进程内后端上启用 zstd codec，遵循 `TraceConfig.compression { zstd { level: N } }`。zstd 在相似速度下产生比 deflate 更小的 trace。没有该宏时，该字段会被静默忽略。 |
 | `PERFETTO_SDK_ENABLE_RE2` | `-lre2` | `re2/re2.h` | 将 `base::Regex` 使用的默认 `std::regex` 后端替换为 [RE2](https://github.com/google/re2)，后者在处理大规模输入时显著更快（例如用于 `TraceConfig` 的数据源/生产者名称过滤）。 |
 
-启用时，相应的系统头文件也必须从 include 路径可达；在 Debian/Ubuntu 上为 `zlib1g-dev` / `libre2-dev`，在 Fedora 上为 `zlib-devel` / `re2-devel`。
+参见 [压缩 trace](/docs/concepts/config.md#compression) 了解如何在 `TraceConfig` 中选择和调整 codec。
+
+启用时，相应的系统头文件也必须从 include 路径可达；在 Debian/Ubuntu 上为 `zlib1g-dev` / `libzstd-dev` / `libre2-dev`，在 Fedora 上为 `zlib-devel` / `libzstd-devel` / `re2-devel`。
 
 ## 自定义数据源 vs Track 事件
 
