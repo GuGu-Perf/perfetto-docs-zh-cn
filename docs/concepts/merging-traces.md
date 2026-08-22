@@ -1,4 +1,4 @@
-# Trace 合并的工作原理
+# Trace 合并
 
 Trace Processor 可以同时打开多个 trace 文件并将其合并到一条
 时间线上：来自不同设备的 trace、来自同一设备上不同进程的 trace，
@@ -7,8 +7,8 @@ Trace Processor 可以同时打开多个 trace 文件并将其合并到一条
 机器。
 
 这是原理层面的解释。面向任务的指南参见
-[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)
-和[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)。
+[在 UI 中合并 trace](/docs/visualization/merging-traces.md)
+和[从命令行合并 trace](/docs/analysis/merging-traces.md)。
 
 ## 问题
 
@@ -133,7 +133,7 @@ ID）。这三种方法以及如何选择它们，在
 
 - [Trace manifest 格式](/docs/reference/perfetto-manifest.md)：
   手动合并配置的完整参考。
-- [使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)：
+- [从命令行合并 trace](/docs/analysis/merging-traces.md)：
   构建合并归档文件并查询结果。
 - [时钟同步](/docs/concepts/clock-sync.md)：此构建所基于的
   单 trace 时钟模型。

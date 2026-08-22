@@ -21,10 +21,11 @@
 
   - [Cookbooks](#)
 
-    - [本地 Android 录制](getting-started/local-android-trace-recording.md) {.tag-android}
+    - [本地录制 Android Trace](getting-started/local-android-trace-recording.md) {.tag-android}
     - [分析 Android Trace](getting-started/android-trace-analysis.md) {.tag-android}
-    - [Linux Tracing 配方](getting-started/linux-cookbook.md) {.tag-linux}
-    - [周期性 Trace 快照](getting-started/periodic-trace-snapshots.md) {.tag-android .tag-linux}
+    - [从命令行分析 trace](getting-started/command-line-analysis.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [Linux 上的 Tracing](getting-started/linux-cookbook.md) {.tag-linux}
+    - [采集周期性 Trace 快照](getting-started/periodic-trace-snapshots.md) {.tag-android .tag-linux}
     - [在 Perfetto 中使用 AI](getting-started/using-ai.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
   - [案例研究](#)
@@ -45,7 +46,7 @@
     - [缓冲区和数据流](concepts/buffers.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
     - [Trace 配置](concepts/config.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
     - [时钟同步](concepts/clock-sync.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
-    - [Trace 合并的工作原理](concepts/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [Trace 合并](concepts/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [并发 Tracing 会话](concepts/concurrent-tracing-sessions.md) {.tag-android .tag-linux .tag-cpp-rust}
 
   - [采集](#)
@@ -92,13 +93,14 @@
   - [可视化](#)
 
     - [Perfetto UI](visualization/perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-    - [在 Perfetto UI 中合并 trace](visualization/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [在 UI 中合并 trace](visualization/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [Data Explorer](visualization/data-explorer.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [打开大型 Trace](visualization/large-traces.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [深度链接](visualization/deep-linking-to-perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [嵌入 Perfetto UI](visualization/embedding-the-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [调试 Track](analysis/debug-tracks.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [Heap Dump 浏览器](visualization/heap-dump-explorer.md) {.tag-android}
+    - [Memscope 与 Memory Overview](visualization/memscope.md) {.tag-android .tag-linux}
 
     - [扩展 UI](#)
 
@@ -124,7 +126,7 @@
       - [C++ 库](analysis/trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
       - [Python 库](analysis/trace-processor-python.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
       - [批量 Trace Processor](analysis/batch-trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [使用 Trace Processor 合并 trace](analysis/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [从命令行合并 trace](analysis/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [Trace 汇总](analysis/trace-summary.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
     - [从 Perfetto 转换](quickstart/traceconv.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}

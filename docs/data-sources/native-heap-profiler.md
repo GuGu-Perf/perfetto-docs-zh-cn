@@ -204,7 +204,7 @@ ART allocation samples 对于理解内存流变很有用，显示代码哪些部
 
 ## 符号化和反混淆
 
-如果你的 profile 显示原始地址或混淆的 Java/Kotlin 名称，请对收集的 trace 运行 `traceconv bundle` 以生成丰富的归档。有关完整工作流程，请参阅[符号化和反混淆](/docs/learning-more/symbolization.md)，包括传统的 `PERFETTO_BINARY_PATH` / `PERFETTO_PROGUARD_MAP` 方法。
+如果你的 profile 显示原始地址或混淆的 Java/Kotlin 名称，请对收集的 trace 运行 `trace_processor bundle` 以生成丰富的归档。有关完整工作流程，请参阅[符号化和反混淆](/docs/learning-more/symbolization.md)，包括传统的 `PERFETTO_BINARY_PATH` / `PERFETTO_PROGUARD_MAP` 方法。
 
 ## 故障排除
 
@@ -239,7 +239,7 @@ tools/heap_profile host -- ./my_binary --some-flag
 1. 首次运行时将 `tracebox` 和 `libheapprofd_glibc_preload.so` (linux-amd64 / arm / arm64) 自动下载到 `~/.local/share/perfetto/prebuilts/` 中。
 2. 通过 `tracebox --system-sockets` 启动捆绑的 `traced` 守护进程。
 3. 使用 `LD_PRELOAD` 指向预加载库并设置 `PERFETTO_HEAPPROFD_BLOCKING_INIT=1` 启动目标二进制文件。默认情况下 heapprofd 懒惰初始化以避免阻塞主线程，这意味着启动分配可能会被遗漏；设置此变量后，第一次 `malloc` 会阻塞，直到 heapprofd 完全附加，因此每个分配都会被正确跟踪。
-4. 等待目标退出（或你按 `Ctrl-C`），然后运行 `traceconv` 以生成 gzip 压缩的 pprof 文件和原始 trace。
+4. 等待目标退出（或你按 `Ctrl-C`），然后运行 `trace_processor` 以生成 gzip 压缩的 pprof 文件和原始 trace。
 
 如果省略 `-n` / `--name`，进程名称默认为你在 `--` 后传递的二进制文件的基本名称。
 
@@ -319,10 +319,10 @@ tools/heap_profile host \
 
 ## 转换为 pprof
 
-你可以使用 [traceconv](/docs/quickstart/traceconv.md) 将 trace 中的堆转储转换为 [pprof](https://github.com/google/pprof) 格式：
+你可以使用 [trace_processor](/docs/quickstart/traceconv.md) 将 trace 中的堆转储转换为 [pprof](https://github.com/google/pprof) 格式：
 
 ```bash
-tools/traceconv profile /tmp/profile
+tools/trace_processor convert profile /tmp/profile
 ```
 
 这将在 `/tmp/` 中创建一个包含堆转储的目录。运行：

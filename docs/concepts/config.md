@@ -271,10 +271,10 @@ NOTE: 只有当对应的构建标志启用时（`enable_perfetto_zlib`、`enable
 
 ### 在 Perfetto 外部读取压缩 trace
 
-如果你需要原始未压缩的 protobuf（例如用于非 Perfetto 工具），可以使用 `traceconv` 展开压缩后的 packet：
+如果你需要原始未压缩的 protobuf（例如用于非 Perfetto 工具），可以使用 `trace_processor` 展开压缩后的 packet：
 
 ```bash
-./traceconv decompress_packets trace.perfetto-trace trace.decompressed
+./trace_processor util decompress_packets trace.perfetto-trace trace.decompressed
 ```
 
 ## 数据源特定配置

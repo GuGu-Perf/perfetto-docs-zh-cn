@@ -9,12 +9,13 @@
 
 ## 你需要哪种工作流？ {#which-workflow}
 
-根据你的 trace 匹配以下类别之一并点击链接。选择错误的工作流是符号"不起作用"的最常见原因。关键经验法则：**用户空间**符号在主机上离线解析（`traceconv bundle`），而**内核**符号始终在设备上录制时解析（Perfetto 故意不存储绝对内核地址，以避免泄露
+根据你的 trace 匹配以下类别之一并点击链接。选择错误的工作流是符号"不起作用"的最常见原因。关键经验法则：**用户空间**符号在主机上离线解析（`trace_processor
+bundle`），而**内核**符号始终在设备上录制时解析（Perfetto 故意不存储绝对内核地址，以避免泄露
 [KASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization)）。
 
 | 你的 trace 包含&hellip; | 示例 | 你需要什么 |
 | --- | --- | --- |
-| **调用栈** | Native heap profiler、`traced_perf` / Linux perf CPU 采样、ART 堆转储 | [符号化与反混淆](#callstacks)。用户空间帧离线解析（`traceconv bundle`）；内核帧在设备上自动符号化。 |
+| **调用栈** | Native heap profiler、`traced_perf` / Linux perf CPU 采样、ART 堆转储 | [符号化与反混淆](#callstacks)。用户空间帧离线解析（`trace_processor bundle`）；内核帧在设备上自动符号化。 |
 | **内核 ftrace 事件** | `function_graph` 追踪、`sched_blocked_reason`、kprobes | [录制时 `symbolize_ksyms`](#ftrace)。这些地址**无法**事后符号化。 |
 | **用户空间事件名称** | atrace slice 名称、ART 方法追踪 | 目前[不支持](#userspace-event-names)离线反混淆；在插桩时发出可读名称。 |
 
@@ -26,12 +27,12 @@
 
 调用栈还可能包含**内核**帧，它们的处理方式不同；请参阅本节末尾的[调用栈中的内核帧](#callstack-kernel-frames)。
 
-### {#option-1-traceconv-bundle} 方式 1：`traceconv bundle`（推荐）
+### {#option-1-traceconv-bundle} 方式 1：`trace_processor bundle`（推荐）
 
-`traceconv bundle` 是一个一键命令，它接受一个 trace 并生成一个**丰富化的 trace**：原始 trace 加上分析它所需的所有符号和反混淆数据，打包在单个文件中。
+`trace_processor bundle` 是一个一键命令，它接受一个 trace 并生成一个**丰富化的 trace**：原始 trace 加上分析它所需的所有符号和反混淆数据，打包在单个文件中。
 
 ```bash
-traceconv bundle input.perfetto-trace enriched-trace
+trace_processor bundle input.perfetto-trace enriched-trace
 ```
 
 丰富化的 trace 可以像任何其他 trace 一样在 [Perfetto UI](https://ui.perfetto.dev) 或 `trace_processor_shell` 中打开，符号和反混淆名称已自动应用。
@@ -59,7 +60,7 @@ NOTE: 作为实现细节，丰富化的 trace 目前被打包为 TAR 归档文�
 当自动发现不够时：
 
 ```bash
-traceconv bundle \
+trace_processor bundle \
   --symbol-paths /path/to/symbols1,/path/to/symbols2 \
   --proguard-map com.example.app=/path/to/mapping.txt \
   --verbose \
@@ -74,15 +75,16 @@ traceconv bundle \
 - `--no-auto-proguard-maps`：禁用 ProGuard/R8 mapping 文件的自动发现（例如标准 Android Gradle 布局）。仅应用通过 `--proguard-map` 给出的 mapping。
 - `--verbose`：打印尝试的每个路径和查找的每个库——在调试"could not find"错误时很有用。
 
-## {#option-2-legacy-traceconv-symbolize-deobfuscate} 方式 2：传统 `traceconv symbolize` / `deobfuscate`
+## {#option-2-legacy-traceconv-symbolize-deobfuscate} 方式 2：传统 `trace_processor util symbolize` / `util deobfuscate`
 
 NOTE: 此流程是为了与已有的脚本和 CI 流水线向后兼容而保留的。对于新使用场景，请始终优先使用[方式 1](#option-1-traceconv-bundle)——它更简单，具有自动发现功能，并且适用于非 Perfetto trace 格式。
 
-较旧的 `traceconv symbolize` 和 `traceconv deobfuscate` 子命令生成独立的符号和反混淆文件，完全由环境变量驱动，然后必须手动拼接到 trace 上。
+较旧的 `trace_processor util symbolize` 和 `trace_processor util
+deobfuscate` 子命令生成独立的符号和反混淆文件，完全由环境变量驱动，然后必须手动拼接到 trace 上。
 
 ### Native 符号化
 
-所有工具（`traceconv`、`trace_processor_shell`、`heap_profile` 脚本）都遵循 `PERFETTO_BINARY_PATH` 环境变量：
+所有工具（`trace_processor`、`heap_profile` 脚本）都遵循 `PERFETTO_BINARY_PATH` 环境变量：
 
 ```bash
 PERFETTO_BINARY_PATH=somedir tools/heap_profile android --name ${NAME}
@@ -91,7 +93,7 @@ PERFETTO_BINARY_PATH=somedir tools/heap_profile android --name ${NAME}
 为已采集的 trace 生成独立的符号文件：
 
 ```bash
-PERFETTO_BINARY_PATH=somedir traceconv symbolize raw-trace > symbols
+PERFETTO_BINARY_PATH=somedir trace_processor util symbolize raw-trace > symbols
 ```
 
 或者，设置 `PERFETTO_SYMBOLIZER_MODE=index`，符号化器将按 Build ID 递归索引目录中的 ELF 文件，因此文件名不需要匹配。
@@ -109,7 +111,7 @@ PERFETTO_PROGUARD_MAP=com.example.pkg1=foo.txt:com.example.pkg2=bar.txt \
 
 ```bash
 PERFETTO_PROGUARD_MAP=com.example.pkg=proguard_map.txt \
-  traceconv deobfuscate ${TRACE} > deobfuscation_map
+  trace_processor util deobfuscate ${TRACE} > deobfuscation_map
 ```
 
 ### 将输出附加到 trace
@@ -158,6 +160,20 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 
 ### 故障排除
 
+`trace_processor bundle` 始终会生成一个至少包含原始 trace 的 bundle。当它无法添加所有想要的丰富化内容时，会打印缺失的内容及修复方法的摘要，然后仍然成功退出——因此即使命令成功也要检查其输出。只有在真正失败时（输入不可读、输出不可写，或显式提供的 `--proguard-map` 无法读取）才会以非零值退出。
+
+常见消息及其含义：
+
+- **`N frames could not be symbolized and will appear as "unknown"`**，附带一行 `hint: use --symbol-paths ...`：工具搜索了自动发现的路径（加上你给出的任何 `--symbol-paths`），但没有找到 Build ID 匹配的二进制文件。按照提示操作，或使用 `--verbose` 重新运行以查看尝试过的每个路径。
+
+- **`N frames ... no build IDs in trace, symbol lookup requires build IDs`**：trace 的 mapping 没有 Build ID，因此即使有正确的二进制文件也无法匹配符号。使用带 Build ID 的二进制文件重新构建（链接器标志 `-Wl,--build-id`）并重新录制。
+
+- **`Kernel function names: this trace contains function_graph events ...`**：trace 包含**未**启用 `symbolize_ksyms` 录制的来自 `function_graph`（或类似 ftrace 事件）的内核地址。这些无法离线符号化；请启用 `symbolize_ksyms: true` 重新录制。参见[内核 ftrace 事件](#ftrace)。
+
+- **`no symbol paths were searched`**：自动发现被禁用（`--no-auto-symbol-paths`）且没有给出显式路径。传入带待搜索目录的 `--symbol-paths`。
+
+- **`failed to open output file ...`**：无法创建输出路径（例如父目录不存在或不可写）。检查该路径。
+
 #### 找不到库
 
 在对 Profile 进行符号化时，你可能会看到如下消息：
@@ -167,9 +183,9 @@ Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so
 (Build ID: 44b7138abd5957b8d0a56ce86216d478).
 ```
 
-检查 `somelib.so` 是否存在于某个搜索路径下（`--symbol-paths`、`PERFETTO_BINARY_PATH` 或自动发现的位置）。然后使用 `readelf -n /path/to/somelib.so` 比较磁盘上的 Build ID 与消息中报告的 Build ID。如果它们不匹配，磁盘上的副本是不同于设备上的构建，无法使用。
+检查 `somelib.so` 是否存在于某个搜索路径下（`--symbol-paths` 或自动发现的位置）。然后使用 `readelf -n /path/to/somelib.so` 比较磁盘上的 Build ID 与消息中报告的 Build ID。如果它们不匹配，磁盘上的副本是不同于设备上的构建，无法使用。
 
-使用 `--verbose` 重新运行 `traceconv bundle` 会打印尝试的每个路径，这通常可以清楚地表明文件是完全缺失还是找到了但 Build ID 不匹配。
+使用 `--verbose` 重新运行 `trace_processor bundle` 会打印尝试的每个路径，这通常可以清楚地表明文件是完全缺失还是找到了但 Build ID 不匹配。
 
 ### 调用栈中的内核帧 {#callstack-kernel-frames}
 
@@ -205,7 +221,7 @@ data_sources: {
 
 这会读取设备上的 `/proc/kallsyms`，并将（偏移后的）符号表嵌入 trace 中。它要求 `traced_probes` 以 root 身份运行或手动降低 `kptr_restrict`。
 
-WARNING: `traceconv bundle` 和上述离线符号器**无法**恢复内核符号。Perfetto 故意不在 trace 中存储绝对内核地址，因为这样做会破坏
+WARNING: `trace_processor bundle` 和上述离线符号器**无法**恢复内核符号。Perfetto 故意不在 trace 中存储绝对内核地址，因为这样做会破坏
 [KASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization) 并泄露内核内存布局。符号名称在设备上进行了偏移处理，因此可以在不泄露绝对地址的情况下工作。如果你忘记设置 `symbolize_ksyms`，必须重新录制。
 
 此标志仅适用于 ftrace **事件**。在采样调用栈中捕获的内核帧另有处理方式；参见[调用栈中的内核帧](#callstack-kernel-frames)。

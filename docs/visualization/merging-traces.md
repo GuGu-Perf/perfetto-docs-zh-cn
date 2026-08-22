@@ -1,4 +1,4 @@
-# 在 Perfetto UI 中合并 trace
+# 在 UI 中合并 trace
 
 Perfetto UI 可以同时打开多个 trace 文件并将其合并到一条
 共享的时间线上：来自两个设备的 trace、应用 trace 与系统 trace、
@@ -7,9 +7,9 @@ Perfetto UI 可以同时打开多个 trace 文件并将其合并到一条
 无法放在共享时间线上的话。
 
 关于在脚本或 CI 中合并，参见
-[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)。
+[从命令行合并 trace](/docs/analysis/merging-traces.md)。
 关于底层模型，参见
-[Trace 合并的工作原理](/docs/concepts/merging-traces.md)。
+[Trace 合并](/docs/concepts/merging-traces.md)。
 
 ## 何时使用
 
@@ -137,9 +137,9 @@ Trace Info 页面（侧边栏中的 info 图标）按输入 trace 和机器
 
 ## 后续步骤
 
-- [使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)：
+- [从命令行合并 trace](/docs/analysis/merging-traces.md)：
   从命令行、脚本和 CI 进行相同的合并。
 - [Trace manifest 格式](/docs/reference/perfetto-manifest.md)：
   "Copy manifest" 产生的内容，逐字段说明。
-- [Trace 合并的工作原理](/docs/concepts/merging-traces.md)：
+- [Trace 合并](/docs/concepts/merging-traces.md)：
   对话框背后的时钟、机器和放置规则。

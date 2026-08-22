@@ -9,9 +9,9 @@ Trace manifest（`perfetto_manifest`）是一个放置在 trace 归档
 标注归档的[属性](#attributes)。
 
 本页面是该格式的规范性参考。关于面向任务的合并指南，参见
-[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)；
+[从命令行合并 trace](/docs/analysis/merging-traces.md)；
 关于底层模型，参见
-[Trace 合并的工作原理](/docs/concepts/merging-traces.md)。
+[Trace 合并](/docs/concepts/merging-traces.md)。
 
 该格式是稳定的：`version` 1 是当前（也是唯一的）版本，并将持续支持。
 新功能作为 version 1 中的新字段添加；给定 Trace Processor 版本不认识
@@ -45,19 +45,39 @@ Trace manifest（`perfetto_manifest`）是一个放置在 trace 归档
     "trace_time": {"clock": "BOOTTIME"},
     "files": [
       {"path": "phone.pftrace", "machine": {"name": "phone"}},
-      {"path": "watch.pftrace", "machine": {"name": "watch"},
-       "clocks": {
-         "BOOTTIME": {
-           "sync_to": {"file": "phone.pftrace"},
-           "offset_ns": 5000000000
-         }
-       }}
+      {"path": "watch.pftrace", "machine": {"name": "watch"}},
+      {
+        "path": "app_log.json",
+        "clocks": {
+          "sync_to": {"file": "phone.pftrace", "clock": "BOOTTIME"},
+          "offset_ns": 250000000
+        }
+      }
     ]
   }
 }
 ```
 
-## 顶层字段
+## {#detection} 检测与放置
+
+Trace Processor 按内容而非文件名检测 manifest：任何内容（忽略前导空白后）以
+`{"perfetto_manifest"` 开头的文件都会被视为 manifest。按照惯例，该文件命名为
+`perfetto_manifest.json`，这也是 Perfetto UI 生成 manifest 时使用的名称，
+但任何名称都可以。
+
+放置规则：
+
+- **在 ZIP 或 TAR 归档内**：位置无关紧要。无论 manifest 出现在归档中的哪个
+  位置，Trace Processor 始终在处理任何 trace 文件之前先处理 manifest。
+- **在拼接流中**（例如拼接在一起的 gzip 成员）：manifest 必须放在最前面。
+  在另一个 trace 文件之后遇到的 manifest 会被拒绝并报错。
+- 每个合并输入中**最多一个 manifest**。出现第二个 manifest 是一个错误。
+- 独立的 manifest（不在归档内）可以成功解析，但没有可配置的内容。
+
+manifest 会在任何 trace 文件被解析之前完整应用，因此条目可以以任意顺序引用
+文件，包括在归档中出现得更晚的文件。
+
+## {#schema} 顶层字段
 
 | 字段 | 类型 | 必需 | 默认值 | 含义 |
 |------|------|------|--------|------|
@@ -66,7 +86,7 @@ Trace manifest（`perfetto_manifest`）是一个放置在 trace 归档
 | `files` | array | 否 | `[]` | 每个 trace 文件的一个条目。 |
 | `attributes` | object | 否 | `{}` | 附加到归档的自由格式元数据。 |
 
-### `trace_time`
+### {#trace-time} trace_time
 
 如果设置，必须是带有以下字段的对象：
 
@@ -79,68 +99,150 @@ Trace manifest（`perfetto_manifest`）是一个放置在 trace 归档
 （因为 manifest 先被处理，第一个文件即 `files[0]`，但 trace 文件之间
 的大致顺序也是稳定的）。
 
-### `files`
+### {#files} files
 
-`files` 数组中的每个条目描述一个 trace 文件：
-
-| 字段 | 类型 | 必需 | 含义 |
-|------|------|------|------|
-| `path` | string | 是 | 文件在归档内的路径（如同 `tar tf` 或 `unzip -l` 所示）。 |
-| `machine` | object | 否 | 将整个 trace 归因到一台命名机器。 |
-| `machines` | object | 否 | 用于多机 trace：将嵌入的机器 ID 映射到名称。与 `machine` 互斥。 |
-| `clocks` | object | 否 | 将文件中的时钟与 trace time 关联。 |
-| `clock_overrides` | object | 否 | 覆盖 trace 声明的时钟；用于修复或增强时钟不精确的 trace。 |
-
-`machine` 对象：
+`files` 数组中的每个条目都是一个对象：
 
 | 字段 | 类型 | 必需 | 含义 |
 |------|------|------|------|
-| `name` | string | 是 | 人类可读的机器名称（出现在 UI 的 track 标签中）。 |
+| `path` | string | 是 | 归档内某个文件的确切名称（对于 TAR/ZIP，即成员路径）。 |
+| `machine` | object | 否 | 将整个文件归因到一台命名机器。与 `machines` 互斥。 |
+| `machines` | array | 否 | 将多机 trace 中嵌入的机器 ID 重新映射为命名机器。与 `machine` 互斥。 |
+| `clocks` | object | 否 | 手动将该文件的时钟与另一个文件中的时钟相关联。参见 [clocks](#clocks)。 |
 
-`machines` 是一个从嵌入机器 ID（字符串化的整数，0 到 4294967295）
-到 `{"name": "..."}` 的映射。
+### {#machine} machine
 
-`clocks` 从时钟域名称（`BOOTTIME`、`REALTIME`、`MONOTONIC` 或任何
-自定义名称）映射到关联对象：
-
-| 字段 | 类型 | 必需 | 默认值 | 含义 |
-|------|------|------|--------|------|
-| `sync_to` | object | 否 | 自动推断 | 哪个（文件，可选机器，时钟）作为该时钟的参照。 |
-| `offset_ns` | integer | 否 | `0` | 固定的纳秒偏移量（正值 = 该时钟领先于参照）。 |
-| `machine` | string | 否 | — | 当时钟来自多机 trace 中的特定机器时使用。 |
-
-`sync_to` 对象：
+```json
+{"path": "watch.pftrace", "machine": {"name": "watch"}}
+```
 
 | 字段 | 类型 | 必需 | 含义 |
 |------|------|------|------|
-| `file` | string | 是 | 在 `files` 中声明的 trace 路径。 |
-| `machine` | string | 否 | 该文件的 `machines` 条目中的机器。如果省略则取该文件的默认机器。 |
-| `clock` | string | 否 | 该机器上的时钟域。省略时与源时钟域相同。 |
+| `name` | string（非空） | 是 | 机器的名称。 |
 
-`clock_overrides` 从时钟域名称映射到覆盖对象：
+将文件中的每个事件归因到一台具有给定名称的机器。使用相同名称的文件（或
+`machines` 条目）共享同一台机器：它们的进程、线程和 CPU 在合并后的 trace
+中被分组到一起。使用不同的名称则使每个设备的数据保持独立。
+
+`machine` 是一个对象而非裸字符串，以便将来在不更改格式的情况下添加按机器
+划分的属性。
+
+对本身包含来自多台机器数据的文件（即通过
+[traced_relay](/docs/deployment/multi-machine-architecture.md) 录制的多机
+proto trace）使用 `machine` 是一个错误；此类文件应使用 `machines`。
+
+### {#machines} machines
+
+```json
+{"path": "relay.pftrace", "machines": [
+  {"id": 0, "name": "host"},
+  {"id": 1234, "name": "vm"}
+]}
+```
 
 | 字段 | 类型 | 必需 | 含义 |
 |------|------|------|------|
-| `snapshots` | array | 是 | 固定一个时钟将其锁定为单一周期性快照序列，或替换其 snapshots。 |
+| `id` | [0, 4294967295] 范围内的整数 | 是 | 嵌入在 trace packet 中的机器 ID。 |
+| `name` | string（非空） | 是 | 赋予该机器的名称。 |
 
-每个 `snapshots` 条目：
+重命名已嵌入多机 trace 中的机器。必须声明出现在 trace 中的每个嵌入 ID；
+来自未声明 ID 的 packet 是一个错误。带有 `id: 0` 的条目还会成为该文件的
+基础机器。名称与 `machine` 名称共享同一命名空间，因此两个文件中的相同名称
+会将它们合并为一台机器。
+
+### {#clocks} clocks
+
+通过将该文件的某个时钟与另一个文件中的时钟相关联，手动将该文件放置到共享
+时间线上。当自动规则（共享时钟域、`REALTIME` 会合）无法放置该文件时，或者
+需要应用已知的固定偏移量时，使用此字段。
+
+```json
+{
+  "path": "app_log.json",
+  "clocks": {
+    "sync_to": {"file": "phone.pftrace", "clock": "BOOTTIME"},
+    "offset_ns": 250000000
+  }
+}
+```
 
 | 字段 | 类型 | 必需 | 含义 |
 |------|------|------|------|
-| `timestamp_ns` | integer | 是 | 该快照的原始时间戳（即该时钟当时的读数）。 |
-| `trace_time_ns` | integer | 是 | 对应的 trace time（当时钟为该值时，trace time 的读数）。 |
-| `clock_value` | integer | 是 | trace time 时钟的值。 |
+| `clock` | string | 否 | 要关联的本文件自身的哪个时钟，以[时钟名称](#clock-names)表示。无时钟文件可省略。 |
+| `machine` | string | 否 | 当本文件是多机 trace 时，指明其哪台机器拥有源时钟。该情况下必填。 |
+| `sync_to` | object | 是 | 参照时钟。见下文。 |
+| `offset_ns` | integer | 否（默认 0） | 两个时钟之间的固定偏移量：在同一时刻，当参照时钟读数为 T + `offset_ns` 时，源时钟读数为 T。因此正值会使该文件在参照时间线上出现得更晚。 |
 
-### `attributes`
+`sync_to` 的字段：
 
-任意字符串到字符串或整数的映射，用作标注。所有值必须是字符串或整数
-（布尔值请使用 `"true"` / `"false"` 或 `1` / `0`）；键必须是非空
-字符串。
+| 字段 | 类型 | 必需 | 含义 |
+|------|------|------|------|
+| `file` | string | 是 | 参照文件。必须与 `files` 中某个条目的 `path` 匹配。 |
+| `machine` | string | 否 | 当参照文件是多机 trace 时，指明其声明的哪台机器拥有参照时钟。该情况下必填。仅给出机器名（不带 `file`）会因含义不明确而被拒绝。 |
+| `clock` | string | 否 | 参照时钟，以[时钟名称](#clock-names)表示。省略时，参照物是该文件自身的每文件私有时间线（适用于参照文件本身是无时钟文件的情况）。 |
 
-存储在归档的 `metadata` 表中，`name` 为 `perfetto_manifest.attributes`
-（作为 JSON 字符串），因此可以像查询任何其他元数据键一样按 `trace_id` 查询。
+省略 `clock` 的语义很重要：
 
-## 错误参考
+- **给出 `clock`**（RELATE）：该文件继续使用自己的时钟；此覆盖只是补充了
+  命名时钟与参照之间缺失的关联。内部自带时钟的 trace（Perfetto proto、
+  systrace 等）使用这种方式。
+- **省略 `clock`**（PIN）：该文件被视为无时钟文件。其事件被放置在自身的
+  每文件私有时间线上，而此覆盖将该时间线固定到参照物上。没有绝对时钟的
+  格式（Chrome JSON、Gecko、Instruments）使用这种方式。对一个随后被发现
+  会发出自身 clock snapshot 的文件进行固定（pin）是一个错误。
+
+WARNING: 手动设置的 `offset_ns` 如果将事件移到合并时间线起点之前，会导致
+这些事件被丢弃，并计入 `trace_sorter_negative_timestamp_dropped` 统计。
+Perfetto UI 的合并对话框在打开前会报告这种情况。
+
+## {#attributes} attributes
+
+用于标注归档的任意键值对：基准测试名称、运行 ID、构建 ID 等。每个条目成为
+`metadata` 表中的一行 `manifest_attribute.<key>`。
+
+其命名空间有意与 `trace_attribute.*`
+（[TraceAttributes](/protos/perfetto/common/trace_attributes.proto)）
+分开：后者是记录在 trace 自身中的属性，而 manifest 属性描述的是整个归档。
+
+```json
+{
+  "perfetto_manifest": {
+    "version": 1,
+    "attributes": {"benchmark": "startup", "run_id": 42}
+  }
+}
+```
+
+值必须是字符串或整数；键必须非空，并建议使用命名空间前缀（例如
+`myapp.build_id`）以避免不同工具之间的冲突。同一键设置两次会覆盖：
+最后一个值生效。
+
+## {#clock-names} Clock names
+
+凡期望出现时钟名称之处，均使用以下名称之一：
+
+`REALTIME`、`REALTIME_COARSE`、`MONOTONIC`、`MONOTONIC_COARSE`、
+`MONOTONIC_RAW`、`BOOTTIME`
+
+它们对应 [builtin_clock.proto](/protos/perfetto/common/builtin_clock.proto)
+中的内建时钟，以及同名的 POSIX `clock_gettime` 时钟域。
+
+## {#sql} 对 SQL 层面的影响
+
+导入后，manifest 的影响在 trace 中可见：
+
+- 每台命名机器都会在
+  [`machine`](/docs/analysis/sql-tables.autogen#machine) 表中获得一行，
+  其 `name` 被设置。Manifest 机器获得从 2^32 开始的合成 `raw_id` 值，
+  刻意位于 trace packet 中嵌入的 32 位 ID 空间之外。
+- `trace_time` 设置 `metadata` 表中的 `trace_time_clock_id` 键。
+- 每个 `attributes` 条目成为 `metadata` 表中的一行 `manifest_attribute.<key>`。
+- 每个 `clocks` 覆盖都记录为 `clock_snapshot` 表中的一条边，与从 trace
+  本身读取的快照并存。
+- 每个输入文件在 `trace_file` 表中有一行；`stats` 和 `metadata` 行带有
+  `machine_id` 和 `trace_id` 列，用于标识它们描述的是哪台机器和哪个文件。
+
+## {#errors} 错误参考
 
 Trace Processor 在导入时验证 manifest 并为其错误发出文本描述：
 
@@ -183,9 +285,9 @@ Trace Processor 在导入时验证 manifest 并为其错误发出文本描述：
 
 ## 后续步骤
 
-- [使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)：
+- [从命令行合并 trace](/docs/analysis/merging-traces.md)：
   构建和查询合并归档。
-- [在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)：
+- [在 UI 中合并 trace](/docs/visualization/merging-traces.md)：
   交互式合并对话框，为你生成此格式。
-- [Trace 合并的工作原理](/docs/concepts/merging-traces.md)：
+- [Trace 合并](/docs/concepts/merging-traces.md)：
   机器、时钟图和自动放置规则。

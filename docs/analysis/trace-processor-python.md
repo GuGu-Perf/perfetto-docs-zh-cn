@@ -254,6 +254,24 @@ with TraceProcessor(trace='trace.perfetto-trace') as tp:
  print(summary)
 ```
 
+### Export
+
+`export()` 函数将解析后的 trace 数据写入文件，直接流式写入磁盘。格式为 `arrow_tar` 或 `perfetto` 之一：
+
+```python
+from perfetto.trace_processor import TraceProcessor
+
+tp = TraceProcessor(trace='trace.perfetto-trace')
+
+# 版本绑定的归档，可由同一版本的 trace processor 加载。
+tp.export('archive.tar', 'perfetto')
+
+# 静态表导出为标准 Arrow 文件组成的 tar。
+tp.export('tables.tar', 'arrow_tar')
+```
+
+`perfetto` 可以由同一版本的新 trace processor 实例加载回来（不同版本也许能加载，但不保证）。`arrow_tar` 为每个静态注册的表生成一个标准的 [Apache Arrow](https://arrow.apache.org/) 文件，可用 pandas、Polars 或 pyarrow 进行分析；它无法加载回 trace processor。Python API 支持这两种格式；要导出为 SQLite，请使用 [`export` shell 子命令](/docs/analysis/trace-processor.md#subcommand-export)。
+
 ### Metatracing
 
 Metatracing 允许 Tracing `trace_processor` 本身的性能。

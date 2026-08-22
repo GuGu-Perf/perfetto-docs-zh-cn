@@ -1,12 +1,12 @@
-# 使用 Trace Processor 合并 trace
+# 从命令行合并 trace
 
 Trace Processor 可以将多个 trace 文件作为一个合并后的 trace 导入：
 来自每个文件的事件最终放在同一条时间线上，其进程、线程和 CPU
 保持归属于它们来源的机器。本页面展示如何从命令行以及在脚本化或
 CI 环境中执行此操作。关于交互式等效操作，参见
-[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)；
+[在 UI 中合并 trace](/docs/visualization/merging-traces.md)；
 关于合并的实际工作原理，参见
-[Trace 合并的工作原理](/docs/concepts/merging-traces.md)。
+[Trace 合并](/docs/concepts/merging-traces.md)。
 
 ## 模型：一个归档进，一个 trace 出
 
@@ -95,54 +95,59 @@ tar/zip 库都可以。下文中的 [`util merge` 辅助工具](#merge-util)仅�
 }
 ```
 
-### 手动关联时钟
+```bash
+trace_processor util merge -o merged.tar --manifest manifest.json \
+    device_a.pftrace device_b.pftrace
+trace_processor merged.tar
+```
 
-当文件不共享时钟时，在相应的 `files` 条目中添加一个 `clocks` 对象：
+被赋予相同机器名称的文件共享同一台机器；不同的名称则创建不同的
+`machine` 表行。
+
+### 将无时钟的 trace 对齐到系统 trace
+
+没有绝对时钟的格式（Chrome JSON、Gecko、Instruments）无法自行与系统
+trace 对齐。`clocks` 条目可将该文件固定（pin）到另一个文件的时钟上，
+还可以指定固定偏移量：
 
 ```json
 {
   "perfetto_manifest": {
     "version": 1,
+    "trace_time": {"clock": "BOOTTIME"},
     "files": [
+      {"path": "system_trace.pftrace"},
       {
-        "path": "phone.pftrace",
-        "machine": {"name": "phone"}
-      },
-      {
-        "path": "watch.pftrace",
-        "machine": {"name": "watch"},
+        "path": "app_trace.json",
         "clocks": {
-          "BOOTTIME": {"trace_time_offset_ns": 5000000000}
+          "sync_to": {"file": "system_trace.pftrace", "clock": "BOOTTIME"},
+          "offset_ns": 100000000
         }
       }
-    ],
-    "trace_time": {"machine": "phone", "clock": "BOOTTIME"}
+    ]
   }
 }
 ```
 
-`clocks` 映射将文件的时钟关联到 trace time。每个条目声明该时钟与
-trace time 之间的关系；`trace_time_offset_ns` 是一个固定的纳秒偏移量
-（正值 = 文件的该时钟领先于 trace time），相当于在文件的每个时间戳上
-加上该偏移量。
+`offset_ns` 的含义是：在同一时刻，当参照时钟读数为 T + `offset_ns` 时，
+源文件的时钟读数为 T，因此正值会使该文件在时间线上出现得更晚。注意
+`sync_to.file` 本身必须也作为条目出现在 `files` 中。
 
-### 重命名嵌入的机器 ID
+### 重命名多机 trace 中的机器
 
-对于本身为多机 trace 的文件（通过 traced_relay 录制），manifest 可以
-命名其中嵌入的机器 ID：
+通过 [traced_relay](/docs/learning-more/multi-machine-tracing.md) 录制的
+trace 已经包含多台机器，以数字 ID 标识。`machines` 可以为它们赋予可读
+名称（必须列出每个嵌入 ID）：
 
 ```json
 {
   "perfetto_manifest": {
     "version": 1,
     "files": [
-      {
-        "path": "multi.pftrace",
-        "machines": {
-          "1": {"name": "phone"},
-          "2": {"name": "watch"}
-        }
-      }
+      {"path": "relay_capture.pftrace", "machines": [
+        {"id": 0, "name": "host"},
+        {"id": 1234, "name": "vm"}
+      ]}
     ]
   }
 }
@@ -198,15 +203,15 @@ WHERE severity = 'error' AND value > 0;
 
 - **Android bugreport**：`bugreport.zip` 文件已经以归档形式打开；
   Trace Processor 提取并合并其中的 trace。
-- **traceconv bundle**：由 [`traceconv bundle`](/docs/quickstart/traceconv.md)
+- **trace_processor bundle**：由 [`trace_processor bundle`](/docs/learning-more/symbolization.md)
   生成的 TAR（trace 加符号文件）是相同的归档机制。
 - **Python `BatchTraceProcessor`** 不合并：它将 N 个 trace 加载到 N 个
   独立实例中以进行并行查询。要合并，将单个归档传递给一个
   `TraceProcessor` 实例。
 - 包含归档的归档不能递归合并；直接合并叶子文件。
 - **隐藏文件被忽略**：任何名称中包含以 `.` 开头的路径组件的归档条目
-  会被跳过，永远不会被解析为 trace。这涵盖了归档工具自动添加的元数据
-  — 尤其是 macOS `tar` 和 Finder 创建的 ZIP 中散落在真实文件旁边的
+  会被跳过，永远不会被解析为 trace。这涵盖了归档工具自动添加的元数据，
+  尤其是 macOS `tar` 和 Finder 创建的 ZIP 中散落在真实文件旁边的
   AppleDouble 资源派生文件（`._foo`）和 `.DS_Store` 条目。因此，在
   macOS 上构建的 `.tar`/`.zip` 可以正常加载，不会出现虚假的
   "unknown trace type" 错误。如果你有意要让一个点前缀文件被解析，
@@ -216,7 +221,7 @@ WHERE severity = 'error' AND value > 0;
 
 - [Trace manifest 格式](/docs/reference/perfetto-manifest.md)：
   manifest 的规范性参考。
-- [Trace 合并的工作原理](/docs/concepts/merging-traces.md)：
+- [Trace 合并](/docs/concepts/merging-traces.md)：
   时钟图、放置规则和机器模型。
 - [多机录制](/docs/learning-more/multi-machine-tracing.md)：
   实时从多台机器录制单个 trace，而非事后合并。

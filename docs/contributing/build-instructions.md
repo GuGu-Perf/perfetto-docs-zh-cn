@@ -80,8 +80,7 @@ tools/ninja -C out/android \
  traced \ # Tracing 服务。
  traced_probes \ # Ftrace 互操作和 /proc 轮询器。
  perfetto \ # 命令行客户端。
- trace_processor_shell \ # Trace 解析。
- traceconv # Trace 转换。
+ trace_processor_shell # Trace 解析和转换。
 ...
 ```
 
@@ -147,8 +146,7 @@ clang-cl 支持更稳定，因为该构建配置被 Chromium 项目积极覆盖�
 
 Windows 上支持以下目标：
 
-- `trace_processor_shell`:trace 导入器和 SQL 查询引擎。
-- `traceconv`:trace 转换工具。
+- `trace_processor_shell`:trace 导入器、SQL 查询引擎和 trace 转换工具。
 - `traced` 和 `perfetto`:tracing 服务和命令行客户端。它们使用基于 TCP 套接字和命名共享内存的 [进程间 tracing 协议](/docs/design-docs/api-and-abi.md#tracing-protocol-abi)
  的替代实现。此配置仅用于测试/基准测试，不会在生产环境中发布。
  Googlers：有关详细信息，请参阅 [go/perfetto-win](http://go/perfetto-win)。
@@ -322,7 +320,7 @@ cxx="${CXX}"
 
 `is_system_compiler = true` 也可用于交叉编译。
 在交叉编译的情况下，GN 变量具有以下语义：
-`ar`、`cc`、`cxx`、`linker` 指的是 _主机_ 工具链（有时也称为 _构建_ 工具链）。此工具链用于构建：(i) 辅助工具（例如 `traceconv` 转换工具）和 (ii) 在目标构建过程的其余部分中使用的可执行文件产物（例如 `protoc` 编译器或 `protozero_plugin` protoc 编译器插件）。
+`ar`、`cc`、`cxx`、`linker` 指的是 _主机_ 工具链（有时也称为 _构建_ 工具链）。此工具链用于构建：(i) 辅助工具（例如 `trace_processor` 转换工具）和 (ii) 在目标构建过程的其余部分中使用的可执行文件产物（例如 `protoc` 编译器或 `protozero_plugin` protoc 编译器插件）。
 
 用于构建在设备上运行的产物的交叉工具链以 `target_` 为前缀：`target_ar`、`target_cc`、`target_cxx`、`target_linker`。
 

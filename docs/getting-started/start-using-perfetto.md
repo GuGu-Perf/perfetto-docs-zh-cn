@@ -99,7 +99,7 @@ TAB: AOSP/OEM/合作伙伴平台开发者
   - 你可以可视化 `adb logcat` 输出以及 trace 数据。Perfetto 也可以配置为将 logcat 直接包含到新的 trace 中。
     - **教程**：[可视化 adb logcat](/docs/getting-started/other-formats.md#logcat-format)
   - 多个相关的 trace 文件（来自两个设备，或应用 trace 与系统 trace 并排）可以作为合并后的 trace 在共享 Timeline 上一起打开。
-    - **教程**：[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)
+    - **教程**：[在 UI 中合并 trace](/docs/visualization/merging-traces.md)
 
 ### {#android-optimizing-performance} 优化性能和解决延迟问题
 

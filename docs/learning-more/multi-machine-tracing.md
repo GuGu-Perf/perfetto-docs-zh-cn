@@ -25,7 +25,7 @@ NOTE: 本指南以 ftrace 事件为例进行记录，在 Linux 上通常需要�
 
 1. **作为单一 trace 录制（本指南）。** 每台 guest 上的 `traced_relay` 将生产者转发到 host 上单一的 `traced`，host 拥有 trace buffer 并在录制时对 guest 进行时钟同步。具有最佳保真度（跨机器时钟同步是实测而非假设），但在录制期间需要机器之间有实时的网络路径。
 
-2. **独立录制并预先分配机器 ID。** 每台机器录制自己的 trace，但 SDK 生产者初始化时具有唯一的 `machine_id`（C++ SDK 中的 `TracingInitArgs::machine_id`，C SDK 中的 `PerfettoProducerBackendInitArgsSetMachineId()`）。后续合并文件无需配置：每个数据包已经表明了它来自哪台机器，trace 通过系统时间进行对齐。参见[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md#no-config)。
+2. **独立录制并预先分配机器 ID。** 每台机器录制自己的 trace，但 SDK 生产者初始化时具有唯一的 `machine_id`（C++ SDK 中的 `TracingInitArgs::machine_id`，C SDK 中的 `PerfettoProducerBackendInitArgsSetMachineId()`）。后续合并文件无需配置：每个数据包已经表明了它来自哪台机器，trace 通过系统时间进行对齐。参见[从命令行合并 trace](/docs/analysis/merging-traces.md#no-config)。
 
 3. **独立录制，后续合并。** 每台机器录制普通的 trace；录制时无需协调。机器归属和 trace 中未携带的任何时钟关系在合并时提供，可以通过 [Perfetto UI](/docs/visualization/merging-traces.md) 交互式提供，或通过 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 文件提供。这是最灵活的选择，也是唯一适用于已存在 trace 的方式。
 
@@ -157,7 +157,7 @@ GROUP BY cpu.machine_id;
 ## 下一步
 
 * [多机器架构](/docs/deployment/multi-machine-architecture.md)——原理：`traced_relay`、机器标识和跨内核时钟同步如何协同工作。
-* [使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)——后期替代方案：当无法使用实时网络路径时，将独立录制的 trace 合并到一个 Timeline 上。
+* [从命令行合并 trace](/docs/analysis/merging-traces.md)——后期替代方案：当无法使用实时网络路径时，将独立录制的 trace 合并到一个 Timeline 上。
 * [PerfettoSQL：入门](/docs/analysis/perfetto-sql-getting-started.md)——用于按 `machine_id` 跨 `cpu`、`thread` 和 `process` 切片生成的 Trace。
 * [Trace Processor](/docs/analysis/trace-processor.md)——当记录可重复时，将分析嵌入脚本或流水线。
 

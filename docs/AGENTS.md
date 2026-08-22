@@ -239,7 +239,6 @@ out/linux_asan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName
 ```sh
 MSAN_SYMBOLIZER_PATH="$(pwd)/buildtools/linux64/clang/bin/llvm-symbolizer" \
 out/linux_msan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName.*>"
-```
 
 ## 创建拉取请求
 
@@ -248,12 +247,12 @@ out/linux_msan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName
 创建拉取请求时，请遵循以下步骤：
 
 1. **创建新分支：**
- 使用命令 `git new-branch dev/$USER/<name-of-branch>` 为你的拉取请求创建新分支。
+ 使用命令 `git checkout -b dev/$USER/<name-of-branch>` 为你的拉取请求创建新分支。
 
 2. **创建堆叠/依赖拉取请求：**
- 要创建依赖于另一个的拉取请求，请使用命令 `git new-branch --parent <name-of-parent-branch> dev/alitm/<name-of-branch>`。
+ 要创建依赖于另一个的拉取请求，请使用命令 `git checkout -b dev/$USER/<name-of-branch> <name-of-parent-branch>`。
 
-**注意:** `git new-branch` 命令仅创建并切换到新分支。应该使用正常的 `git add` 和 `git commit` 工作流将更改添加到分支。
+**注意:** `git checkout` 命令仅创建并切换到新分支。应该使用正常的 `git add` 和 `git commit` 工作流将更改添加到分支。
 
 ## 提交消息
 

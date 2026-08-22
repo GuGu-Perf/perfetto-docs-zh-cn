@@ -79,7 +79,7 @@ Host 的 `traced` 将每个唯一提示映射到一个小的整数 `MachineId`�
 ## 下一步
 
 * [多机器记录](/docs/learning-more/multi-machine-tracing.md)——两台 Linux 主机之间记录多机器 Trace 的分步演练。
-* [trace 合并的工作原理](/docs/concepts/merging-traces.md)——事后将独立录制的 trace 合并到同一个多机器模型中。
+* [Trace 合并](/docs/concepts/merging-traces.md)——事后将独立录制的 trace 合并到同一个多机器模型中。
 * [时钟同步](/docs/concepts/clock-sync.md)——跨机器偏移在导入时折叠进去的单机器时钟同步图。
 * [`machine` 表参考](/docs/analysis/sql-tables.autogen#machine)——从 `SetPeerIdentity` 填充的表完整 Schema。
 

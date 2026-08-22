@@ -1,4 +1,4 @@
-# 在 Perfetto 中使用 AI
+# 实战指南：在 Perfetto 中使用 AI
 
 NOTE: **Googlers**：请使用 [go/perfetto-ai-skills](http://go/perfetto-ai-skills)
 和
@@ -41,6 +41,46 @@ curl.exe -fsSL https://get.perfetto.dev/agents-install | python - --target <path
 
 要在团队中共享此设置，将 `--target` 指向仓库中的按 Agent 目录
 （例如 `.claude/skills/`），并将结果提交。
+
+### 离线安装
+
+无法在安装时访问 github.com 的机器，可以使用每个
+[GitHub release](https://github.com/google/perfetto/releases) 附带的
+`perfetto-ai-skill.zip` 资产：在有网络连接的地方下载它，拷贝过去，
+然后解压到你的 Agent 技能目录（例如 `.claude/skills/`）。它包含一个
+单独的 `perfetto/` 技能文件夹，其中有 `SKILL.md` —— 无需安装器。
+
+捆绑的 `bin/trace_processor` 包装器会在首次使用时下载原生
+`trace_processor` 二进制文件，并将其以
+`trace_processor_shell-<其 sha256 的前 16 个十六进制字符>` 为名缓存到
+`~/.local/share/perfetto/prebuilts/`。在完全离线的机器上，请自行填充
+该缓存：从同一 release 页面下载你平台的预构建 zip（例如
+`linux-amd64.zip`，其中包含 `trace_processor_shell`），然后运行：
+
+```sh
+mkdir -p ~/.local/share/perfetto/prebuilts
+SHA=$(sha256sum trace_processor_shell | cut -c1-16)
+cp trace_processor_shell ~/.local/share/perfetto/prebuilts/trace_processor_shell-$SHA
+```
+
+包装器信任任何已以该名称存在的文件，因此该二进制文件必须来自同一
+release。在 Windows 上，缓存目录是
+`%USERPROFILE%\.local\share\perfetto\prebuilts`，文件名是
+`trace_processor_shell.exe-<sha256 前缀>`。
+
+## 更新
+
+更新使用与安装相同的机制：
+
+| 安装方式 | 更新方式 |
+| -------- | -------- |
+| Claude Code marketplace | Claude Code 的常规插件更新流程（`/plugin` → manage/update，它会拉取最新的 `ai-agents` 分支）。 |
+| Codex marketplace | Codex 的插件更新机制。 |
+| OpenCode `skills.urls` | 无需操作 —— 该 URL 始终提供最新发布的技能。 |
+| 后备安装器 | 重新运行相同的 `curl ... agents-install` 命令。它会检测到现有安装并在替换前询问（传入 `--yes` 可跳过提示）。 |
+
+每个 Perfetto release 都会发布新的技能版本。后备安装器默认安装最新
+release；传入 `--version vX.Y` 可固定到特定版本。
 
 ## 临时 trace 分析
 

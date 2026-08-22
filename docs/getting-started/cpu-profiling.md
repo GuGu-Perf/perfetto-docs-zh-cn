@@ -223,7 +223,7 @@ python3 cpu_profile -n com.android.example -f 100
 
 #### 缺失符号和反混淆
 
-如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）在主机上符号化 profile。`traceconv bundle` 是推荐的入口点。
+如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）在主机上符号化 profile。`trace_processor bundle` 是推荐的入口点。
 
 TAB: Linux (command line)
 
@@ -249,15 +249,15 @@ echo 0 | sudo tee /proc/sys/kernel/kptr_restrict
 
 采集停止后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/trace.pb` 文件。
 
-要将 trace 转换为"pprof"格式的每个进程 profiles，你可以按如下方式使用 `traceconv` 脚本：
+要将 trace 转换为"pprof"格式的每个进程 profiles，你可以按如下方式使用 `trace_processor` 工具：
 
 ```bash
-python3 traceconv profile --perf /tmp/trace.pb
+python3 trace_processor convert profile --perf /tmp/trace.pb
 ```
 
 #### 缺失符号和反混淆
 
-如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）事后符号化 profile。`traceconv bundle` 是推荐的入口点。
+如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）事后符号化 profile。`trace_processor bundle` 是推荐的入口点。
 
 </tabs?>
 

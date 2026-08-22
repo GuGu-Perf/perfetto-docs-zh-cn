@@ -172,6 +172,17 @@ traced_buf_chunks_di 0 info trace 0
 traced_buf_chunks_ov 0 data_loss trace 0
 ```
 
+当使用[流模式]时，覆盖也是一种数据丢失：被覆盖的数据永远不会写入文件，因此 trace 中会出现空隙。这些数据可以在 `stats` 表中查到，每个受影响的中央缓冲区对应一个条目，其中 `idx` 是缓冲区编号，`value` 是其覆盖的字节数：
+
+```sql
+> select * from stats where name = 'long_trace_mode_bytes_overwritten'
+name                 idx                  severity             source  value
+-------------------- -------------------- -------------------- ------- -----
+long_trace_mode_byte                    0 data_loss            trace    2048
+```
+
+`file_write_period_ms` 为一天或更长的 trace 不会得到这个统计项：如此之久的写入实际上永远不会发生，因此缓冲区又变回了普通的环形缓冲区。Traceur 就是这么做的，因为分离模式会强制开启 `write_into_file`。
+
 Summary: 检测和调试数据丢失的最佳方法是使用 Trace Processor 并发出查询：`select * from stats where severity = 'data_loss' and value != 0`
 
 ## 原子性和顺序保证

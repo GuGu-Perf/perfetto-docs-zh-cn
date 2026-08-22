@@ -21,7 +21,7 @@ Linux 内核的 `function_graph` tracer 会记录**每个内核函数的进入�
   输出必须包含 `function_graph`。
 - ftrace 配置中需设置 `symbolize_ksyms: true`。否则每个函数都会显示为
   原始十六进制地址。关于为何内核符号必须在录制时解析而无法事后通过
-  `traceconv bundle` 添加，参见
+  `trace_processor bundle` 添加，参见
   [符号化：内核符号](/docs/learning-more/symbolization.md#ftrace)。
 - 在 **Android** 上，函数图追踪仅在 `debuggable`（userdebug/eng）构建上
   可用，并在 Android U 中引入。

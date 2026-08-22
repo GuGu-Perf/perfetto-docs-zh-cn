@@ -9,7 +9,7 @@
 
 从文件资源管理器拖放 trace，或单击侧边栏中的"打开 trace 文件"以打开本地 trace 文件。
 
-选择或拖放多个文件会通过配置对话框将它们合并到一条共享时间线上：参见[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)。
+选择或拖放多个文件会通过配置对话框将它们合并到一条共享时间线上：参见[在 UI 中合并 trace](/docs/visualization/merging-traces.md)。
 
 ## 导航时间轴
 

@@ -1,4 +1,4 @@
-# 实战指南：本地 Android Trace 录制
+# 实战指南：在本地录制 Android Trace
 
 本页面收集了在标准交互式工作流无法覆盖的情况下，在 Android 上录制
 Perfetto trace 的**端到端方案**。

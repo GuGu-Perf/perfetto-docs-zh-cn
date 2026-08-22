@@ -35,7 +35,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
                             [--no-block-client] [--idle-allocations]
                             [--dump-at-max] [--disable-fork-teardown]
                             [--simpleperf]
-                            [--traceconv-binary TRACECONV_BINARY]
+                            [--trace-processor-binary TRACE_PROCESSOR_BINARY]
                             [--no-annotations] [--print-config] [-o DIRECTORY]
 ```
 
@@ -47,7 +47,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
                          [--block-client-timeout BLOCK_CLIENT_TIMEOUT]
                          [--no-block-client] [--idle-allocations]
                          [--dump-at-max] [--disable-fork-teardown]
-                         [--traceconv-binary TRACECONV_BINARY]
+                         [--trace-processor-binary TRACE_PROCESSOR_BINARY]
                          [--no-annotations] [--print-config] [-o DIRECTORY]
                          [--preload-library PRELOAD_LIBRARY]
                          [--tracebox-binary TRACEBOX_BINARY]
@@ -115,8 +115,8 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 `--shmem-size`
 ::    客户端和 heapprofd 之间的缓冲区大小。默认 8MiB。必须是 4096 的 2 的幂的倍数，至少 8192。
 
-`--traceconv-binary`
-::    本地 traceconv 的路径。用于调试。
+`--trace-processor-binary`
+::    本地 trace_processor 的路径。用于调试。
 
 `-h`, `--help`
 ::    显示帮助消息并退出。

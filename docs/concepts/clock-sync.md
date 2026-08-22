@@ -157,4 +157,4 @@ CLOCK_BOOTTIME = (3703 - 1200) + 5200 = 7703
 
 ## 跨 trace 和机器的时钟
 
-以上所有内容描述的是单个 trace 内的时钟域。当合并多个 trace 文件，或者一个 trace 包含来自多台机器的数据时，同样的图会扩展为带有机器和文件限定符的时钟：机器 A 上的 `CLOCK_BOOTTIME` 和机器 B 上的 `CLOCK_BOOTTIME` 是不同的节点，通过显式的边关联（录制时的时钟同步、wall-clock 汇合点或 [trace manifest](/docs/reference/perfetto-manifest.md)）。所有边，无论其来源，都记录在 `clock_snapshot` 表中。完整模型参见 [trace 合并的工作原理](/docs/concepts/merging-traces.md)。
+以上所有内容描述的是单个 trace 内的时钟域。当合并多个 trace 文件，或者一个 trace 包含来自多台机器的数据时，同样的图会扩展为带有机器和文件限定符的时钟：机器 A 上的 `CLOCK_BOOTTIME` 和机器 B 上的 `CLOCK_BOOTTIME` 是不同的节点，通过显式的边关联（录制时的时钟同步、wall-clock 汇合点或 [trace manifest](/docs/reference/perfetto-manifest.md)）。所有边，无论其来源，都记录在 `clock_snapshot` 表中。完整模型参见 [Trace 合并](/docs/concepts/merging-traces.md)。

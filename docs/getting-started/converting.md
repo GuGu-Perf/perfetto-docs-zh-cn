@@ -1119,6 +1119,18 @@ FROM metadata
 WHERE name GLOB 'trace_attribute.*';
 ```
 
+## 将数据导出
+
+一旦你的 trace 加载完成，trace processor 可以使用 `export` 子命令将解析后的表写回出来：
+
+```bash
+trace_processor export perfetto -o archive.tar my_custom_trace.pftrace
+trace_processor export arrow_tar -o tables.tar my_custom_trace.pftrace
+trace_processor export sqlite -o trace.db my_custom_trace.pftrace
+```
+
+`perfetto` 可以由同一版本的 trace processor 实例重新加载，`arrow_tar` 面向 pandas、Polars 或 pyarrow 等外部工具，而 `sqlite` 会生成一个任何 SQLite 工具都能打开的数据库。关于如何在各种格式之间选择以及每种格式的具体内容，请参阅[导出 trace 数据](/docs/getting-started/command-line-analysis.md#export-trace-data)和 [Trace Processor reference](/docs/analysis/trace-processor.md#subcommand-export)。
+
 ## 下一步
 
 你现在了解了如何使用 Python 和 `TrackEvent` 将自定义时间戳数据转换为 Perfetto traces。通过这些技术，你可以表示 slices、counters、flows、track 层次结构、调试注解、调用栈和 trace 级别元数据。
@@ -1134,5 +1146,6 @@ WHERE name GLOB 'trace_attribute.*';
   [Trace Processor](/docs/analysis/getting-started.md) 查询你的自定义
   trace 数据。你的自定义 tracks 和事件将填充标准表，如
   `slice`、`track`、`counter` 等。
+- **将数据取回出来：** 使用 [`export` 子命令](/docs/getting-started/command-line-analysis.md#export-trace-data)导出解析后的表（SQLite、Arrow 或可重新加载的 Perfetto 归档）。
 - **处理大型数据集：** 如果你正在生成非常大的 traces 并且想要避免高内存使用，请在
   [Advanced Guide's section on streaming](/docs/reference/synthetic-track-event.md#handling-large-traces-with-streaming) 中了解如何直接将数据流式传输到文件。

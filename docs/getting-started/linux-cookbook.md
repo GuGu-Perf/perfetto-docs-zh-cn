@@ -1,4 +1,4 @@
-# 实战指南：Linux 追踪方案
+# 实战指南：在 Linux 上进行 Tracing
 
 本页面收集了在 Linux 上对你的程序进行 profiling 和 tracing 的
 **端到端方案**：如何构建以便 trace 可以被符号化、如何录制最常见类型
@@ -24,12 +24,12 @@
   curl -LO https://get.perfetto.dev/tracebox
   chmod +x tracebox
   ```
-- **`traceconv`**：主机端工具集，用于转换和（此处重要的）符号化 trace。
+- **`trace_processor`**：主机端工具集，用于转换和（此处重要的）符号化 trace。
   它是一个轻量级 Python 包装器，首次使用时会为你的平台下载正确的原生
   二进制文件。
   ```bash
-  curl -LO https://get.perfetto.dev/traceconv
-  chmod +x traceconv
+  curl -LO https://get.perfetto.dev/trace_processor
+  chmod +x trace_processor
   ```
 
 从 ftrace 和 `perf_event_open` 录制需要提升的权限。最简单的选项是以
@@ -165,20 +165,20 @@ sudo ./tracebox -c cpu.cfg --txt -o /tmp/trace.pftrace
 此时**内核**帧已经符号化（从 kallsyms 在设备端解析），但**用户空间**
 帧仍是原始地址。
 
-**4. 使用 `traceconv bundle` 嵌入用户空间符号。**它会自动发现已加载的
+**4. 使用 `trace_processor bundle` 嵌入用户空间符号。**它会自动发现已加载的
 二进制文件（使用 trace 中记录的绝对路径，这在同机 profiling 时工作良好），
 并写出一个独立的自包含 trace：
 
 ```bash
 # llvm-symbolizer 必须在 $PATH 上，例如 `sudo apt install llvm`。
-./traceconv bundle /tmp/trace.pftrace /tmp/trace.bundle
+./trace_processor bundle /tmp/trace.pftrace /tmp/trace.bundle
 ```
 
 如果你的符号文件在其他位置（构建主机、`.debug` 目录、嵌入式 sysroot），
 将 `bundle` 指向它们：
 
 ```bash
-./traceconv bundle \
+./trace_processor bundle \
   --symbol-paths /path/to/sysroot/usr/lib/debug,/path/to/build/out \
   --verbose \
   /tmp/trace.pftrace /tmp/trace.bundle
@@ -192,7 +192,7 @@ sudo ./tracebox -c cpu.cfg --txt -o /tmp/trace.pftrace
 要生成聚合后的 [pprof](https://github.com/google/pprof) profile：
 
 ```bash
-./traceconv profile --perf /tmp/trace.pftrace
+./trace_processor convert profile --perf /tmp/trace.pftrace
 ```
 
 ## 方案：原生 heap（内存）profiling {#heap-profiling}
@@ -264,7 +264,7 @@ sudo ./tracebox -c funcgraph.cfg --txt -o /tmp/funcgraph.pftrace
 过滤选项以及调用如何可视化，参见专门的
 [函数图数据源](/docs/data-sources/funcgraph.md)页面。请注意，与
 [CPU profile](#cpu-profiling) 方案不同，这些内核符号来自
-`symbolize_ksyms`，**不能**事后通过 `traceconv bundle` 添加。
+`symbolize_ksyms`，**不能**事后通过 `trace_processor bundle` 添加。
 
 ## 方案：找出线程阻塞的原因 {#blocked-thread}
 
@@ -314,7 +314,7 @@ data_sources {
 
 录制和符号化方式与 [CPU profiling 方案](#cpu-profiling)完全相同
 （`sudo ./tracebox -c blocked.cfg --txt -o ...`，然后
-`./traceconv bundle ...`）。
+`./trace_processor bundle ...`）。
 
 关于完整实例，包括同时在 `sched_switch` 和 `sched_waking` 上过滤以及
 如何分析捕获的调用栈，参见

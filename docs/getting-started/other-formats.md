@@ -619,7 +619,7 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 **描述：** 包含多个 trace 文件的 ZIP 或 TAR 归档文件，可以是本页面任何格式的混合。
 
-**Perfetto 支持：** UI 和 Trace Processor 都可以直接打开归档文件，并将内部的 trace 合并到一条时间线上。归档中的可选 [trace manifest](/docs/reference/perfetto-manifest.md) 文件控制 trace 如何合并：每个文件属于哪台机器以及它们的时钟如何关联。参见[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)了解如何构建此类归档，以及[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md)了解交互式等效方式（也可以导出其构建的归档）。
+**Perfetto 支持：** UI 和 Trace Processor 都可以直接打开归档文件，并将内部的 trace 合并到一条时间线上。归档中的可选 [trace manifest](/docs/reference/perfetto-manifest.md) 文件控制 trace 如何合并：每个文件属于哪台机器以及它们的时钟如何关联。参见[从命令行合并 trace](/docs/analysis/merging-traces.md)了解如何构建此类归档，以及[在 UI 中合并 trace](/docs/visualization/merging-traces.md)了解交互式等效方式（也可以导出其构建的归档）。
 
 在合并 Linux `perf` 产生的 trace 时，请在录制时选择合并友好的时钟；参见上面 [Firefox Profiler JSON](#firefox-json-format) 和 [Perf 文本格式](#perf-textual-format) 部分的说明。
 

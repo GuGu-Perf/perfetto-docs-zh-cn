@@ -136,7 +136,7 @@ chmod +x heap_profile
 2. 启动捆绑的 `traced` 守护进程并打开 tracing session。
 3. 使用 `LD_PRELOAD` 设置为预加载库和 `PERFETTO_HEAPPROFD_BLOCKING_INIT=1` 启动你的二进制文件。否则 heapprofd 会懒惰初始化并遗漏启动分配；此环境变量阻塞第一次 `malloc` 直到它已附加，因此每个分配都会被捕获。
 
-当你的二进制文件退出（或你按 `Ctrl-C` 提前停止）时，脚本运行 `traceconv` 以生成 gzip 压缩的 pprof 文件和原始 trace，并打印输出目录。典型的端到端运行如下：
+当你的二进制文件退出（或你按 `Ctrl-C` 提前停止）时，脚本运行 `trace_processor` 以生成 gzip 压缩的 pprof 文件和原始 trace，并打印输出目录。典型的端到端运行如下：
 
 ```text
 $ ./heap_profile host -- ./my_binary

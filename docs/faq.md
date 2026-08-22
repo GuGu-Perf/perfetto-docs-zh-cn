@@ -43,4 +43,4 @@ JSON trace 格式被视为遗留 trace 格式，并在尽力而为的基础上�
 
 ## 能否在一条时间线上同时打开多个 trace？
 
-可以。在 UI 中，使用"打开多个 trace 文件"（或选择/拖放多个文件）：对话框让你配置它们如何合并到共享时间线上。从命令行，将 trace 的 ZIP 或 TAR 归档文件传递给 `trace_processor`。参见[在 Perfetto UI 中合并 trace](/docs/visualization/merging-traces.md) 和[使用 Trace Processor 合并 trace](/docs/analysis/merging-traces.md)。
+可以。在 UI 中，使用"打开多个 trace 文件"（或选择/拖放多个文件）：对话框让你配置它们如何合并到共享时间线上。从命令行，将 trace 的 ZIP 或 TAR 归档文件传递给 `trace_processor`。参见[在 UI 中合并 trace](/docs/visualization/merging-traces.md) 和[从命令行合并 trace](/docs/analysis/merging-traces.md)。

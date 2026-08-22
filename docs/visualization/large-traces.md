@@ -18,6 +18,19 @@ Perfetto UI 将通过探测 http://127.0.0.1:9001 自动检测 `trace_processor 
 
 NOTE: 经典的 `./trace_processor --httpd /path/to/trace.pftrace` 调用仍然受支持且行为相同。
 
+## 复用已解析的 trace 而无需重新解析
+
+解析是处理大型 trace 中开销最大的部分。如果同一个 trace 会被加载多次（或交给另一个实例使用），可以先导出一次解析结果，之后直接加载该归档文件：
+
+```bash
+./trace_processor export perfetto -o parsed.tar trace.pftrace
+./trace_processor query parsed.tar "SELECT count(*) FROM slice"
+```
+
+`perfetto` 格式会直接从归档中恢复 trace processor 的静态表，跳过完整解析所需的 packet 摄入和排序过程。它与版本耦合：请使用生成它的同一版本的 trace processor 来加载（其他版本可能可以工作，但不作保证）。
+
+如果是在同一台机器上反复使用，后台 [session](/docs/getting-started/command-line-analysis.md#iterate-without-re-parsing-sessions) 是更轻量的选择；而 `perfetto` 归档则是可移植的方案，例如在不同机器之间迁移已解析的 trace，或将其送入批处理任务。
+
 ## 并行使用多个实例
 
 NOTE: 这是一个临时解决方案，直到实现 [b/317076350](http://b/317076350) (Googlers only) 中描述的更好的解决方案。
@@ -36,3 +49,7 @@ NOTE: 这是一个临时解决方案，直到实现 [b/317076350](http://b/31707
 - https://ui.perfetto.dev/#!/?rpc_port=9001
 - https://ui.perfetto.dev/#!/?rpc_port=9002
 - https://ui.perfetto.dev/#!/?rpc_port=9003
+
+## 多大算太大？
+
+确切的内存限制因浏览器、架构和操作系统而异，但 2GB 是典型值。此限制针对的是运行时使用的总内存，而不是 trace 文件的二进制大小。`trace_processor`（以及 UI）在运行时对 trace 的表示通常大于该 trace 的二进制大小。这是因为该表示针对查询性能而非大小进行了优化。确切的膨胀系数取决于 trace 格式，但对于未压缩的 proto trace 可以达到 2-4 倍。
