@@ -1,6 +1,6 @@
 # Trace Processor (Python)
 
-Trace Processor Python API 构建在 Trace Processor [C++ 库](/docs/analysis/trace-processor.md）之上。通过与 Python 集成，该库允许利用 Python 丰富的数据分析生态系统来处理 trace。
+Trace Processor Python API 构建在 Trace Processor [C++ 库](/docs/analysis/trace-processor.md) 之上。通过与 Python 集成，该库允许利用 Python 丰富的数据分析生态系统来处理 trace。
 
 ## 设置
 
@@ -298,7 +298,7 @@ tp_meta.query('select * from slice')
 
 `metric()` 函数接受 trace metrics 列表并将结果以 Protobuf 格式返回。
 
-**注意：**此函数已弃用，但没有计划删除它。建议改用 `trace_summary()`，这是一个间接的替代方案，以更灵活的方式提供许多相同的功能。
+**Note:**此函数已弃用，但没有计划删除它。建议改用 `trace_summary()`，这是一个间接的替代方案，以更灵活的方式提供许多相同的功能。
 
 ```python
 from perfetto.trace_processor import TraceProcessor

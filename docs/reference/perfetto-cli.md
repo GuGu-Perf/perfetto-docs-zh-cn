@@ -27,7 +27,7 @@ perfetto - 捕获 traces
 `-o`, `--out` _OUT_FILE_
 :：指定输出 trace 文件的所需路径，或 `-` 用于 stdout。
  `perfetto` 将输出写入上述标志描述的文件。
- 输出格式符合 AOSP `trace.proto` 中定义的格式。
+ 输出格式符合 [AOSP `trace.proto`](/protos/perfetto/trace/trace.proto) 中定义的格式。
 
 `--dropbox` _TAG_
 :：通过 [DropBoxManager API](https://developer.android.com/reference/android/os/DropBoxManager.html)

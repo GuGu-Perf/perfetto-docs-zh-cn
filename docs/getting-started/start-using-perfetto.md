@@ -145,8 +145,6 @@ Perfetto 还提供了专门用于调查和归因内存使用的工具：
   - **教程**：[录制内存 profile（原生 heap profiling）](/docs/getting-started/memory-profiling.md)
   - **参考**：[原生 heap profiler 数据源](/docs/data-sources/native-heap-profiler.md)
 
-  - **教程**：[使用 heapprofd 进行原生内存分析](/docs/instrumentation/heapprofd-api.md)
-
 - **系统整体内存使用情况如何？** Perfetto 可以从内核获取系统级内存指标，包括活动内存、可用内存、页面缓存等，帮助你了解系统的整体内存健康状况。
 
   - **教程**：[采集和分析系统 trace](/docs/getting-started/system-tracing.md)
@@ -212,7 +210,7 @@ Perfetto 是 Chromium 浏览器及其相关项目（Angle、Skia、V8）的 chro
 
 - **教程**：[在 Chrome 上采集 trace](/docs/getting-started/chrome-tracing.md)
 
-有关 Chrome 中实际 trace 分析的一般介绍，[这篇 Perf-Planet 博客文章](https://calendar.perfplanet.com/2023/digging-chrome-traces-introduction-example/）也是一个有用的资源。
+有关 Chrome 中实际 trace 分析的一般介绍，[这篇 Perf-Planet 博客文章](https://calendar.perfplanet.com/2023/digging-chrome-traces-introduction-example/) 也是一个有用的资源。
 
 ## {#trace-like-data} 任何有"trace 类数据"需要分析或可视化的人
 
@@ -237,7 +235,7 @@ Perfetto 强大的 UI 和 Trace Processor 不仅限于 Perfetto 自己采集的 
     - **创造性思考：** 你的问题是否可以通过对你的 C/C++ 代码进行插桩并在 Timeline 上记录事件来理解？我们的[使用 Perfetto 采集应用内 trace 教程](/docs/getting-started/in-app-tracing.md) 展示了如何做。
     - 你是否正在使用产生时间戳数据的现有系统？它可能可以转换为 Perfetto 理解的格式。请参阅我们的[自定义数据转换指南](/docs/getting-started/converting.md)。
 
-2.  **强大的 Timeline 可视化（无需编码）：** [Perfetto UI](/docs/visualization/perfetto-ui.md) 旨在直观地探索大型复杂 trace。你可以导航 Timeline、放大到纳秒级细节、检查事件属性以及关联不同进程和硬件组件之间的活动，所有这些都通过图形界面完成，无需编写任何代码。轨道过滤、展开/折叠进程线程以及可视化事件流等功能帮助你了解系统正在做什么。
+2.  **强大的 Timeline 可视化（无需编码）：** [Perfetto UI](/docs/visualization/perfetto-ui.md) 旨在直观地探索大型复杂 trace。你可以导航 Timeline、放大到纳秒级细节、检查事件属性以及关联不同进程和硬件组件之间的活动，所有这些都通过图形界面完成，无需编写任何代码。Track 过滤、展开/折叠进程线程以及可视化事件流等功能帮助你了解系统正在做什么。
 
     - **探索多样化数据：** Perfetto 可以直接在 UI 中打开各种[外部 trace 格式](/docs/getting-started/other-formats.md)。
     - **发现 UI 功能：** Perfetto UI 还有 [Debug Tracks](/docs/analysis/debug-tracks.md) 等功能，允许通过简单的 UI 配置进行复杂的数据聚合和自定义可视化。
@@ -247,10 +245,10 @@ Perfetto 强大的 UI 和 Trace Processor 不仅限于 Perfetto 自己采集的 
 
 有关 Perfetto 灵活的架构如何适应各种复杂诊断场景的更多灵感，请参阅：
 
-- Snap 关于[大规模客户端 trace](https://www.droidcon.com/2022/06/28/client-tracing-at-scale/）的演示。
+- Snap 关于[大规模客户端 trace](https://www.droidcon.com/2022/06/28/client-tracing-at-scale/) 的演示。
 - Collabora 如何使用 Perfetto 进行[虚拟化 GPU 加速分析](https://www.collabora.com/news-and-blog/blog/2021/04/22/profiling-virtualized-gpu-acceleration-with-perfetto/)。
 
 如果你不确定从哪里开始或 Perfetto 如何适用于你的独特情况：
 
 - **浏览我们的文档：** 使用导航侧边栏探索不同的部分，如"概念"、"数据源"或"深入探索"。
-- **参与社区：** 在 [Discord](https://discord.gg/35ShE3A) 或我们的[公开邮件列表](https://groups.google.com/forum/#!forum/perfetto-dev）上提问。
+- **参与社区：** 在 [Discord](https://discord.gg/35ShE3A) 或我们的[公开邮件列表](https://groups.google.com/forum/#!forum/perfetto-dev) 上提问。

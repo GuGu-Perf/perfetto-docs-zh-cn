@@ -40,6 +40,7 @@ show_help() {
     echo "命令:"
     echo "  deploy-local     本地部署并启动服务器"
     echo "  deploy-gh-pages  部署到 GitHub Pages"
+    echo "  rollback-gh-pages [tag]  回退 gh-pages 到部署前状态（默认最近 pre-deploy-* tag）"
     echo "  sync-check       检查上游 docs/ 更新"
     echo "  sync-update      更新 LAST_SYNC"
     echo ""
@@ -56,6 +57,10 @@ parse_args() {
             ;;
         deploy-gh-pages)
             COMMAND="deploy-gh-pages"
+            shift
+            ;;
+        rollback-gh-pages)
+            COMMAND="rollback-gh-pages"
             shift
             ;;
         sync-check)
@@ -704,6 +709,19 @@ PYEOF
             print_warning "未找到标准构建输出目录，但构建可能已成功"
         fi
 
+        # fail-closed 断言：首页必须是中文文档页（README.md 渲染），
+        # 防止上游构建系统变化导致补丁失效、英文落地页静默上线
+        SITE_INDEX="out/perfetto.dev/site/index.html"
+        if [ -f "$SITE_INDEX" ]; then
+            if grep -q "什么是 Perfetto" "$SITE_INDEX"; then
+                print_success "首页断言通过（README.md 渲染）"
+            else
+                print_error "首页断言失败：index.html 不含「什么是 Perfetto」"
+                print_error "上游构建系统/首页补丁可能已失效，请检查 .project/plan/ 第八节的防护设计"
+                exit 1
+            fi
+        fi
+
         rm -f "$BUILD_LOG"
 
         if [[ "$deploy_mode" == "deploy-gh-pages" ]]; then
@@ -757,6 +775,23 @@ PYEOF
 
             touch "$DEPLOY_TEMP/.nojekyll"
 
+            # fail-closed 断言：路径修补必须真实生效（上游模板变化会导致 sed 静默无效）
+            print_info "校验路径修补产物 (fail-closed)..."
+            if ! grep -q "href=\"/$REPO_NAME/assets/style.css" "$DEPLOY_TEMP/index.html" \
+               || ! grep -q "src=\"/$REPO_NAME/assets/script.js" "$DEPLOY_TEMP/index.html" \
+               || ! grep -q "href=\"/$REPO_NAME/docs/" "$DEPLOY_TEMP/index.html"; then
+                print_error "路径修补校验失败：index.html 未包含仓库前缀路径"
+                print_error "上游站点模板可能已变更，sed 规则失效。中止部署（线上站点未受影响）"
+                rm -rf "$DEPLOY_TEMP"
+                exit 1
+            fi
+            if ! grep -q "什么是 Perfetto" "$DEPLOY_TEMP/index.html"; then
+                print_error "首页断言失败：部署产物 index.html 不含「什么是 Perfetto」，中止部署"
+                rm -rf "$DEPLOY_TEMP"
+                exit 1
+            fi
+            print_success "路径修补校验通过"
+
             print_info "部署到 gh-pages 分支..."
             cd "$DEPLOY_TEMP"
             git init
@@ -764,6 +799,19 @@ PYEOF
             git config user.name "Deploy Bot"
             git add -A
             git commit -m "Deploy to GitHub Pages"
+
+            # 回退点：把旧 gh-pages 提交打成 pre-deploy-* 远端 tag（强推前执行）
+            OLD_GH_SHA=$(git ls-remote origin gh-pages 2>/dev/null | awk '{print $1}')
+            if [ -n "$OLD_GH_SHA" ]; then
+                DEPLOY_TAG="pre-deploy-$(date +%Y%m%d-%H%M%S)"
+                git fetch origin gh-pages >/dev/null 2>&1
+                if git tag "$DEPLOY_TAG" FETCH_HEAD 2>/dev/null; then
+                    git push origin "refs/tags/$DEPLOY_TAG" >/dev/null 2>&1 \
+                        && print_info "回退点: tag $DEPLOY_TAG → ${OLD_GH_SHA:0:7}（回退: bash .project/workwork.sh rollback-gh-pages）" \
+                        || print_warning "回退 tag 推送失败（不影响本次部署）"
+                fi
+            fi
+
             git push --force "$DOCS_ZH_DIR" main:gh-pages
             cd "$DOCS_ZH_DIR"
             git push origin gh-pages --force
@@ -995,6 +1043,23 @@ case "$COMMAND" in
         ;;
     deploy-gh-pages)
         run_deploy "$COMMAND"
+        ;;
+    rollback-gh-pages)
+        # 回退 gh-pages 到最近一次部署前状态（或指定 pre-deploy-* tag）
+        cd "$(dirname "$0")/.."
+        git fetch origin --tags >/dev/null 2>&1
+        TAG="${1:-}"
+        if [ -z "$TAG" ]; then
+            TAG=$(git tag -l 'pre-deploy-*' | sort | tail -1)
+        fi
+        if [ -z "$TAG" ]; then
+            echo "错误: 未找到 pre-deploy-* tag（旧版部署未创建回退点）" >&2
+            exit 1
+        fi
+        SHA=$(git rev-parse "$TAG^{commit}" 2>/dev/null)
+        echo "回退 gh-pages → $TAG (${SHA:0:7})"
+        git push --force origin "$SHA:refs/heads/gh-pages"
+        echo "完成。等待 1-2 分钟 CDN 刷新后验证线上状态"
         ;;
     sync-check)
         run_sync "$COMMAND"

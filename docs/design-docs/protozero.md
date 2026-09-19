@@ -4,7 +4,7 @@ Protozero 是专为 Perfetto 跟踪用例量身定制的零拷贝、零分配、
 
 ## 动机
 
-Protozero 专为所有 Perfetto tracing 路径中使用的 proto 序列化进行了设计和优化。反序列化仅在项目后期引入，主要由离线工具使用（例如，[TraceProcessor](/docs/analysis/trace-processor.md）。_零拷贝、零分配、零系统调用_ 语句仅适用于序列化代码。
+Protozero 专为所有 Perfetto tracing 路径中使用的 proto 序列化进行了设计和优化。反序列化仅在项目后期引入，主要由离线工具使用（例如，[TraceProcessor](/docs/analysis/trace-processor.md)）。_零拷贝、零分配、零系统调用_ 语句仅适用于序列化代码。
 
 Perfetto 在 tracing 快速路径中广泛使用 protobuf。Perfetto 中的每个 trace 事件都是一个 proto(请参阅 [TracePacket](/docs/reference/trace-packet-proto.autogen) 参考)。这允许事件具有强类型，并使团队更容易使用一种普遍理解的语言来保持向后兼容性。
 

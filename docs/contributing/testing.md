@@ -171,7 +171,7 @@ chrome 加载网页并截图，然后逐像素比较
 当一定数量的像素不同时，这些测试会失败。如果这些
 测试失败，你需要调查差异并确定其是否有意。如果
 这是所需的更改，你需要在 linux 机器上更新屏幕截图
-以使 CI 通过。你可以通过生成和上传新的基线来更新它们（这需要通过 gcloud 访问 google 存储桶，只有 googlers 可以访问，googlers 可以 [在此](https://g3doc.corp.google.com/cloud/sdk/g3doc/index.md#installing-and-using-the-cloud-sdk）安装 gcloud)。
+以使 CI 通过。你可以通过生成和上传新的基线来更新它们（这需要通过 gcloud 访问 google 存储桶，只有 googlers 可以访问，googlers 可以[在此](https://g3doc.corp.google.com/cloud/sdk/g3doc/index.md#installing-and-using-the-cloud-sdk)安装 gcloud）。
 
 默认情况下，测试在 docker 容器中运行，除非传递 `-no-docker`。
 建议使用容器以获得稳定和可重现的
@@ -185,7 +185,7 @@ tools/test_data upload
 
 完成后，你可以提交并上传作为 CL 的一部分，导致 CI 使用你的新屏幕截图。
 
-注意：如果你看到失败的差异测试，你可以通过使用以 `ui-test-artifacts/index.html` 结尾的链接在 CI 上查看像素差异。该页面上报告包含已更改的屏幕截图以及接受更改的命令（如果这些更改是需要的）。
+NOTE:如果你看到失败的差异测试，你可以通过使用以 `ui-test-artifacts/index.html` 结尾的链接在 CI 上查看像素差异。该页面上报告包含已更改的屏幕截图以及接受更改的命令（如果这些更改是需要的）。
 
 ## Android CTS 测试
 

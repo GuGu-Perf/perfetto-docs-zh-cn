@@ -19,11 +19,11 @@ trace 数据流的设计原则是：
 
 #### trace 服务的中央缓冲区
 
-这些缓冲区（上图中为黄色）由用户在[trace config](config.md）的 `buffers` 部分中定义。在最简单的情况下，一个 trace 会话 = 一个缓冲区，无论数据源和生产者的数量如何。
+这些缓冲区（上图中为黄色）由用户在 [trace config](config.md) 的 `buffers` 部分中定义。在最简单的情况下，一个 trace 会话 = 一个缓冲区，无论数据源和生产者的数量如何。
 
-这是 trace 数据最终保存在内存中的地方，无论它来自内核 ftrace 基础结构、`traced_probes` 中的其他数据源还是使用[Perfetto SDK](/docs/instrumentation/tracing-sdk.md）的另一个用户空间进程。在 trace 结束时（或期间，如果处于[流模式]），这些缓冲区被写入输出 trace 文件。
+这是 trace 数据最终保存在内存中的地方，无论它来自内核 ftrace 基础结构、`traced_probes` 中的其他数据源还是使用 [Perfetto SDK](/docs/instrumentation/tracing-sdk.md) 的另一个用户空间进程。在 trace 结束时（或期间，如果处于[流模式]），这些缓冲区被写入输出 trace 文件。
 
-这些缓冲区可以包含来自不同数据源甚至不同生产者进程的 trace 数据包的混合。什么写入哪里在 trace config 的[缓冲区映射部分](config.md#dynamic-buffer-mapping）中定义。因此，trace 缓冲区不在进程之间共享，以避免跨生产者进程的交叉对话和信息泄露。
+这些缓冲区可以包含来自不同数据源甚至不同生产者进程的 trace 数据包的混合。什么写入哪里在 trace config 的[缓冲区映射部分](config.md#dynamic-buffer-mapping) 中定义。因此，trace 缓冲区不在进程之间共享，以避免跨生产者进程的交叉对话和信息泄露。
 
 #### 共享内存缓冲区
 
@@ -215,7 +215,7 @@ Summary: 检测和调试数据丢失的最佳方法是使用 Trace Processor 并
  ```
  /proc 条目每个进程只发出一次，以避免使 trace 的大小膨胀。在没有数据丢失的情况下，这可以很好地重建该 pid 的所有调度事件。但是，如果 process_stats 数据包在环形缓冲区中被丢弃，则将无法为引用该 PID 的所有其他 ftrace 事件计算进程详细信息。
 
-2. Perfetto SDK 中的[Track Event 库](/docs/instrumentation/track-events）大量使用字符串驻留。大多数字符串和描述符（例如，关于进程/线程的详细信息）只发出一次，随后使用单调 ID 引用。在描述符数据包丢失的情况下，不可能完全理解这些事件。
+2. Perfetto SDK 中的 [Track Event 库](/docs/instrumentation/track-events) 大量使用字符串驻留。大多数字符串和描述符（例如，关于进程/线程的详细信息）只发出一次，随后使用单调 ID 引用。在描述符数据包丢失的情况下，不可能完全理解这些事件。
 
 Trace Processor 具有内置机制，可以检测驻留数据的丢失，并跳过引用缺失的驻留字符串或描述符的数据包的摄取。
 
@@ -243,7 +243,7 @@ Trace Processor 具有内置机制，可以检测驻留数据的丢失，并跳�
 
 #### 缓解措施
 
-对于这类问题的最佳缓解措施是在 trace config 中指定[`flush_period_ms`][TraceConfig](对于大多数情况，10-30 秒通常就足够了)，尤其是在采集长 trace 时。
+对于这类问题的最佳缓解措施是在 trace config 中指定 [`flush_period_ms`][TraceConfig]（对于大多数情况，10-30 秒通常就足够了），尤其是在采集长 trace 时。
 
 这将导致 trace service 向数据源发出定期刷新请求。刷新请求导致数据源将共享内存缓冲区页面提交到中央缓冲区，即使它们没有完全填满。默认情况下，刷新仅在 trace 结束时发出。
 

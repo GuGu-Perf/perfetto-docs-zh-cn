@@ -152,7 +152,7 @@ Windows 上支持以下目标：
  Googlers：有关详细信息，请参阅 [go/perfetto-win](http://go/perfetto-win)。
 - `perfetto_unittests` / `perfetto_integrationtests`：虽然它们仅支持 Windows 上支持的代码子集（例如没有 ftrace）。
 
-无法从 Windows 原生构建 Perfetto UI。但是，你可以使用 [WSL 2](https://learn.microsoft.com/zh-cn/windows/wsl/about) 从 Windows 构建，在 WSL 环境中按照 Linux 说明操作即可。
+无法从 Windows 原生构建 Perfetto UI。但是，你可以使用 [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/about) 从 Windows 构建，在 WSL 环境中按照 Linux 说明操作即可。
 
 #### 先决条件
 

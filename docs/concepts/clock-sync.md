@@ -41,7 +41,7 @@ message TracePacket {
 
 此（可选）字段确定数据包的时钟域。如果省略，它指的是 trace 的默认时钟域（对于 Linux/Android 为 `CLOCK_BOOTTIME`）。如果存在，此字段可以设置为：
 
-- [clock_snapshot.proto 中定义的内置时钟之一][builtin_clocks](例如，`CLOCK_BOOTTIME`、`CLOCK_REALTIME`、`CLOCK_MONOTONIC`)。这些时钟的 ID <= 63。
+- [clock_snapshot.proto 中定义的内置时钟之一][builtin_clocks]（例如，`CLOCK_BOOTTIME`、`CLOCK_REALTIME`、`CLOCK_MONOTONIC`）。这些时钟的 ID <= 63。
 - 自定义序列作用域时钟，64 <= ID < 128
 - 自定义全局作用域时钟，128 <= ID < 2**32
 

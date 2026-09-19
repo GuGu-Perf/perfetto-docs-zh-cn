@@ -11,6 +11,25 @@ description: >
 
 # Perfetto 中文文档翻译项目
 
+## 快速启动清单（月度会话开工顺序）
+
+0. **先读 `.project/HANDOFF.md`**——上次会话的坑与绕法、术语新决策
+1. `export https_proxy=http://127.0.0.1:7897 http_proxy=http://127.0.0.1:7897`（终端代理）
+2. `bash .project/audit.sh`——全量结构审计，**非 0 差异先修欠账再继续**
+3. `bash .project/workwork.sh sync-check`——检查上游更新
+4. 翻译：按 `.project/prompts/translate-batch.md` 模板派发子代理批次
+   （模板含规范加载顺序与自检命令；上游英文必须用 `git show HEAD:` 取，
+   上游工作树可能已被部署脚本覆盖为中文）
+5. 全绿后：`deploy-local` 浏览器抽查变更页 → 提交推送 → `sync-update` → `deploy-gh-pages`
+6. 收尾：**更新 `.project/HANDOFF.md`**（本轮教训 + 术语决策）
+
+核心质量门禁（翻译完必须全绿）：
+
+```bash
+bash .project/audit.sh                # 全量结构审计（标题/围栏/表格/图片/链接URL vs 上游）
+bash .project/proofread.sh --all      # 术语/标志/标点 lint（W1 空格警告可留存）
+```
+
 ## 项目概述
 
 本项目维护 Google Perfetto 官方文档的中文翻译，发布地址：
@@ -18,7 +37,8 @@ https://gugu-perf.github.io/perfetto-docs-zh-cn/
 
 上游源为 https://github.com/google/perfetto 的 `docs/` 目录，
 通过 `.project/LAST_SYNC` 跟踪同步点。项目使用 Perfetto 自己的
-构建系统（`infra/perfetto.dev/build.js`）生成静态站点。
+构建系统（新：`infra/perfetto.dev/build` 即 build.mjs；旧：build.js + GN/ninja，
+workwork.sh 自动探测）生成静态站点。
 
 ## 核心工作流
 
@@ -177,9 +197,16 @@ git commit -m "chore: update LAST_SYNC to <commit_hash>"
 | 路径 | 用途 |
 |------|------|
 | `docs/` | 翻译后的中文文档（镜像上游 `perfetto/docs/`） |
-| `.project/workwork.sh` | 统一工具脚本（deploy、sync-check、sync-update） |
+| `.project/workwork.sh` | 统一工具脚本（deploy、rollback-gh-pages、sync-check、sync-update） |
 | `.project/LAST_SYNC` | 本仓库同步到的上游 commit |
+| `.project/HANDOFF.md` | 会话交接纪要（开工先读、收尾必更） |
 | `.project/TRANSLATION_GUIDE.md` | 完整翻译规则和术语表 |
+| `.project/glossary.json` | 机器可读术语表（proofread 校验 + 翻译注入） |
+| `.project/phrases.json` | 短语/链接文本定型译法（轻量翻译记忆） |
+| `.project/audit.sh` | 全量结构审计（对上游 git HEAD） |
+| `.project/proofread.sh` | 术语/标志/标点 lint |
+| `.project/prompts/translate-batch.md` | 翻译子代理批次任务模板 |
+| `.project/plan/` | 架构决策与路线图文档 |
 | `CONTRIBUTING.md` | 贡献工作流和 commit 规范 |
 | `README.md` | 项目首页（同时用作站点首页） |
 

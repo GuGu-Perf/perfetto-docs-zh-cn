@@ -22,7 +22,7 @@ TIP: 如果你只是想可视化内核函数的执行，perfetto 对 ftrace 内�
 
 本页面分为三个部分：
 - [A部分][section-a-link]：涵盖创建一个带有静态 tracepoint 的示例内核模块，使用 perfetto 记录事件，以及在 perfetto UI 中查看基本事件数据。
-- [B部分][section-b-link](高级)：涵盖通过修改 perfetto 源代码为 tracepoint 添加专用解析。这让你可以充分利用将事件转换为结构化的 SQL 表和 UI tracks。
+- [B部分][section-b-link]（高级）：涵盖通过修改 perfetto 源代码为 tracepoint 添加专用解析。这让你可以充分利用将事件转换为结构化的 SQL 表和 UI tracks。
 - [C部分][section-c-link]：作为上述内容的替代，描述了构建 tracepoints 的约定，以便 perfetto 可以自动将它们转换为 slices/instants/counters，**而无需修改 perfetto 源代码**。
 
 [funcgraph-cfg-link]: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/ftrace/ftrace_config.proto?q=enable_function_graph
@@ -247,7 +247,7 @@ data_sources {
 duration_ms: 10000
 ```
 
-请参阅[系统 tracing 页面](/docs/getting-started/system-tracing.md）以设置 tracebox。对于此示例，我们将使用刚刚创建的配置文件从命令行采集 trace：
+请参阅[系统 tracing 页面](/docs/getting-started/system-tracing.md)以设置 tracebox。对于此示例，我们将使用刚刚创建的配置文件从命令行采集 trace：
 ```bash
 ./tracebox -c ticker.cfg --txt -o ticker.pftrace
 ```

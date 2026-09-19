@@ -275,7 +275,7 @@ sudo ./tracebox -c funcgraph.cfg --txt -o /tmp/funcgraph.pftrace
 的 `timebase`，这样你可以在线程阻塞或被唤醒的精确时刻捕获调用栈。
 对于阻塞分析，这远比基于时间的采样精确。
 
-WARNING：Android 的 `blocked_function` 字段（来自
+WARNING:Android 的 `blocked_function` 字段（来自
 [sched/sched_blocked_reason](/docs/getting-started/android-trace-analysis.md)
 中使用的 `sched/sched_blocked_reason` ftrace 事件）是 Android 内核特性，
 在主线/桌面 Linux 内核上通常**不**存在。请改用下面的调用栈采样方法。

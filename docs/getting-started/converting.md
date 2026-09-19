@@ -458,7 +458,7 @@ Flows 用于在视觉上连接具有显式因果或依赖关系的 slices，特�
 Perfetto UI 将绘制箭头连接共享共同 `flow_id` 的 slices，使依赖链显式化。
 
 **替代方案：Correlation IDs** 对于属于相同逻辑操作但不是因果连接的事件，请考虑使用 correlation IDs 代替或除了 flows。Correlation IDs 将相关事件视觉上分组（例如，使用一致的颜色）而不暗示因果关系。有关详细信息，请参阅高级指南中的
-[Linking Related Events with Correlation IDs](/docs/reference/synthetic-track-event.md#linking-related-events-with-correlation-ids）部分。
+[Linking Related Events with Correlation IDs](/docs/reference/synthetic-track-event.md#linking-related-events-with-correlation-ids) 部分。
 
 ### Python 示例：Flows
 

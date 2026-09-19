@@ -2,7 +2,7 @@
 
 本指南深入探讨在 Android 上采集系统 trace，建立在 [System Tracing](/docs/getting-started/system-tracing.md) 指南中介绍的概念基础上。
 
-在继续之前，你应该熟悉使用 [Perfetto UI](/docs/getting-started/system-tracing.md#android-perfetto-ui) 或 [`record_android_trace`](/docs/getting-started/system-tracing.md#android-command-line) 脚本采集系统 trace 的基础知识。
+在继续之前，你应该熟悉使用 [Perfetto UI](/docs/getting-started/system-tracing.md#recording-your-first-system-trace) 或 [`record_android_trace`](/docs/getting-started/system-tracing.md#recording-your-first-system-trace) 脚本采集系统 trace 的基础知识。
 
 本指南涵盖这些工具抽象掉的底层详细信息，包括：
 
@@ -23,7 +23,7 @@ adb shell setprop persist.traced.enable 1
 ```
 
 NOTE: 如果你使用的是早于 9 (P) 的 Android 版本，设备上的工具将无法工作。
- 你必须使用 [`record_android_trace`](/docs/getting-started/system-tracing.md#android-command-line) 脚本。
+ 你必须使用 [`record_android_trace`](/docs/getting-started/system-tracing.md#recording-your-first-system-trace) 脚本。
 
 ## 使用设备上的 /system/bin/perfetto 命令进行记录
 
@@ -43,7 +43,7 @@ adb shell perfetto \
 
 然而，直接使用 `adb shell perfetto` 时有几个注意事项需要注意:
 
-- **停止 trace：** `Ctrl+C` 在 `adb shell perfetto` 中不可靠。它仅在使用基于交互式 PTY 的会话时才正确传播（即，先运行 `adb shell`，然后在 shell 内运行 `perfetto`）。对于长时间运行的 trace，更安全的方法是使用 `--background` 标志并通过其 PID `kill` 进程。有关更多信息，请参阅[后台 Tracing](/docs/learning-more/tracing-in-background.md）指南。
+- **停止 trace：** `Ctrl+C` 在 `adb shell perfetto` 中不可靠。它仅在使用基于交互式 PTY 的会话时才正确传播（即，先运行 `adb shell`，然后在 shell 内运行 `perfetto`）。对于长时间运行的 trace，更安全的方法是使用 `--background` 标志并通过其 PID `kill` 进程。有关更多信息，请参阅[后台 Tracing](/docs/learning-more/tracing-in-background.md) 指南。
 
 - **传递 trace config：** 在 Android 12 之前的非 root 设备上，SELinux 规则阻止 `perfetto` 进程从世界可写的位置（如 `/data/local/tmp`）读取 config 文件。推荐的解决方法是通过标准输入管道传递 config：`cat config.pbtx | adb shell perfetto -c -`。从 Android 12 开始，你可以将 config 放在 `/data/misc/perfetto-configs` 中并直接传递路径。
 
@@ -57,7 +57,7 @@ adb shell perfetto \
 
 WARNING: 下面的命令在 Android P 上不起作用，因为 `--txt` 选项是在 Q 中引入的。
  应该使用二进制 protobuf 格式；详细信息可以在
- [_Trace configuration_ 页面](https://perfetto.dev/docs/concepts/config#pbtx-vs-binary-format）中找到。
+ [_Trace configuration_ 页面](https://perfetto.dev/docs/concepts/config#pbtx-vs-binary-format) 中找到。
 
 如果你在 Mac 或 Linux 主机上运行，或者在 Windows 上使用基于 bash 的终端，你可以使用以下内容：
 
@@ -131,7 +131,7 @@ NOTE: 由于严格的 SELinux 规则，在 Android 的非 root 版本上，直�
 NOTE: 在 Android 10 之前的设备上，adb 无法直接拉取 `/data/misc/perfetto-traces`。
  使用 `adb shell cat /data/misc/perfetto-traces/trace > trace.perfetto-trace` 作为解决方法。
 
-`perfetto` 命令行界面的完整参考可以在[这里](/docs/reference/perfetto-cli.md）找到。
+`perfetto` 命令行界面的完整参考可以在[这里](/docs/reference/perfetto-cli.md) 找到。
 
 ## 独占 Tracing 会话
 

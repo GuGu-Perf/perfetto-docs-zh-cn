@@ -20,7 +20,7 @@
 - **采样周期/频率** ： Counter 采样的频率。这可以是一个固定的 `period`（例如，每 1000 个事件）或一个 `frequency`(例如，每秒 100 次)。
 - **[Followers](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/common/perf_events.proto?q=FollowerEvent)** ： 要记录的任何其他 Counters。这些 Counters 在 timebase 事件的同时被快照。
 
-一个 trace 配置可以为单独的采样组定义多个"linux.perf"数据源。但请注意，如果计算硬件事件，你需要小心不要超过平台的 PMU 容量。否则内核将多路复用（重复切换进出）事件组，导致计数不足（参见[this perfwiki page](https://perfwiki.github.io/main/tutorial/#multiplexing-and-scaling-events）了解更多信息)。
+一个 trace 配置可以为单独的采样组定义多个"linux.perf"数据源。但请注意，如果计算硬件事件，你需要小心不要超过平台的 PMU 容量。否则内核将多路复用（重复切换进出）事件组，导致计数不足（参见 [这个 perfwiki 页面](https://perfwiki.github.io/main/tutorial/#multiplexing-and-scaling-events) 了解更多信息）。
 
 ### 配置示例
 
@@ -135,7 +135,7 @@ echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
 
 Counter 记录也可以配置为包含在 Counter 采样时被中断进程的调用栈（相互调用的函数帧列表）。这是通过要求内核在每个样本中记录额外的状态（用户空间寄存器状态，栈内存顶部），并在 profiler 中展开 + 符号化调用栈来实现的。展开在进程外部发生，不需要在被 profile 的进程中进行插桩或注入库。
 
-要启用调用栈 profiling，请在数据源配置中设置 [`callstack_sampling`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/profiling/perf_event_config.proto) 字段。请注意，采样仍将按每个 CPU 执行，但你可以设置 [`scope`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/profiling/perf_event_config.proto) 字段，以便 profiler 仅展开匹配进程的调用栈（这反过来有助于防止 profiler 因展开运行时成本而过载）。
+要启用调用栈 profiling，请在数据源配置中设置 [`callstack_sampling`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/profiling/perf_event_config.proto?q=%22optional%20CallstackSampling%20callstack_sampling%20%3D%2016;%22) 字段。请注意，采样仍将按每个 CPU 执行，但你可以设置 [`scope`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/config/profiling/perf_event_config.proto?q=%22optional%20Scope%20scope%20%3D%201;%22) 字段，以便 profiler 仅展开匹配进程的调用栈（这反过来有助于防止 profiler 因展开运行时成本而过载）。
 
 ### 配置示例
 
@@ -223,7 +223,7 @@ python3 cpu_profile -n com.android.example -f 100
 
 #### 缺失符号和反混淆
 
-如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）在主机上符号化 profile。`trace_processor bundle` 是推荐的入口点。
+如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md)在主机上符号化 profile。`trace_processor bundle` 是推荐的入口点。
 
 TAB: Linux (command line)
 
@@ -257,7 +257,7 @@ python3 trace_processor convert profile --perf /tmp/trace.pb
 
 #### 缺失符号和反混淆
 
-如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md）事后符号化 profile。`trace_processor bundle` 是推荐的入口点。
+如果你的 profiles 缺少 native 库的函数名称，但你有权访问库的调试版本（带有符号数据），你可以按照[符号化和反混淆指南](/docs/learning-more/symbolization.md)事后符号化 profile。`trace_processor bundle` 是推荐的入口点。
 
 </tabs?>
 

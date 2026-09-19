@@ -219,7 +219,7 @@ GROUP BY process_name;
 - 在 PerfettoSQL 唯一 ID 上连接表。
 - SQL 聚合。
 
-Thread tracks 显示 [thread's state](/docs/data-sources/cpu-scheduling.md#decoding-code-end_state-code-)，
+Thread tracks 显示 [thread's state](/docs/data-sources/cpu-scheduling.md#decoding-end-state)，
 例如它是否正在运行、可运行但未运行、休眠等。性能问题的常见来源是应用线程进入 "uninterruptible sleep"，即调用阻塞在不可中断条件上的内核函数。
 
 要排除不可中断睡眠问题，你需要在采集 traces 时在 Perfetto 配置中包含以下代码段：

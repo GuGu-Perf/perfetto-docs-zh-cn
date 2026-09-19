@@ -139,7 +139,7 @@ msg_invoke_method_reply: {
 
 Trace 数据包含泄露系统活动（例如，哪些进程/线程正在运行）的敏感信息，并且可能允许侧信道攻击。因此，消费者 socket 仅打算向少数特权进程公开。
 
-在 Android 上，只有 `adb shell` 域（由各种 UI 工具使用，如 [Perfetto UI](https://ui.perfetto.dev/）、[Android Studio](https://developer.android.com/studio) 或 [Android GPU Inspector](https://github.com/google/agi))和其他少数受信任的系统服务被允许访问消费者 socket(请参见 [SELinux 中的 traced_consumer][selinux_consumer])。
+在 Android 上，只有 `adb shell` 域（由各种 UI 工具使用，如 [Perfetto UI](https://ui.perfetto.dev/)、[Android Studio](https://developer.android.com/studio) 或 [Android GPU Inspector](https://github.com/google/agi)）和其他少数受信任的系统服务被允许访问消费者 socket（请参见 [SELinux 中的 traced_consumer][selinux_consumer]）。
 
 在 Perfetto 代码库中，[`perfetto`](/docs/reference/perfetto-cli) 二进制文件（Android 上的 `/system/bin/perfetto`）提供了消费者实现，并通过命令行界面公开它。
 
@@ -236,7 +236,7 @@ Protobuf 中的嵌套消息以其长度为前缀。在零拷贝直接序列化�
 
 以下 protobuf 消息是整个 trace 协议 ABI 的一部分，并在更新时保持向后兼容，除非在注释中标记为实验性。
 
-TIP: 另请参见 [Protobuf 语言指南](https://developers.google.com/protocol-buffers/docs/proto#updating) 的 _更新消息类型_ 部分，了解在更新 protobuf 消息模式时的有效 ABI 兼容更改。
+TIP: 另请参见 [Protobuf 语言指南][proto-updating] 的 _更新消息类型_ 部分，了解在更新 protobuf 消息模式时的有效 ABI 兼容更改。
 
 #### DataSourceDescriptor
 

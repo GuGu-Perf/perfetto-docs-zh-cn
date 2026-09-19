@@ -12,7 +12,7 @@ Perfetto 是一个开源的 SDK、守护进程和工具套件，使用 **tracing
 - **完全本地的、基于浏览器的 UI**，用于在 Timeline 上可视化大量复杂的、相互关联的数据。我们的 UI 适用于所有主流浏览器，不需要任何安装，可以离线工作，并且可以打开由其他（非 Perfetto） tracing 工具采集的 trace。
 - **强大的、基于 SQL 的分析库**，用于以编程方式分析 Timeline 上的大量复杂的、相互关联的数据，即使这些数据不是用 Perfetto 记录工具收集的。
 
-![](/docs/images/perfetto-stack.svg)
+![](images/perfetto-stack.svg)
 
 ## 为什么使用 Perfetto?
 
@@ -92,7 +92,7 @@ Google 还有许多其他团队以多种方式使用 Perfetto。这包括 tracin
 - [Meta Quest 平台上的性能和优化](https://m.facebook.com/RealityLabs/videos/performance-and-optimization-on-meta-quest-platform/488126049869673/)
 - [通过比例 trace 进行性能测试](https://www.jviotti.com/2022/09/07/performance-testing-through-proportional-traces.html)
 - [性能](https://www.twoscomplement.org/podcast/performance.mp3) 
- [Twoscomplement 播客](https://www.twoscomplement.org/#podcast）的一集"我们最高效的播客。Ben 和 Matt 在不到 30 分钟内谈论性能测试和优化。"
+ [Twoscomplement 播客](https://www.twoscomplement.org/#podcast) 的一集"我们最高效的播客。Ben 和 Matt 在不到 30 分钟内谈论性能测试和优化。"
 - [Collabora：使用 Perfetto 分析虚拟化 GPU 加速](https://www.collabora.com/news-and-blog/blog/2021/04/22/profiling-virtualized-gpu-acceleration-with-perfetto/)
 - [Snap：大规模客户端 Tracing](https://www.droidcon.com/2022/06/28/client-tracing-at-scale/)
  "由于 Android 设备种类繁多，很难找到性能问题的根本原因。通过利用 trace，我们可以开始了解导致糟糕用户体验的确切情况。我们将讨论如何为我们的 Snapchat 应用进行插桩，以便我们能够获得必要的可解释性信号。此外，我们将描述如何将 tracing 纳入我们的开发过程，从本地调试到性能测试，最后到生产。"

@@ -104,7 +104,7 @@ gh pr create # 需要 cli.github.com
 
 #### 外部贡献者
 
-请像为任何其他 GitHub 仓库做贡献一样进行贡献。有关如何进行的良好解释，可以在[这里](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project）找到。
+请像为任何其他 GitHub 仓库做贡献一样进行贡献。有关如何进行的良好解释，可以在[这里](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) 找到。
 
 ### 测试
 

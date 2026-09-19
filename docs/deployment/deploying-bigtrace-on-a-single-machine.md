@@ -12,7 +12,7 @@ NOTE: 选项 1 和 2 用于开发目的，不推荐用于生产环境。对于�
 
 ## 前提条件
 
-要构建 Bigtrace，你必须首先遵循[快速入门设置和构建](/docs/contributing/getting-started.md#quickstart）步骤，但使用 `tools/install-build-deps --grpc` 以安装 Bigtrace 和 gRPC 所需的依赖项。
+要构建 Bigtrace，你必须首先遵循[快速入门设置和构建](/docs/contributing/getting-started.md#quickstart)步骤，但使用 `tools/install-build-deps --grpc` 以安装 Bigtrace 和 gRPC 所需的依赖项。
 
 ## 手动运行 Orchestrator 和 Worker 可执行文件
 

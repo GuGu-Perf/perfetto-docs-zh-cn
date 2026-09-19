@@ -46,7 +46,7 @@
 
 1. 创建，发送审查并合并一个 Chromium 补丁，该补丁编辑 Chrome
  里程碑分支上的顶级 `DEPS` 文件。你还可以将此步骤与任何 chromium 更改的 cherry-picks 结合起来。有关详细信息，请参阅
- [Chromium 的文档](https://www.chromium.org/developers/how-tos/cover)。这相当于：
+ [Chromium 的文档](https://www.chromium.org/developers/how-tos/drover)。这相当于：
 
  ```
  $ gclient sync --with_branch_heads

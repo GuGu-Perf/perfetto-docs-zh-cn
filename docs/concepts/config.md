@@ -199,7 +199,7 @@ perfetto -c config.bin -o trace_file.perfetto-trace
 
 有关长 trace 模式下的工作 trace 配置的完整示例，请参见 [`/test/configs/long_trace.cfg`](/test/configs/long_trace.cfg)。
 
-总结：要捕获长 trace，只需设置 `write_into_file:true`，设置一个长的 `duration_ms`，并使用 32MB 或更大的内存缓冲区大小。
+Summary:要捕获长 trace，只需设置 `write_into_file:true`，设置一个长的 `duration_ms`，并使用 32MB 或更大的内存缓冲区大小。
 
 ## {#compression} 压缩 trace
 

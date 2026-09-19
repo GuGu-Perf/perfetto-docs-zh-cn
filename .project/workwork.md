@@ -7,7 +7,8 @@
 | 命令 | 作用 |
 |------|------|
 | `deploy-local` | 本地部署并启动服务器 |
-| `deploy-gh-pages` | 部署到 `gh-pages` |
+| `deploy-gh-pages` | 部署到 `gh-pages`（含 fail-closed 断言，强推前自动打 `pre-deploy-*` 回退 tag） |
+| `rollback-gh-pages [tag]` | 回退 `gh-pages` 到部署前状态（默认最近 tag） |
 | `sync-check` | 检查上游 `perfetto/docs` 是否有更新 |
 | `sync-update` | 将上游最新 commit 更新到 `.project/LAST_SYNC` |
 

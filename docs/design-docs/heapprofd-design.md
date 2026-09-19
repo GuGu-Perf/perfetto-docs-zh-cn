@@ -114,7 +114,7 @@ class StackMemory : public unwindstack::MemoryRemote {
 
 远程展开还使我们能够在 libunwindstack 中使用 _全局缓存_(`Elf::SetCachingEnabled(true)`)。这防止了由不同进程使用的调试信息被加载和解压缩多次。
 
-我们添加一个 `FDMaps` 对象来解析从目标进程发送的 `/proc/self/maps` 映射。我们为每个正在分析的进程保持 `FDMaps` 对象缓存。这既节省了文本解析 `/proc/[pid]/maps` 的开销，也保持了展开所需的各种对象（例如，解压缩的 minidebuginfo）。如果展开因 `ERROR_INVALID_MAP` 失败，我们重新解析 maps 对象。我们将对 libunwindstack 进行更改，以创建 [`LocalUpdatableMaps`](https://cs.android.com/android/platform/superproject/main/+/main:system/unwinding/libunwindstack/Maps.cpp?q=symbol:LocalUpdatableMaps）的更通用版本，该版本也适用于远程进程。
+我们添加一个 `FDMaps` 对象来解析从目标进程发送的 `/proc/self/maps` 映射。我们为每个正在分析的进程保持 `FDMaps` 对象缓存。这既节省了文本解析 `/proc/[pid]/maps` 的开销，也保持了展开所需的各种对象（例如，解压缩的 minidebuginfo）。如果展开因 `ERROR_INVALID_MAP` 失败，我们重新解析 maps 对象。我们将对 libunwindstack 进行更改，以创建 [`LocalUpdatableMaps`](https://cs.android.com/android/platform/superproject/main/+/main:system/unwinding/libunwindstack/Maps.cpp?q=symbol:LocalUpdatableMaps) 的更通用版本，该版本也适用于远程进程。
 
 
 #### 远程展开的优势
@@ -265,9 +265,9 @@ ART（Android Runtime,Android Java 运行时）有三种不同的执行模式。
 
 对于非 zygote 进程，我们可以使用 [`pthread_atfork(3)`](http://man7.org/linux/man-pages/man3/pthread_atfork.3.html) 来建立新连接。
 
-对于 zygote 进程，`FileDescriptorInfo::ReopenOrDetach` 在 `fork(2)` 之后被调用——因此在 `pthread_atfork` 处理程序之后——分离所有 socket，即将它们替换为指向 `/dev/null` 的文件描述符。如果 socket 不包含在 [`kPathWhiteList`](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/fd_utils.cpp?q=symbol:kPathWhitelist) 中，zygote 会崩溃。因此，仅使用 `pthread_atfork` 处理程序是不可行的，因为在其中建立的连接将在 zygote 子进程中立即断开。
+对于 zygote 进程，[`FileDescriptorInfo::ReopenOrDetach`](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/fd_utils.cpp?q=%22void%20FileDescriptorInfo::ReopenOrDetach%22) 在 `fork(2)` 之后被调用——因此在 `pthread_atfork` 处理程序之后——分离所有 socket，即将它们替换为指向 `/dev/null` 的文件描述符。如果 socket 不包含在 [`kPathWhiteList`](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/fd_utils.cpp?q=symbol:kPathWhitelist) 中，zygote 会崩溃。因此，仅使用 `pthread_atfork` 处理程序是不可行的，因为在其中建立的连接将在 zygote 子进程中立即断开。
 
-Fork 后，zygote 调用 `PreApplicationInit`，目前 malloc\_debug 使用它来通过设置 `gMallocLeakZygoteChild` 来检测它是处于根 zygote 还是子进程中。它还调用 [Java 回调](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/com_android_internal_os_Zygote.cpp?q=CallStaticVoidMethod.*gCallPostForkChildHooks)，但目前似乎不存在动态注册原生回调的方法。
+Fork 后，zygote 调用 [`PreApplicationInit`](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/com_android_internal_os_Zygote.cpp?q=symbol:PreApplicationInit)，目前 malloc\_debug 使用它来通过设置 `gMallocLeakZygoteChild` 来检测它是处于根 zygote 还是子进程中。它还调用 [Java 回调](https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/com_android_internal_os_Zygote.cpp?q=CallStaticVoidMethod.*gCallPostForkChildHooks)，但目前似乎不存在动态注册原生回调的方法。
 
 朴素的延迟初始化（即在 atfork 处理程序中关闭 socket，然后在第一次调用 malloc 时重新连接）是有问题的，因为 zygote 中 fork 和 `ReopenOrDetach` 之间的代码可能会调用 `malloc`，从而导致建立连接，然后再次被 `ReopenOrDetach` 关闭。
 

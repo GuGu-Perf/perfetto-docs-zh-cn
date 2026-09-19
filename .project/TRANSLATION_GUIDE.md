@@ -224,9 +224,9 @@ WARNING: This operation cannot be undone.
 ### 翻译后必做
 
 ```bash
-bash .project/proofread.sh --file docs/你翻译的文件.md   # 校对术语和格式
-bash .project/workwork.sh deploy-local                   # 本地预览
-bash .project/workwork.sh sync-check                     # 检查上游变更
+bash .project/proofread.sh docs/你翻译的文件.md   # 校对术语和格式（--all 全量）
+bash .project/audit.sh --files docs/你翻译的文件.md  # 结构审计（对上游 git HEAD）
+bash .project/workwork.sh deploy-local             # 本地预览
 ```
 
 ## 十、参考资料

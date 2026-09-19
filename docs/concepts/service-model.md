@@ -53,7 +53,7 @@ NOTE: 在极少数情况下，一个进程可以托管多个生产者，因此�
 
  ([示例](/protos/perfetto/config/ftrace/ftrace_config.proto))
 - 一个或多个 `TracePacket` 子消息
- ([示例](/protos/perfetto/Trace/ps/process_tree.proto))
+ ([示例](/protos/perfetto/trace/ps/process_tree.proto))
 
 不同的生产者可能会公开相同的数据源。一个具体的示例是使用 [Tracing SDK 中的 Track Event](/docs/instrumentation/track-events) 的进程的情况。它在每个参与的进程中公开相同的 `track_event` 数据源。
 

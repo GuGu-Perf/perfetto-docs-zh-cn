@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "description": "短语级定型译法对照表（轻量翻译记忆）。收录跨文件反复出现、已定型的短语与链接文本译法，保证多轮翻译一致性。翻译子代理开工前应将本表注入 prompt；新增定型译法时同步更新。",
+    "usage": "优先级：本表 > 上下文灵活翻译。表中未收录的短语按 TRANSLATION_GUIDE.md 处理。"
+  },
+  "link_texts": {
+    "Merging traces from the command line": "从命令行合并 trace",
+    "Merging traces in the UI": "在 UI 中合并 trace",
+    "Trace merging": "Trace 合并",
+    "How trace merging works": "Trace 合并",
+    "Trace Processor CLI reference": "trace_processor CLI 参考",
+    "Converting from Perfetto": "从 Perfetto 转换到其他格式",
+    "Export trace data": "导出 trace 数据",
+    "Iterate without re-parsing: sessions": "免重复解析的迭代：session",
+    "Symbolization and deobfuscation": "符号化与反混淆",
+    "Recording Android traces locally": "本地录制 Android Trace",
+    "Analyzing traces from the command line": "从命令行分析 trace",
+    "Tracing on Linux": "在 Linux 上进行 Tracing",
+    "Capturing periodic trace snapshots": "周期性采集 Trace 快照",
+    "Using AI with Perfetto": "在 Perfetto 中使用 AI"
+  },
+  "phrases": {
+    "capture/record a trace": "采集 trace",
+    "to profile": "进行 profile/profiling",
+    "keep a trace warm": "让 trace 保持热身状态",
+    "warm session": "热身好的 session",
+    "version-coupled archive": "与版本耦合的归档",
+    "statically registered tables": "静态注册的表",
+    "trace summary": "trace 汇总",
+    "subcommand": "子命令",
+    "release channel": "发布渠道",
+    "enriched trace": "增强后的 trace",
+    "data loss": "数据丢失",
+    "ring buffer": "环形缓冲区",
+    "detached mode": "分离模式",
+    "long tracing mode": "长时 tracing 模式",
+    "trace manifest": "trace manifest",
+    "machine ID": "机器 ID",
+    "wall clock": "墙上时钟",
+    "clock snapshot": "时钟快照",
+    "flamegraph": "火焰图",
+    "dominator tree": "支配树",
+    "retained size": "保留大小",
+    "self size": "自身大小"
+  }
+}

@@ -79,27 +79,37 @@ manifest 会在任何 trace 文件被解析之前完整应用，因此条目可�
 
 ## {#schema} 顶层字段
 
-| 字段 | 类型 | 必需 | 默认值 | 含义 |
-|------|------|------|--------|------|
-| `version` | integer | 是 | — | 必须是 `1`。 |
-| `trace_time` | object | 否 | 自动检测 | 合并后 trace 使用哪个时钟作为其时间线。 |
-| `files` | array | 否 | `[]` | 每个 trace 文件的一个条目。 |
-| `attributes` | object | 否 | `{}` | 附加到归档的自由格式元数据。 |
-
-### {#trace-time} trace_time
-
-如果设置，必须是带有以下字段的对象：
+文档是一个 JSON 对象，带有单个顶层 `perfetto_manifest` 键，其中包含：
 
 | 字段 | 类型 | 必需 | 含义 |
 |------|------|------|------|
-| `machine` | string | 否 | 提供此时钟的 `files` 条目中的 `machine.name`。如果是默认机器则省略。 |
-| `clock` | string | 是 | 时钟域名称（`BOOTTIME`、`REALTIME` 等，或自定义名称）。 |
+| `version` | integer | 是 | 必须为 `1`。任何其他值都会被拒绝。 |
+| `trace_time` | object | 否 | 选择合并后时间线的时钟。参见 [trace_time](#trace-time)。 |
+| `files` | array | 否 | 每个文件的配置条目。参见 [files](#files)。 |
+| `attributes` | object | 否 | 标注归档的键值对。参见 [attributes](#attributes)。 |
 
-如果未设置，Trace Processor 会自动选择一个：来自第一个文件的时钟
-（因为 manifest 先被处理，第一个文件即 `files[0]`，但 trace 文件之间
-的大致顺序也是稳定的）。
+归档中存在但未在 `files` 中列出的文件仍会被导入；它们只是不会获得任何
+覆盖，并遵循 [Trace 合并](/docs/concepts/merging-traces.md)中描述的默认
+合并规则。
 
-### {#files} files
+## {#trace-time} trace_time
+
+选择成为合并后 trace 时间线（即其 "trace time"）的时钟。未设置时，第一个
+声明 trace-time 时钟的文件胜出。
+
+| 字段 | 类型 | 必需 | 含义 |
+|------|------|------|------|
+| `clock` | string | 是 | [时钟名称](#clock-names)之一。 |
+| `file` | string | 否 | 将时钟固定到该文件所在的机器。必须与 `files` 中某个条目的 `path` 匹配。 |
+| `machine` | string | 否 | 当 `file` 是多机 trace 时，指明其哪台机器拥有该时钟。需要 `file`。 |
+
+每个时钟都作用于一台机器：手机上的 `BOOTTIME` 和手表上的 `BOOTTIME` 是
+不同的时钟。`file`（和 `machine`）选择哪台机器的时钟成为时间线；未指定时
+使用主机机器的时钟。
+
+选定的时钟 ID 记录在 `metadata` 表的 `trace_time_clock_id` 键下。
+
+## {#files} files
 
 `files` 数组中的每个条目都是一个对象：
 
@@ -257,18 +267,13 @@ Perfetto UI 的合并对话框在打开前会报告这种情况。
 
 ## {#errors} 错误参考
 
-Trace Processor 在导入时验证 manifest 并为其错误发出文本描述：
+manifest 会被预先验证；任何违规都会使整个导入失败，并报出以
+`perfetto_manifest:` 为前缀的错误。条件如下：
 
 | 条件 | 错误信息 |
 |------|----------|
-| 不存在的文件 | `unknown file: X. Did you mean: Y?` |
-| 重复文件路径 | `duplicate file path: X` |
-| 同名机器（不同文件） | `duplicate machine name: X` |
-| 缺少 `version` | `version is required` |
-| `version` 不是 `1` | `unsupported version: N。仅支持版本 1。` |
-| `trace_time` 未设置 `clock` | `trace_time: clock is required` |
-| `trace_time.clock` 不是字符串 | `trace_time.clock must be a string` |
-| `trace_time.machine` 不是字符串 | `trace_time.machine must be a string` |
+| 缺少 `version` | `missing required field: version` |
+| `version` 不是 `1` | `unsupported version: N. Only version 1 is supported` |
 | 未知的时钟名称 | `unknown clock name: X. Use one of REALTIME, ...` |
 | 一个输入中有第二个 manifest | `multiple perfetto_manifest files in archive` |
 | 拼接流中 manifest 在 trace 文件之后 | `perfetto_manifest file must be the first trace file in the input` |

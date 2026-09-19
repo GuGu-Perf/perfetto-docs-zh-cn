@@ -9,7 +9,7 @@ Track events 是 [Perfetto Tracing SDK](tracing-sdk.md) 的一部分。
 
 有关如何检出和构建 SDK 的说明，请参阅 Tracing SDK 页面的 [快速入门](/docs/instrumentation/tracing-sdk#getting-started) 部分。
 
-TIP: 这些示例中的代码也可在[仓库中](/examples/sdk/README.md）找到。
+TIP: 这些示例中的代码也可在[仓库中](/examples/sdk/README.md) 找到。
 
 有几种主要的 Track event 类型：
 
@@ -143,7 +143,7 @@ TRACE_EVENT("category", "MyEvent", [&](perfetto::EventContext ctx) {
 
 传递给宏的 lambda 函数仅在给定类别的 tracing 已启用时才会被调用。它总是被同步调用，并且如果有多个并发 tracing 会话处于活动状态，可能会被多次调用。
 
-现在你已经使用 Track events 为你的应用程序进行了插桩，你准备好开始[采集 Trace](tracing-sdk.md#recording）了。
+现在你已经使用 Track events 为你的应用程序进行了插桩，你准备好开始[采集 Trace](tracing-sdk.md#recording) 了。
 
 ## 类别配置
 
@@ -643,8 +643,7 @@ TRACE_EVENT_INSTANT("category", "Event",
 
 Interning 可用于避免在整个 trace 中重复相同的常量数据（例如，事件名称）。Perfetto 自动为传递给 `TRACE_EVENT` 的大多数字符串执行 interning，但也可以定义自己的类型 interning 数据。
 
-首先，为你的类型定义 interning 索引。它应该映射到[interned_data.proto](
-/protos/perfetto/trace/interned_data/interned_data.proto)的特定字段，并指定在第一次看到时如何将 interning 数据写入该消息。
+首先，为你的类型定义 interning 索引。它应该映射到 [interned_data.proto](/protos/perfetto/trace/interned_data/interned_data.proto) 的特定字段，并指定在第一次看到时如何将 interning 数据写入该消息。
 
 ```C++
 struct MyInternedData

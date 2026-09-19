@@ -10,7 +10,7 @@
 
 - 为其平台服务添加插桩的 Android 平台工程师。
 - 为其 native HAL 和 Java/Kt 服务添加插桩的系统集成商 / Android 合作伙伴。
-- 为其应用添加插桩的 Native 和 Java/Kt 应用开发者（尽管你应该考虑使用 [androidx.tracing](https://developer.android.com/jetpack/androidx/releases/tracing），详见下文)
+- 为其应用添加插桩的 Native 和 Java/Kt 应用开发者（尽管你应该考虑使用 [androidx.tracing](https://developer.android.com/jetpack/androidx/releases/tracing)，详见下文）
 
 ![Atrace slices example](/docs/images/atrace_slices.png)
 

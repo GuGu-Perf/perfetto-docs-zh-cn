@@ -657,7 +657,7 @@ xcrun xctrace export --input profile.trace \
 **Perfetto 支持：**
 
 - **Perfetto UI & Trace Processor：** Perfetto 的 Trace Processor 可以解析文本 logcat 文件。
-  - 导入的日志消息被填充到 `android_logs` SQL 表中。这与 Perfetto 通过其 [Android Log 数据源](/docs/data-sources/android-log.md）本机收集 logcat 数据时使用的表相同。
+  - 导入的日志消息被填充到 `android_logs` SQL 表中。这与 Perfetto 通过其 [Android Log 数据源](/docs/data-sources/android-log.md) 本机收集 logcat 数据时使用的表相同。
   - 在 Perfetto UI 中，这些日志出现在 "Android Logs" 面板中，按时间顺序显示并可以过滤。这允许将日志消息与主 Timeline 上的其他 trace 事件相关联。
 - **支持的格式：** Perfetto 的解析器处理 `logcat -v threadtime` 输出格式，可选择与 `-v uid` 或 `-v year` 组合。其他 logcat 格式（如 `logcat -v long`）不会被解析。
 

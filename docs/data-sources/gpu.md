@@ -30,7 +30,7 @@ data_sources: {
 }
 ```
 
-Trace 包含 `gpu_id` 字段用于区分不同的 GPU，以及 `machine_id` 字段用于在多机环境中区分不同的机器。GPU 硬件元数据（名称、厂商、架构、UUID、PCI BDF）通过 [GpuInfo](/protos/perfetto/trace/system_info/gpu_info.proto) trace packet 记录。
+Trace 包含 `gpu_id` 字段用于区分不同的 GPU，以及 `machine_id` 字段用于在[多机环境](/docs/deployment/multi-machine-architecture.md)中区分不同的机器。GPU 硬件元数据（名称、厂商、架构、UUID、PCI BDF）通过 [GpuInfo](/protos/perfetto/trace/system_info/gpu_info.proto) trace packet 记录。
 
 ## Android
 

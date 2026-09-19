@@ -2,7 +2,7 @@
 
 Perfetto 可以直接从桌面上的 Chrome 浏览器捕获 traces。它捕获所有打开的选项卡的 traces。
 
-> NOTE: 要从 Android 上的 Chrome 采集 traces，请遵循[采集 Android 系统 traces 的说明](/docs/getting-started/system-tracing.md）并启用 Chrome Probe。如果你使用的是 [Android 的用户构建版本](https://source.android.com/docs/setup/build/building#lunch)，你必须通过将 `chrome://flags#enable-perfetto-system-tracing` 切换为"已启用"并重启 Chrome 来启用与系统 Perfetto 的集成。
+> NOTE: 要从 Android 上的 Chrome 采集 traces，请遵循[采集 Android 系统 traces 的说明](/docs/getting-started/system-tracing.md)并启用 Chrome Probe。如果你使用的是 [Android 的用户构建版本](https://source.android.com/docs/setup/build/building#lunch)，你必须通过将 `chrome://flags#enable-perfetto-system-tracing` 切换为"已启用"并重启 Chrome 来启用与系统 Perfetto 的集成。
 
 ## 手动采集 trace
 
@@ -11,9 +11,9 @@ Perfetto 可以直接从桌面上的 Chrome 浏览器捕获 traces。它捕获�
 1. 导航到 [ui.perfetto.dev](https://ui.perfetto.dev/) 并从左侧菜单中选择 [**"采集新 trace"**](https://ui.perfetto.dev/#!/record)。
  > 如果你是第一次使用 Perfetto UI，你必须安装
  > [Perfetto UI Chrome 扩展](https://chrome.google.com/webstore/detail/perfetto-ui/lfmkphfpdbjijhpomgecfikhfohaoine)。
-2. 在[概览设置](https://ui.perfetto.dev/#!/record/target）中选择 **"Chrome"** 作为 **"目标平台"**。
+2. 在[概览设置](https://ui.perfetto.dev/#!/record/target)中选择 **"Chrome"** 作为 **"目标平台"**。
 
-3. 在 [**"录制设置"**](https://ui.perfetto.dev/#!/record/config）中配置设置。
+3. 在 [**"录制设置"**](https://ui.perfetto.dev/#!/record/config) 中配置设置。
 
  ![Perfetto UI 的记录页面](/docs/images/record-trace-chrome.png)
  > NOTE: "Long trace"模式尚不适用于 Chrome 桌面版。
@@ -22,7 +22,7 @@ Perfetto 可以直接从桌面上的 Chrome 浏览器捕获 traces。它捕获�
  > - 要保存当前配置设置并稍后应用，请使用"Overview"页面的"User configs"部分。
  > - 要共享你的配置设置，请转到"Cmdline instructions"菜单。
 
-4. 在 [**Chrome 浏览器**](https://ui.perfetto.dev/#!/record/chrome）探针部分中选择你想要的类别（或顶级标签）。
+4. 在 [**Chrome 浏览器**](https://ui.perfetto.dev/#!/record/chrome) 探针部分中选择你想要的类别（或顶级标签）。
 
  > NOTE: 顶部的标签启用相关类别的组，但目前没有直接的方法在针对 Chrome 时看到它们。但是，你可以将目标切换到"Android"，然后在"Cmdline instructions"部分生成的配置中查看类别，如果你好奇的话。
 

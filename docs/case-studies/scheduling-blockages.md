@@ -49,7 +49,7 @@
 
 虽然随机采样无疑是 callstack 采样最流行的形式之一，但这种方法更有助于回答形式为 _"函数在哪里花费 CPU 周期？"_ 或 _"我能做些什么来减少任务的 CPU 使用？"_ 的问题。这些都不适用于此。
 
-Linux - 以及许多其他操作系统 - 上的 callstack 采样要强大得多。简单来说，你可以将 callstack 采样视为 _"每次特定事件发生 N 次时抓取一个调用栈"_（另请参阅此 [easyperf.net 博客文章](https://easyperf.net/blog/2018/06/01/PMU-counters-and-profiling-basics）以进行深入解释)。
+Linux - 以及许多其他操作系统 - 上的 callstack 采样要强大得多。简单来说，你可以将 callstack 采样视为 _"每次特定事件发生 N 次时抓取一个调用栈"_（另请参阅此 [easyperf.net 博客文章](https://easyperf.net/blog/2018/06/01/PMU-counters-and-profiling-basics) 以进行深入解释）。
 
 有趣的部分是 _哪个特定事件_。通常这可以是：
 

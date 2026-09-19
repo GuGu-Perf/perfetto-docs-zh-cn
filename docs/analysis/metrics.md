@@ -239,7 +239,7 @@ message TopProcesses {
 }
 ```
 
-最后，为所有 metrics 的根 proto 定义一个扩展（[TraceMetrics](https://github.com/google/perfetto/blob/main/protos/perfetto/metrics/metrics.proto#L143） proto)。
+最后，为所有 metrics 的根 proto 定义一个扩展（[TraceMetrics](https://github.com/google/perfetto/blob/main/protos/perfetto/metrics/metrics.proto#L143) proto）。
 
 ```protobuf
 extend TraceMetrics {

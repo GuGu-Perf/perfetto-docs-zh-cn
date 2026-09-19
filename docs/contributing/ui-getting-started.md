@@ -15,7 +15,7 @@ tools/install-build-deps --ui
 sudo apt install curl python3-venv build-essential
 ```
 
-无法从 Windows 原生构建 UI，但可以通过 [WSL 2](https://learn.microsoft.com/zh-cn/windows/wsl/about) 从 Windows 构建——在 WSL 环境中按照 Linux 说明操作即可。
+无法从 Windows 原生构建 UI，但可以通过 [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/about) 从 Windows 构建——在 WSL 环境中按照 Linux 说明操作即可。
 
 ### 构建 UI
 

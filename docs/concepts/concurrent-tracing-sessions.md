@@ -16,7 +16,7 @@ Perfetto 支持多个并发 trace 会话。会话彼此隔离，每个会话可�
 - Perfetto SDK：用户可以[选择不支持多个会话](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/include/perfetto/tracing/data_source.h;l=266;drc=f988c792c18f93841b14ffa71019fdedf7ab2f03)
 
 ### 已知可以工作
-- `traced_probes` 数据源（[linux.ftrace](/docs/reference/trace-config-proto.autogen#FtraceConfig）、[linux.process_stats](/docs/reference/trace-config-proto.autogen#ProcessStatsConfig)、[linux.sys_stats](/docs/reference/trace-config-proto.autogen#SysStatsConfig)、[linux.system_info](https://perfetto.dev/docs/reference/trace-config-proto.autogen#SystemInfoConfig) 等)
+- `traced_probes` 数据源（[linux.ftrace](/docs/reference/trace-config-proto.autogen#FtraceConfig)、[linux.process_stats](/docs/reference/trace-config-proto.autogen#ProcessStatsConfig)、[linux.sys_stats](/docs/reference/trace-config-proto.autogen#SysStatsConfig)、[linux.system_info](https://perfetto.dev/docs/reference/trace-config-proto.autogen#SystemInfoConfig) 等）
 
 ### 已知可以工作但有注意事项
 - `heapprofd` 支持多个会话，但每个进程只能在一个会话中。
@@ -29,7 +29,7 @@ Perfetto 支持多个并发 trace 会话。会话彼此隔离，每个会话可�
 
 配置中指定的大多数缓冲区大小和时间是每个会话的。例如缓冲区[大小](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/protos/perfetto/config/trace_config.proto;l=32?q=f:perfetto%20f:trace_config&ss=android%2Fplatform%2Fsuperproject%2Fmain)。
 
-但是，某些参数配置每个生产者的设置：例如，生产者和 traced 之间的 shmem 缓冲区的[大小和布局](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/protos/perfetto/config/trace_config.proto;l=182;drc=488df1649781de42b72e981c5e79ad922508d1e5)。虽然这是通用数据源设置，但同样适用于数据源特定设置。例如， ftrace [内核缓冲区大小和排空周期](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/protos/perfetto/config/ftrace/ftrace_config.proto;l=32;drc=6a3d3540e68f3d5949b5d86ca736bfd7f811deff）是必须在 `traced_probes` 的所有用户之间共享的设置。
+但是，某些参数配置每个生产者的设置：例如，生产者和 traced 之间的 shmem 缓冲区的[大小和布局](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/protos/perfetto/config/trace_config.proto;l=182;drc=488df1649781de42b72e981c5e79ad922508d1e5)。虽然这是通用数据源设置，但同样适用于数据源特定设置。例如， ftrace [内核缓冲区大小和排空周期](https://cs.android.com/android/platform/superproject/main/+/main:external/perfetto/protos/perfetto/config/ftrace/ftrace_config.proto;l=32;drc=6a3d3540e68f3d5949b5d86ca736bfd7f811deff) 是必须在 `traced_probes` 的所有用户之间共享的设置。
 
 请记住
 - 某些资源（如 shmem 缓冲区）由所有会话共享
