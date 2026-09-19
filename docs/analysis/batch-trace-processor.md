@@ -86,6 +86,8 @@ with BatchTraceProcessor('foo:bar=1,baz=abc', config=config) as btp:
 2 121431
 ```
 
+`query_and_flatten` 还会隐式添加指示来源 trace 的列。具体添加哪些列取决于所使用的 resolver：请查阅所用 resolver 的文档以获取更多信息。
+
 [Polars](https://pola.rs/) DataFrames 也作为 Pandas 的替代方案受支持。`query_polars` 镜像 `query` 并返回 Polars DataFrames 列表（每个 trace 一个）；`query_and_flatten_polars` 镜像 `query_and_flatten` 并将它们连接成单个 DataFrame。Polars 支持需要一个可选依赖：
 
 ```shell
@@ -123,9 +125,7 @@ shape: (3, 1)
 └──────────┘
 ```
 
-`query_and_flatten` 还会隐式添加指示来源 trace 的列。添加的确切列取决于所使用的 resolver：请查阅你的 resolver 文档以获取更多信息。
-
-## Trace URI
+## Trace URIs
 
 Trace URIs 是 batch trace processor 的一个强大功能。URI 将 trace 的"路径"概念与文件系统解耦。相反，URI 描述了*如何*获取 trace（即通过向服务器发送 HTTP 请求、从云存储等）。
 

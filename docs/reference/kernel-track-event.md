@@ -4,7 +4,7 @@
 
 这是一个 perfetto 约定，不需要（也不需要）任何专用的上游内核代码。在本地内核上黑客攻击或编写不会被上游的自包含模块时，它最能使用。它也没有明确绑定到静态 tracepoint，创建具有相关字段的 `tracefs` 条目的动态 Probe（例如 kprobe）也将起作用。
 
-本文档的结构作为参考，在["使用 ftrace 对 Linux 内核进行仪器化"][ftrace-intro-link]中有带有生成 UI 的**示例和截图**的介绍。
+本文档的结构作为参考，带有生成 UI 的**示例和截图**的介绍见["使用 ftrace 插桩 Linux 内核"][ftrace-intro-link]。
 
 [ftrace-intro-link]: /docs/getting-started/ftrace#part-c-simple-slice-counter-visualisations-without-modifying-perfetto-code-kernel-track-events-
 

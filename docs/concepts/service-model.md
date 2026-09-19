@@ -27,19 +27,20 @@ trace Service 是一个长期存在的实体（Linux/Android 上的系统守护�
 - 有多少其他生产者被注册或处于活动状态。
 - 由其他生产者编写的 Trace 数据。
 
-NOTE: 在极少数情况下，一个进程可以托管多个生产者，因此有多个共享内存缓冲区。对于捆绑第三方库的进程可能是这种情况，而这些库又包括 Perfetto 客户端库。具体示例：在未来某个时候，Chrome 可能会为一个 Producer 用于主项目中的 Trace，一个用于 V8，一个用于 Skia(对于每个子进程)。
+NOTE: 在极少数情况下，一个进程可以托管多个生产者，因此有多个共享内存缓冲区。对于捆绑第三方库的进程可能是这种情况，而这些库又包括 Perfetto 客户端库。  
+具体示例：在未来某个时候，Chrome 可能会为一个 Producer 用于主项目中的 Trace，一个用于 V8，一个用于 Skia(对于每个子进程)。
 
 ## 消费者
 
 消费者是一个受信任的实体（Linux/Android 上的命令行客户端，Chrome 中浏览器进程的接口），它（非独占地）控制 Trace Service 并回读(破坏性地)Trace 缓冲区。消费者有能力：
 
-- 将 [Trace 配置](#）发送到服务，确定：
-  - 创建多少个 Trace 缓冲区。
-  - Trace 缓冲区应该有多大。
-  - 每个缓冲区的策略（*环形缓冲区* 或 *满时停止*）。
-  - 启用哪些数据源。
-  - 每个数据源的配置。
-  - 每个配置的数据源生成的数据的目标缓冲区。
+- 将 [Trace 配置](#) 发送到服务，确定：
+- 创建多少个 Trace 缓冲区。
+- Trace 缓冲区应该有多大。
+- 每个缓冲区的策略（*环形缓冲区* 或 *满时停止*）。
+- 启用哪些数据源。
+- 每个数据源的配置。
+- 每个配置的数据源生成的数据的目标缓冲区。
 - 启用和禁用 Trace。
 - 回读 Trace 缓冲区：
   - 通过 IPC 通道流式传输数据。
@@ -51,9 +52,9 @@ NOTE: 在极少数情况下，一个进程可以托管多个生产者，因此�
 
 - 最多一个 `DataSourceConfig` 子消息：
 
- ([示例](/protos/perfetto/config/ftrace/ftrace_config.proto))
+  ([示例](/protos/perfetto/config/ftrace/ftrace_config.proto))
 - 一个或多个 `TracePacket` 子消息
- ([示例](/protos/perfetto/trace/ps/process_tree.proto))
+  ([示例](/protos/perfetto/trace/ps/process_tree.proto))
 
 不同的生产者可能会公开相同的数据源。一个具体的示例是使用 [Tracing SDK 中的 Track Event](/docs/instrumentation/track-events) 的进程的情况。它在每个参与的进程中公开相同的 `track_event` 数据源。
 

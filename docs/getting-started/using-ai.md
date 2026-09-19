@@ -44,9 +44,9 @@ curl.exe -fsSL https://get.perfetto.dev/agents-install | python - --target <path
 
 ### 离线安装
 
-无法在安装时访问 github.com 的机器，可以使用每个
-[GitHub release](https://github.com/google/perfetto/releases) 附带的
-`perfetto-ai-skill.zip` 资产：在有网络连接的地方下载它，拷贝过去，
+无法在安装时访问 github.com 的机器，可以使用 `perfetto-ai-skill.zip` 资产
+（附属于每个 [GitHub release](https://github.com/google/perfetto/releases)）：
+在有网络连接的地方下载它，拷贝过去，
 然后解压到你的 Agent 技能目录（例如 `.claude/skills/`）。它包含一个
 单独的 `perfetto/` 技能文件夹，其中有 `SKILL.md` —— 无需安装器。
 
@@ -88,11 +88,11 @@ release；传入 `--version vX.Y` 可固定到特定版本。
 探查 schema，并为你编写 PerfettoSQL。
 
 ```
-> 加载 ~/traces/startup.pftrace，告诉我前两秒内哪些线程
-  使用了最多的 CPU。
+> Load ~/traces/startup.pftrace and tell me which threads used the most CPU
+  in the first two seconds.
 
-> 在 trace.pftrace 中找出 com.example.myapp 的不可中断
-  睡眠的主要原因。
+> Find the top causes of uninterruptible sleep for com.example.myapp in
+  trace.pftrace.
 ```
 
 对于 Android 特定的工作流（内存泄漏调试、集群级 heap dump
@@ -106,14 +106,14 @@ release；传入 `--version vX.Y` 可固定到特定版本。
 NVIDIA/CUDA。
 
 ```
-> 这个工作负载是 GPU 瓶颈还是主机瓶颈？trace 文件位于
-  ~/traces/game.pftrace。
+> Is this workload GPU-bound or host-bound? The trace is at
+  ~/traces/game.pftrace.
 
-> GPU 看起来很忙但工作负载很慢。在 gpu.pftrace 中，
-  时钟是否被降频或加速缓慢？
+> The GPU looks busy but the workload is slow. Was the clock throttled or
+  slow to ramp in gpu.pftrace?
 
-> 哪些 kernel 主导了这个 CUDA trace，它们是计算瓶颈还是
-  内存瓶颈？
+> Which kernels dominate this CUDA trace, and are they compute-bound or
+  memory-bound?
 ```
 
 Agent 会盘点 GPU、将时间线分为繁忙与空闲时间（将空闲间隙

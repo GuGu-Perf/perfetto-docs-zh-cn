@@ -5,7 +5,7 @@
 1. 一个或多个 producers 连接到 tracing 服务并设置它们的 IPC 通道。
 2. 每个 producer 通过 [`RegisterDataSource`](/protos/perfetto/ipc/producer_port.proto#33) IPC 宣告一个或多个数据源。Producer 在此之前没有任何其他操作。默认情况下没有任何内容被 trace。
 3. Consumer 连接到 tracing 服务并设置 IPC 通道。
-4. Consumer 通过 [`EnableTracing`](/protos/perfetto/ipc/consumer_port.proto#38) IPC 向服务发送 [trace config](/docs/concepts/config.md) 启动 tracing session。
+4. Consumer 向服务发送 [trace config](/docs/concepts/config.md)，通过 [`EnableTracing`](/protos/perfetto/ipc/consumer_port.proto#38) IPC 启动 tracing session。
 6. 服务创建配置中指定的多个新 trace 缓冲区。
 7. 服务遍历 trace config 的 [`data_sources`](/protos/perfetto/config/trace_config.proto#127) 部分：对于每个条目，如果在 producer（s）中找到匹配的数据源(根据步骤 2 中宣告的内容):
 8. 服务发送 [`SetupTracing`](/protos/perfetto/ipc/producer_port.proto#305) IPC 消息，向 producer（s）传递共享内存缓冲区（每个 producer 只一次）。

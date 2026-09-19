@@ -134,7 +134,7 @@ WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
 2. 在 [protos/perfetto/metrics/metrics.proto](/protos/perfetto/metrics/metrics.proto) 中导入 proto 并为新消息添加字段。
 3. 运行 `tools/gen_all out/YOUR_BUILD_DIRECTORY`。这将更新包含 proto 描述符的生成的头文件。
 
-- NOTE: 修改任何与 metric 相关的 proto 时都必须执行此步骤。
+- *注意：修改任何与 metric 相关的 proto 时都必须执行此步骤。*
 - 如果在 `out/` 目录中看不到任何内容，你可能需要
  重新运行 `tools/setup_all_configs.py`。
 
@@ -143,7 +143,7 @@ WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
 - 要了解如何编写新的 metric，请参阅 [基于 trace 的 metric 文档](/docs/analysis/metrics.md)。
 
 5. 使用 `tools/ninja -C out/YOUR_BUILD_DIRECTORY` 构建输出目录中的所有目标。
-6. 为 metric 添加新的差异测试。可以通过将文件添加到适当的 [test/trace_processor](/test/trace_processor) 子文件夹中的 `tests_*.py` 文件来完成。
+6. 为 metric 添加新的差异测试。可以通过将文件添加到 `tests_*.py` 文件（位于适当的 [test/trace_processor](/test/trace_processor) 子文件夹中）来完成。
 7. 使用 `tools/diff_test_trace_processor.py <path to trace processor binary>` 运行新添加的测试。
 8. 像往常一样上传和合并你的更改。
 
@@ -159,7 +159,7 @@ WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
 6. 如果需要在 `trace_processor` 中进行特殊处理，请更新 [src/trace_processor/importers/ftrace/ftrace_parser.cc](/src/trace_processor/importers/ftrace/ftrace_parser.cc) 以解析事件。
 7. 像往常一样上传和合并你的更改。
 
-这是一个 [示例更改](https://android-review.googlesource.com/c/platform/external/perfetto/+/3343525)，它添加了一个新事件。NOTE: Perfetto 的权威来源自该更改以来已移至 GitHub，因此虽然该更改的内容是准确的，但你应该通过 GitHub 而不是在 AOSP Gerrit 上发送补丁。
+这是一个 [示例更改](https://android-review.googlesource.com/c/platform/external/perfetto/+/3343525)，它添加了一个新事件。NOTE: Perfetto 的权威来源自该更改以来已移至 GitHub，因此虽然该更改的内容是准确的，但你应该通过 GitHub *而不是*在 AOSP Gerrit 上发送补丁。
 
 要测试你的更改，你可以在 Android 设备上 sideload 本地构建的 `tracebox` 二进制文件。有关更多详细信息，请参阅 [Android Sideloading](#sideloading)。
 
@@ -185,8 +185,8 @@ WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
    -b 32mb \
    sched/sched_switch
    ```
- `--sideload-path` 参数告诉脚本将本地构建的
- `tracebox` 二进制文件推送到设备并用于记录。
+   `--sideload-path` 参数告诉脚本将本地构建的
+   `tracebox` 二进制文件推送到设备并用于记录。
 
 ## Statsd
 

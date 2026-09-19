@@ -6,7 +6,7 @@
 
 所有 Perfetto 更改必须提交到上游仓库 https://github.com/google/perfetto。
 
-**Google 同事注意：** 针对 google3 中的 `third_party/perfetto/` 或 Android 内部仓库中的 `external/perfetto` 发起的 Pull Request 或变更列表将**不会**被接受。要将更改上游化，请按照 [go/perfetto-github-instructions](http://go/perfetto-github-instructions) 中的说明操作，或联系 perfetto-team@google.com 寻求帮助。
+**Google 同事注意：** 针对 google3 中的 `third_party/perfetto/` 或 Android 内部仓库中的 `external/perfetto` 发起的 Pull Request 或变更列表将不会被接受。要将更改上游化，请按照 [go/perfetto-github-instructions](http://go/perfetto-github-instructions) 中的说明操作，或联系 perfetto-team@google.com 寻求帮助。
 
 ## 概述
 

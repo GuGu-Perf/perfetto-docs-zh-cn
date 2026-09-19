@@ -82,13 +82,14 @@ TIP: profile 应用程序时，你可能希望将 `libart.so` 设置为"Hide Fra
 可以配置 heap profiler 定期（不仅仅是在 trace 结束时）存储快照（连续转储），例如每 5000ms:
 
 * 通过在 UI 中将"Continuous dump interval"设置为 5000。
-* 通过在 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中添加
+* 通过将
   ```
   continuous_dump_config {
     dump_interval_ms: 5000
   }
   ```
-* 通过向 [`tools/heap_profile android`](/docs/reference/heap_profile-cli) 的调用添加 `-c 5000`（或 `tools/heap_profile host` 用于本地 Linux 进程）。
+  添加到 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中。
+* 通过将 `-c 5000` 添加到 [`tools/heap_profile android`](/docs/reference/heap_profile-cli) 的调用中（或 `tools/heap_profile host` 用于本地 Linux 进程）。
 
 ![连续转储火焰图](/docs/images/heap_prof_continuous.png)
 
@@ -139,8 +140,8 @@ adb shell killall perfetto
 
 在 _user_ (即生产版本、不可 root) 构建上，只能 profile 设置了 profileable 或 debuggable 清单标志的 Java 应用程序。对不可 profileable/debuggable 进程的 profiling 请求将导致空 profile。
 
-在 userdebug 构建上，可以 profile 除一小部分关键服务之外的所有进程(要查找不允许的目标集，请在 [heapprofd.te](
-https://cs.android.com/android/platform/superproject/main/+/main:system/sepolicy/private/heapprofd.te?q=never_profile_heap) 中查找 `never_profile_heap`)。可以通过运行 `adb shell su root setenforce 0` 禁用 SELinux 或向 `heap_profile` 脚本传递 `--disable-selinux` 来取消此限制。
+在 userdebug 构建上，可以 profile 除一小部分关键服务之外的所有进程(要查找不允许的目标集，请查找 `never_profile_heap`，参见 [heapprofd.te](
+https://cs.android.com/android/platform/superproject/main/+/main:system/sepolicy/private/heapprofd.te?q=never_profile_heap))。可以通过运行 `adb shell su root setenforce 0` 禁用 SELinux 或向 `heap_profile` 脚本传递 `--disable-selinux` 来取消此限制。
 
 <center>
 
@@ -172,8 +173,8 @@ NOTE: **ART allocation profiling 在 Android 12 或更高版本上可用**
 NOTE: **ART allocation profiling 不得与 [Heap dumps](/docs/data-sources/java-heap-profiler.md) 混淆**
 
 Heapprofd 可以配置为跟踪 Java 分配而不是 native 分配。
-* 通过在 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中添加 `heaps: "com.android.art"`。
-* 通过向 [`tools/heap_profile android`](/docs/reference/heap_profile-cli) 的调用添加 `--heaps com.android.art`。
+* 通过将 `heaps: "com.android.art"` 添加到 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中。
+* 通过将 `--heaps com.android.art` 添加到 [`tools/heap_profile android`](/docs/reference/heap_profile-cli) 的调用中。
 
 与 ART heap dumps（显示活动对象快照的保留图）不同，但与 native heap profiles 类似，ART allocation samples 显示整个 profile 随时间分配的调用堆栈。
 
@@ -333,7 +334,7 @@ gzip /tmp/heap_profile-XXXXXX/*.pb
 
 ## {#heapprofd-example-queries} 示例 SQL 查询
 
-我们可以通过在 Trace Processor 中使用 SQL 查询来获取分配的调用堆栈。对于每个帧，我们为分配的字节数获得一行，其中 `count` 和 `size` 为正，如果其中任何一个已被释放，则获得另一行具有负 `count` 和 `size` 的行。这些的总和为我们提供了"未释放的 malloc 大小"视图。
+我们可以通过在 Trace Processor 中使用 SQL 查询来获取分配的调用堆栈。对于每个帧，我们为分配的字节数获得一行，其中 `count` 和 `size` 为正，如果其中任何一个已被释放，则获得另一行具有负 `count` 和 `size` 的行。这些的总和为我们提供了 `未释放的 malloc 大小` 视图。
 
 ```sql
 select a.callsite_id, a.ts, a.upid, f.name, f.rel_pc, m.build_id, m.name as mapping_name,

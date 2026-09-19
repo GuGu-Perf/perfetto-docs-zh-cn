@@ -19,15 +19,12 @@ chmod +x open_trace_in_ui
 tools/open_trace_in_ui -i /path/to/trace
 ```
 
-## 为什么 Perfetto 不支持 \<某些冷门的 JSON 格式功能\>?
+## {#why-does-perfetto-not-support-some-obscure-json-format-feature} 为什么 Perfetto 不支持 \<某些冷门的 JSON 格式功能\>?
 
 JSON trace 格式被视为遗留 trace 格式，并在尽力而为的基础上提供支持。虽然我们尽力保持与 chrome://tracing UI 和 [格式规范](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.nso4gcezn7n1) 在如何解析和显示事件方面的兼容性，但这并不总是可能的。
 对于在 Chrome 外部以编程方式生成并依赖 chrome://tracing 实现细节的 traces，尤其如此。
 
 如果支持某个功能会引入不成比例的技术债务，我们通常会做出不支持该功能的选择。建议用户改为发出 [TrackEvent](/docs/instrumentation/track-events.md)，这是 Perfetto 的原生 trace 格式。请参阅[此指南](/docs/reference/synthetic-track-event.md)，了解如何使用 TrackEvent 表示常见的 JSON 事件。
-
-建议用户改为发出
-[TrackEvent](/docs/instrumentation/track-events.md)，这是 Perfetto 的原生 trace 格式。请参阅[此指南](/docs/reference/synthetic-track-event.md)，了解如何使用 TrackEvent 表示常见的 JSON 事件。
 
 ## 如何在不对我的程序进行插桩的情况下使用 Perfetto 工具？
 

@@ -3,7 +3,7 @@
 Perfetto 代码库的权威来源是
 https://github.com/google/perfetto。
 
-Android 树中也有一个副本，位于 `/external/perfetto`，并按照常规的 Android 发布节奏进行更新。
+Android 树中也有一个副本，位于 /external/perfetto，并按照常规的 Android 发布节奏进行更新。
 
 Perfetto 可以从 Android 树（AOSP）构建，也可以独立构建。独立构建仅用于本地测试。由于依赖项更少，独立构建的迭代速度更快，是开发 Perfetto 的推荐方式，除非你正在开发具有 Android 内部非 NDK 依赖项的代码。profiler 和内部 HAL/AIDL 依赖项不会在独立构建中构建。
 
@@ -112,7 +112,7 @@ Android 构建文件([Android.bp](/Android.bp))通过 `tools/gen_android_bp` 从
 
 预提交检查（`tools/run_presubmit`，CI 也会在每个 pull request 上运行）会检查 Android.bp 是否与 GN 文件一致。
 
-生成器有一个将被翻译到 Android.bp 文件的根目标列表。如果你要添加新目标，请在 [`tools/gen_android_bp`](/tools/gen_android_bp) 的 `default_targets` 变量中添加一个新条目。
+生成器有一个将被翻译到 Android.bp 文件的根目标列表。如果你要添加新目标，请在 `default_targets` 变量中添加一个新条目，该变量位于 [`tools/gen_android_bp`](/tools/gen_android_bp) 中。
 
 ## 支持的平台
 

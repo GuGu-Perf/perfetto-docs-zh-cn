@@ -131,7 +131,7 @@ WHERE process.pid = 1234;
 
 1. 为线程创建 `TrackDescriptor`。
 2. 填充其 `thread` 字段，提供此线程所属进程的 `pid` 和线程的唯一 `tid`。你还应该设置 `thread_name`。
-3. 可选但鼓励的是，你还可以为父进程本身定义一个单独的 `TrackDescriptor`(使用其 `process` 字段和 `pid`)，尽管这不是线程 Track 被识别为该 PID 的线程严格要求的。UI 通常根据线程 Track 中存在的 PID 推断进程分组。
+3. 可选但鼓励的是，你还可以为父进程本身定义一个单独的 `TrackDescriptor`(使用其 `process` 字段和 `pid`)，尽管这不是线程 Track 被识别为*该 PID 的线程*的严格要求。UI 通常根据线程 Track 中存在的 PID 推断进程分组。
 
 与进程 Track 类似，还建议将 `timestamp` 添加到包含线程的 `TrackDescriptor` 的 `TracePacket` 中。这尤其重要，当 trace 包含来自其他源的数据（例如，来自内核的调度信息）时。与"全局"Track 不同，这些 Track 类型可能会与其他数据源交互，因此具有时间戳可确保 Trace Processor 可以准确地将描述符排序到正确的位置。
 
@@ -269,7 +269,7 @@ WHERE tid = 5678;
 
 ![线程排序](/docs/images/synthetic-track-event-thread-order.png)
 
-**注意：** UI 将这些视为强提示。虽然它通常尊重这些排序，但在某些情况下，UI 保留不按此顺序显示它们的权利；通常，如果用户明确请求此操作，或者 UI 对这些 Track 有特殊处理，则会发生这种情况。
+**注意：** UI 将这些视为强提示。虽然它通常尊重这些排序，但在某些情况下，UI 保留*不*按此顺序显示它们的权利；通常，如果用户明确请求此操作，或者 UI 对这些 Track 有特殊处理，则会发生这种情况。
 
 #### Python 示例：演示所有排序类型
 
@@ -657,19 +657,20 @@ WHERE tid = 5678;
 
 **它如何工作：**
 
-1. **定义驻留数据：** 在 `TracePacket` 中，你包含一个 `interned_data`
- 消息。在其中，你将字符串映射到 `iid`s。例如，你可以定义 `event_names`，其中每个条目都有一个 `iid`（你选择的一个非零整数）和一个 `name` 字符串。此数据包_建立_映射。
-2. **通过 IID 引用：** 在后续的 `TrackEvent` 中（在相同的 `trusted_packet_sequence_id` 内且在驻留状态被清除之前）,
- 你不是直接设置 `name` 字段，而是将相应的 `name_iid` 字段设置为你定义的整数 `iid`。
-3. **序列标志：** `TracePacket.sequence_flags` 字段至关重要：
+1.  **定义驻留数据：** 在 `TracePacket` 中，你包含一个 `interned_data`
+    消息。在其中，你将字符串映射到 `iid`s。例如，你可以定义 `event_names`，其中每个条目都有一个 `iid`（你选择的一个非零整数）和一个 `name` 字符串。此数据包*建立*映射。
+2.  **通过 IID 引用：** 在后续的 `TrackEvent` 中（在相同的
+    `trusted_packet_sequence_id` 内且在驻留状态被清除之前），
+    你不是直接设置 `name` 字段，而是将相应的 `name_iid` 字段设置为你定义的整数 `iid`。
+3.  **序列标志：** `TracePacket.sequence_flags` 字段至关重要：
 
-  - `SEQ_INCREMENTAL_STATE_CLEARED`(值 1)：在处理此数据包的 `interned_data` 之前，如果应将此序列的驻留字典（和其他增量状态）视为已重置，请在此数据包上设置。这通常用于定义驻留条目的序列的第一个数据包上。
-  - `SEQ_NEEDS_INCREMENTAL_STATE`(值 2)：在_定义新驻留数据条目或使用在先前数据包中（在序列的当前有效状态内）定义的 iid_的任何数据包上设置此数据包。
+    - `SEQ_INCREMENTAL_STATE_CLEARED`（值 1）：如果此序列的驻留字典（和其他增量状态）需要在*处理*此数据包的 `interned_data` 之前被视为已重置，请在此数据包上设置。这通常用于定义驻留条目的序列的第一个数据包上。
+    - `SEQ_NEEDS_INCREMENTAL_STATE`（值 2）：在*定义新驻留数据条目或使用在先前数据包中（在序列的当前有效状态内）定义的 iid*的任何数据包上设置此数据包。
 
- 通常为序列_初始化_驻留字典的数据包将设置两个标志：
- `TracePacket.SEQ_INCREMENTAL_STATE_CLEARED | TracePacket.SEQ_NEEDS_INCREMENTAL_STATE`。
- _使用_这些已建立的驻留条目（或向现有的有效字典添加更多条目）的数据包将设置
- `TracePacket.SEQ_NEEDS_INCREMENTAL_STATE`。
+    通常为序列*初始化*驻留字典的数据包将设置两个标志：
+    `TracePacket.SEQ_INCREMENTAL_STATE_CLEARED | TracePacket.SEQ_NEEDS_INCREMENTAL_STATE`。
+    *使用*这些已建立的驻留条目（或向现有的有效字典添加更多条目）的数据包将设置
+    `TracePacket.SEQ_NEEDS_INCREMENTAL_STATE`。
 
 #### Python 示例：驻留事件名称
 
@@ -971,8 +972,8 @@ WHERE tid = 5678;
 **注意：**
 
 - 序列标志：定义驻留数据（首次）时使用 `SEQ_INCREMENTAL_STATE_CLEARED |
- SEQ_NEEDS_INCREMENTAL_STATE`;引用它或定义*更多*增量数据时仅使用
- `SEQ_NEEDS_INCREMENTAL_STATE`。
+ SEQ_NEEDS_INCREMENTAL_STATE`；之后仅使用 `SEQ_NEEDS_INCREMENTAL_STATE`
+ 来引用它或定义*更多*增量数据。
 - 帧顺序： `frame_ids` 从最外到最内排序（与内联调用堆栈相同）。
 - 重用：事件 3 重用 `CALLSTACK_1`，演示效率增益。
 
@@ -1002,7 +1003,8 @@ message TrackEvent {
 }
 ```
 
-需要记住的关键规则：**加权聚合只包含设置了 `callstack_weight` 的事件；加权和未加权样本永远不会混合。** 如果你的某些事件设置了 weight 而其他事件没有，则 "Weight" measure 只覆盖加权事件，而 "Samples" 继续计数所有事件。要获得有意义的加权火焰图，请在每个事件上（在给定 track 上）都设置 weight，或都不设置。
+需要记住的关键规则：**加权聚合只包含设置了
+`callstack_weight` 的事件；加权和未加权样本永远不会混合。** 如果你的某些事件设置了 weight 而其他事件没有，则 "Weight" measure 只覆盖加权事件，而 "Samples" 继续计数所有事件。要获得有意义的加权火焰图，请在每个事件上（在给定 track 上）都设置 weight，或都不设置。
 
 除了 weight 之外，附加到携带 callstack 的事件的任何**数字参数**都可以在 UI 中用作额外的火焰图 measure。这包括 [debug annotations](/docs/getting-started/converting.md#debug-annotations) 和来自 [proto 扩展](#proto-extensions) 的整数/双精度字段 — 任何最终作为 `args` 表中数字条目的内容。这让单个事件流可以携带多个并行 measure：例如，allocation profiler 可以使用 `callstack_weight` 表示字节数，使用 `objects` debug annotation 表示对象数量。
 
@@ -1012,7 +1014,7 @@ message TrackEvent {
 
 该扩展使用 [使用 Proto 扩展附加自定义类型字段](#proto-extensions) 中描述的双文件描述符设置。如果你只需要 weight 和 debug annotation，可以跳过两个 `.proto` 文件并删除 Python 代码中与扩展相关的行。
 
-**文件 1 — `alloc_stats.proto`**（数据模式，编译为 Python 绑定）：
+**文件 1 — `alloc_stats.proto`** （数据模式，编译为 Python 绑定）：
 
 ```protobuf
 syntax = "proto2";
@@ -1023,7 +1025,7 @@ message AcmeAllocStats {
 }
 ```
 
-**文件 2 — `alloc_stats_extension.proto`**（扩展 hook，编译为嵌入 trace 的描述符集）：
+**文件 2 — `alloc_stats_extension.proto`** （扩展 hook，编译为嵌入 trace 的描述符集）：
 
 ```protobuf
 syntax = "proto2";

@@ -7,7 +7,7 @@
 
 NOTE: 虚线表示这些转换仅在后台配置中发生；实线的转换在后台和非后台情况下都会发生。
 
-NOTE: 对于后台 traces，*要么*支持 start triggers *要么*支持 stop triggers；两者不能在同一个 trace 中发生。
+NOTE: 对于后台 traces，*要么*支持 start triggers 要么支持 stop triggers；两者不能在同一个 trace 中发生。
 
 ```mermaid
 graph TD;

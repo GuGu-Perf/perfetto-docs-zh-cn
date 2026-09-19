@@ -33,7 +33,7 @@ Perfetto trace 文件（`.pftrace` 或 `.perfetto-trace`）是一系列 [TracePa
   [更多](https://protobuf.dev/reference/)。
 - **第三方库：** 许多第三方库也为广泛的语言提供 protobuf 支持。
 
-无论使用什么语言，核心任务都是根据 Perfetto [protobuf schemas](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/) 构造 `TracePacket` 消息并将它们序列化为二进制文件。
+无论使用什么语言，核心任务都是构造 `TracePacket` 消息（根据 Perfetto 的 [protobuf schemas](https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/)）并将它们序列化为二进制文件。
 
 ### Python 脚本模板
 
@@ -126,7 +126,7 @@ TraceProtoBuilder 类（从 `perfetto` pip 包导入）帮助管理构成 `Trace
 Slices 可以表示的常见示例包括：
 
 - 特定**函数正在执行**的时间间隔。
-- 等待服务器响应网络请求的**时间间隔**。
+- **等待服务器响应**网络请求的时间间隔。
 - **资源（如图像、脚本或数据文件）加载**所需的时间。
 - 应用生命周期中特定阶段的持续时间，如"解析数据"或"渲染帧"。
 
@@ -195,7 +195,7 @@ Slices 可以表示的常见示例包括：
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Basic Timeline Slices](/docs/images/converting-basic-slices.png)
 
@@ -276,7 +276,7 @@ Perfetto UI 将直观地嵌套这些 slices，使层次结构清晰。
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Nested Slices](/docs/images/converting-nested.png)
 
@@ -297,9 +297,9 @@ ORDER BY ts;
 - **Wakelocks(Android/Linux)：** 多个组件可以同时持有 wakelocks。
 - **文件 I/O 操作：** 程序可能启动多个对不同文件的异步读取或写入操作。
 
-在这些场景中，如果你使用的是开始/结束 slice 语义，则无法将所有这些重叠事件表示在单个 track 上，因为 `TYPE_SLICE_END` 总是关闭该特定 track 上最近打开的 slice。
+在这些场景中，如果你使用的是开始/结束 slice 语义，则无法将所有这些重叠事件表示在单个 track 上，因为 `TYPE_SLICE_END` 总是关闭*该特定 track 上*最近打开的 slice。
 
-Perfetto 对此进行建模的方式是将每个并发的、可能重叠的操作分配到其**自己的唯一 track(具有唯一的 UUID)**。为了在 Perfetto UI 中实现这些相关异步操作的视觉分组，你可以给这些单独的操作 tracks 的每个 `TrackDescriptor` 指定**相同的 `name`**(例如，"Network Connections"或"File I/O")。slices 本身在这些 tracks 上可以有不同的名称（例如，"GET :/api/data"、"Read /config.txt"）。
+Perfetto 对此进行建模的方式是将每个并发的、可能重叠的操作分配到其**自己的唯一 track，具有唯一的 UUID**。为了在 Perfetto UI 中实现这些相关异步操作的视觉分组，你可以给这些单独的操作 tracks 的每个 `TrackDescriptor` 指定**相同的 `name`**(例如，"Network Connections"或"File I/O")。slices 本身在这些 tracks 上可以有不同的名称（例如，"GET :/api/data"、"Read /config.txt"）。
 
 Perfetto UI 将组合或视觉上合并具有相同名称的 tracks。这是约定，可以由用户控制。有关更多详细信息，请参阅有关控制合并的部分：
 [synthetic track event reference docs](/docs/reference/synthetic-track-event.md#controlling-track-merging)。
@@ -353,7 +353,7 @@ Perfetto UI 将组合或视觉上合并具有相同名称的 tracks。这是约�
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Asynchronous Slices](/docs/images/converting-async-slices.png)
 
@@ -428,7 +428,7 @@ Counters 可以表示的常见示例包括：
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Counters](/docs/images/converting-counters.png)
 
@@ -529,7 +529,7 @@ Perfetto UI 将绘制箭头连接共享共同 `flow_id` 的 slices，使依赖�
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Flows](/docs/images/converting-flows.png)
 
@@ -635,7 +635,7 @@ Perfetto UI 通常会将这些渲染为可展开的树。
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Grouping Tracks with Hierarchies](/docs/images/converting-track-groups.png)
 
@@ -741,7 +741,7 @@ Track 层次结构的另一个强大用途是可视化复杂操作或请求的�
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Track Hierarchies for Waterfall / Trace Views](/docs/images/converting-waterfall.png)
 
@@ -855,7 +855,7 @@ ORDER BY slice.ts;
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Adding Debug Annotations](/docs/images/converting-debug-basic.png)
 
@@ -935,7 +935,7 @@ WHERE track.name = 'Debug Annotations Example';
 
 </details>
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Nested Debug Annotations](/docs/images/converting-debug-nested.png)
 
@@ -1050,7 +1050,7 @@ NOTE: 帧从最外层(堆栈底部，例如 `main()`)到最内层（堆栈顶部
 
 当你在 slice 结束事件上提供调用栈时，Trace Processor 会将其与开始调用栈分开存储（存储为 `end_callsite_id` 而非 `callsite_id`）。这对于快速比较进入/退出堆栈非常方便。
 
-运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
+运行脚本后，打开生成的 `my_custom_trace.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）将显示以下输出：
 
 ![Inline Callstacks](/docs/images/converting-inline-callstacks.png)
 
@@ -1081,7 +1081,8 @@ Trace 级别元数据适用于：
 
 NOTE: 仅支持字符串和 64 位整数值。如果相同的 key 被多次设置，无论是在单个数据包内还是跨多个数据包，最后写入的值生效。
 
-除了写入数据包外，还可以在录制 trace 时通过 `perfetto --add-attribute key=value` 设置属性；两者最终都会出现在相同的 `trace_attribute.*` 行中。Trace archive 还可以通过 [trace manifest](/docs/reference/perfetto-manifest.md#attributes) 的 `attributes` 部分进行注释，该部分使用自己的 `manifest_attribute.*` 命名空间。
+除了写入数据包外，还可以在录制 trace 时通过 `perfetto --add-attribute key=value` 设置属性；两者最终都会出现在相同的 `trace_attribute.*` 行中。Trace archive 还可以通过 `attributes` 部分进行注释（见 [trace manifest](/docs/reference/perfetto-manifest.md#attributes)），该部分使用自己的
+`manifest_attribute.*` 命名空间。
 
 ### Python 示例：Trace Metadata
 
@@ -1107,7 +1108,7 @@ NOTE: 仅支持字符串和 64 位整数值。如果相同的 key 被多次设�
 
 </details>
 
-与本页中的其他示例不同，Timeline 视图中没有 track 或 slice 可看。相反，运行脚本并在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `my_custom_trace.pftrace` 后，这些属性会显示在 "Overview" 页面上（可从左侧侧边栏进入），位于 "Metadata" 标签页的 "Trace Attributes" 部分下，与 trace 的其他元数据一起。
+与本页中的其他示例不同，Timeline 视图中没有 track 或 slice 可看。相反，运行脚本并打开 `my_custom_trace.pftrace`（在 [Perfetto UI](https://ui.perfetto.dev) 中）后，这些属性会显示在 "Overview" 页面上（可从左侧侧边栏进入），位于 "Metadata" 标签页的 "Trace Attributes" 部分下，与 trace 的其他元数据一起。
 
 ![Overview 页面中的 Trace 属性](/docs/images/converting-trace-attributes.png)
 
@@ -1137,11 +1138,11 @@ trace_processor export sqlite -o trace.db my_custom_trace.pftrace
 
 一旦你将自定义数据转换为 Perfetto trace 格式（`.pftrace` 文件），你可以：
 
-- **探索高级的 `TrackEvent` 功能：** 有关对 track 和事件外观、interning 和其他高级功能的更详细控制，请参阅
+- **探索高级的 `TrackEvent` 功能：** 有关对 track 和事件外观、interning 以及 `TrackEvent` protobuf 其他高级功能的更详细控制，请参阅
   [Writing synthetic traces using TrackEvent protobufs](/docs/reference/synthetic-track-event.md)
   参考页面。
 - **附加自定义类型字段：** 如果 `debug_annotations` 不够表达力，并且你想要自己的 schema，可以在 `TrackEvent` 上定义 protobuf 扩展，并沿内置字段设置这些字段。[高级指南的 proto extensions 部分](/docs/reference/synthetic-track-event.md#proto-extensions) 介绍了 Python 工作流；有关该机制的背景以及描述符如何到达 Trace Processor，请参阅 [使用自定义 Protos 扩展 TrackEvent](/docs/instrumentation/extensions.md)。
-- **可视化你的 trace：** 在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `.pftrace` 文件以在交互式 Timeline 上探索你的数据。
+- **可视化你的 trace：** 打开生成的 `.pftrace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）以在交互式 Timeline 上探索你的数据。
 - **使用 SQL 分析：** 使用
   [Trace Processor](/docs/analysis/getting-started.md) 查询你的自定义
   trace 数据。你的自定义 tracks 和事件将填充标准表，如

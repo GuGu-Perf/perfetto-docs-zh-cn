@@ -28,7 +28,7 @@ TAB: Android (Perfetto UI)
 
 1. 首先导航到 [ui.perfetto.dev](https://ui.perfetto.dev)。这是 **Perfetto UI**，我们用于采集、profile 和可视化 traces 的多合一图形 UI；在本指南的其余部分，我们将大量使用它。
 2. 点击左侧边栏上的 "Record New Trace"。
-3. 这应该会将你带到 UI 的 _Recording page_，看起来像这样：
+3. 这应该会将你带到 UI 的 *Recording page*，看起来像这样：
    ![Perfetto UI 的录制页面](/docs/images/record-trace-adb-websocket-success.png)
 4. 你可以在不同的连接 Android 设备的方式之间进行选择。
    按照屏幕上的说明连接到你的设备。Perfetto UI 将检查是否满足所有条件，否则将显示描述性错误消息。例如，对于 _ABD+Websocket_ 传输，成功消息将如上面的屏幕截图所示。

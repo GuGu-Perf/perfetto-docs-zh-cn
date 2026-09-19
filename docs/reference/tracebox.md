@@ -22,7 +22,7 @@ tracebox - 用于 Perfetto tracing 服务的一体化二进制文件
 
 自动启动模式支持 `perfetto` 操作的简单和普通模式，并额外提供 `--system-sockets` 标志。
 
-在 *自动启动模式* 下使用 `tracebox` 的通用语法如下：
+使用 `tracebox`（*自动启动模式*）的通用语法如下：
 
 ```
  tracebox [PERFETTO_OPTIONS] [TRACEBOX_OPTIONS] [EVENT_SPECIFIERS]
@@ -70,7 +70,7 @@ tracebox -c config.pbtx --txt -o custom_trace.perfetto-trace
 
 `tracebox` 可用于调用绑定的 applets。
 
-在 *手动模式* 下使用 `tracebox` 的通用语法如下：
+使用 `tracebox`（*手动模式*）的通用语法如下：
 
 ```
  tracebox [applet_name] [args ...]

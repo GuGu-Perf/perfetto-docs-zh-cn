@@ -99,14 +99,14 @@ trace_processor export arrow_tar -o tables.tar trace.pftrace
 trace_processor export sqlite -o trace.db trace.pftrace
 ```
 
-- **`perfetto`**：静态表的一个与版本耦合的归档。同一版本的新
+- **`perfetto`**: 静态表的一个与版本耦合的归档。同一版本的新
   trace processor 实例可以将其作为 trace 加载回来；不同版本或许能加载，
   但不保证。这是唯一可以重新加载的格式。
-- **`arrow_tar`**：每个静态注册的表一个标准
+- **`arrow_tar`**: 每个静态注册的表一个标准
   [Apache Arrow](https://arrow.apache.org/)
   文件，打包在一个 tar 中。在 trace processor 各版本间稳定，适合用
   pandas、Polars 或 pyarrow 进行分析。无法加载回 trace processor。
-- **`sqlite`**：静态注册的表加上该 trace 的视图，作为一个任何 SQLite
+- **`sqlite`**: 静态注册的表加上该 trace 的视图，作为一个任何 SQLite
   工具都能打开的 SQLite 数据库文件。
 
 这三种格式导出的都是静态注册的表；只有 `sqlite` 还包含视图。session

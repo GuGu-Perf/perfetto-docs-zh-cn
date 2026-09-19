@@ -75,11 +75,11 @@ docker run worker ...
 
 1. 使用以下命令构建并推送新的 docker 容器：
 
- `make -C infra/ci build push`
+   `make -C infra/ci build push`
 
 2. 重新启动 GCE 实例，手动或通过：
 
- `make -C infra/ci restart-workers`
+   `make -C infra/ci restart-workers`
 
 ## 安全考虑
 

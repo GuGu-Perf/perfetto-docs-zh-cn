@@ -71,7 +71,7 @@ Host 的 `traced` 将每个唯一提示映射到一个小的整数 `MachineId`�
 
 ## 限制与约束
 
-* `traced_relay` 不能与 `traced` 运行在同一台机器上——两者都绑定本地 Producer Socket。配置中的每台机器运行 `traced`（host）*或* `traced_relay`（其余每台机器）。
+* `traced_relay` 不能与 `traced` 运行在同一台机器上——两者都绑定本地 Producer Socket。配置中的每台机器*要么*运行 `traced`（host）*或* `traced_relay`（其余每台机器）。
 * 每台远程机器必须有到 host 的 Relay 端点的网络路径，基于 TCP 或 vsock。
 * 跨机器时钟对齐仅取决于 Ping 协议对偏移的测量精度；大致对齐的挂钟（NTP 或类似）有助于初始 Snapshot，但并非严格要求。
 * UI 的每机器 Track 渲染仍在完善中。对 `machine` 表和 `machine_id` 列进行 SQL 查询是目前切片跨机器数据的权威方式。

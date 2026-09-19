@@ -18,13 +18,13 @@
 
 两个工具覆盖了本页面的所有内容。两者都是单文件、自包含的下载：
 
-- **`tracebox`**：录制引擎。它将 `traced`、`traced_probes` 和所有数据源
+- **`tracebox`**: 录制引擎。它将 `traced`、`traced_probes` 和所有数据源
   实现打包到一个静态链接的二进制文件中。
   ```bash
   curl -LO https://get.perfetto.dev/tracebox
   chmod +x tracebox
   ```
-- **`trace_processor`**：主机端工具集，用于转换和（此处重要的）符号化 trace。
+- **`trace_processor`**: 主机端工具集，用于转换和（此处重要的）符号化 trace。
   它是一个轻量级 Python 包装器，首次使用时会为你的平台下载正确的原生
   二进制文件。
   ```bash
@@ -99,7 +99,7 @@ objcopy --strip-debug --add-gnu-debuglink=myapp.debug myapp
 这是 [CPU profiling 指南](/docs/getting-started/cpu-profiling.md)的
 端到端版本。
 
-**1. 按上述说明[构建带符号的二进制文件](#building-with-symbols)。**
+**1. 构建带符号的二进制文件**，按[上述](#building-with-symbols)说明。
 
 **2. 编写配置。**这会对每个 CPU 每秒采样 100 次调用栈，仅在进程在 CPU
 上运行时展开，并添加调度上下文。保存为 `cpu.cfg`，将 `target_cmdline`
@@ -156,7 +156,7 @@ data_sources {
 }
 ```
 
-**3. 录制**（关于 `tracebox` 下载和权限，参见[准备](#setup)）：
+**3. 录制**（参见[准备](#setup)中关于 `tracebox` 下载和权限的说明）：
 
 ```bash
 sudo ./tracebox -c cpu.cfg --txt -o /tmp/trace.pftrace
@@ -165,7 +165,7 @@ sudo ./tracebox -c cpu.cfg --txt -o /tmp/trace.pftrace
 此时**内核**帧已经符号化（从 kallsyms 在设备端解析），但**用户空间**
 帧仍是原始地址。
 
-**4. 使用 `trace_processor bundle` 嵌入用户空间符号。**它会自动发现已加载的
+**4. 嵌入用户空间符号**，使用 `trace_processor bundle`。它会自动发现已加载的
 二进制文件（使用 trace 中记录的绝对路径，这在同机 profiling 时工作良好），
 并写出一个独立的自包含 trace：
 
@@ -184,8 +184,8 @@ sudo ./tracebox -c cpu.cfg --txt -o /tmp/trace.pftrace
   /tmp/trace.pftrace /tmp/trace.bundle
 ```
 
-**5. 查看。**在 [Perfetto UI](https://ui.perfetto.dev) 中打开
-`/tmp/trace.bundle`；选择样本上方的时间范围以获得火焰图。Build-ID
+**5. 查看。**打开 `/tmp/trace.bundle` 并在
+[Perfetto UI](https://ui.perfetto.dev) 中查看；选择样本上方的时间范围以获得火焰图。Build-ID
 查找顺序和"找不到库"的故障排除在
 [符号化指南](/docs/learning-more/symbolization.md#callstacks) 中有记录。
 
@@ -219,7 +219,7 @@ python3 heap_profile host -- ./myapp --some-flag
 将 `raw-trace` 加上每个进程的 pprof 文件写入它打印的 `/tmp` 目录。
 由于你在本地进行 profiling，匹配的二进制文件存在，因此符号会自动解析。
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `raw-trace` 文件即可
+打开 `raw-trace` 文件并在 [Perfetto UI](https://ui.perfetto.dev) 中查看，即可
 看到分配火焰图。关于完整选项集（自定义预加载库、采样间隔等），参见
 [原生 heap profiler：Linux 支持](/docs/data-sources/native-heap-profiler.md#non-android-linux-support)。
 
@@ -260,9 +260,9 @@ sudo ./tracebox -c funcgraph.cfg --txt -o /tmp/funcgraph.pftrace
 ```
 
 在 UI 中打开 `/tmp/funcgraph.pftrace`；调用以嵌套 slice 形式显示在上文
-`Funcgraph` track 中。关于内核要求（`CONFIG_FUNCTION_GRAPH_TRACER`）、
-过滤选项以及调用如何可视化，参见专门的
-[函数图数据源](/docs/data-sources/funcgraph.md)页面。请注意，与
+`Funcgraph` track 中。参见专门的
+[函数图数据源](/docs/data-sources/funcgraph.md)页面，了解内核要求（`CONFIG_FUNCTION_GRAPH_TRACER`）、
+过滤选项以及调用如何可视化。请注意，与
 [CPU profile](#cpu-profiling) 方案不同，这些内核符号来自
 `symbolize_ksyms`，**不能**事后通过 `trace_processor bundle` 添加。
 
@@ -275,9 +275,9 @@ sudo ./tracebox -c funcgraph.cfg --txt -o /tmp/funcgraph.pftrace
 的 `timebase`，这样你可以在线程阻塞或被唤醒的精确时刻捕获调用栈。
 对于阻塞分析，这远比基于时间的采样精确。
 
-WARNING:Android 的 `blocked_function` 字段（来自
-[sched/sched_blocked_reason](/docs/getting-started/android-trace-analysis.md)
-中使用的 `sched/sched_blocked_reason` ftrace 事件）是 Android 内核特性，
+WARNING:Android 的 `blocked_function` 字段（来自 `sched/sched_blocked_reason` ftrace 事件，在
+[Android trace 分析实战指南](/docs/getting-started/android-trace-analysis.md)
+中使用）是 Android 内核特性，
 在主线/桌面 Linux 内核上通常**不**存在。请改用下面的调用栈采样方法。
 
 最小配置（保存为 `blocked.cfg`，将 `comm` filter 调整为你自己的进程）。

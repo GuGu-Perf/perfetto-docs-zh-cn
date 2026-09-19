@@ -10,10 +10,10 @@ perfetto - 捕获 traces
 
 `perfetto` 有两种配置 Tracing Session 的模式（即收集什么以及如何收集）：
 
-**轻量级模式**
+__轻量级模式__
 :：所有配置选项都作为命令行标志提供，但可用的数据源限制为 ftrace 和 atrace。此模式类似于 [`systrace`](https://developer.android.com/topic/performance/tracing/command-line)。
 
-**普通模式**
+__普通模式__
 :：配置在协议缓冲区中指定。这允许对收集的 traces 进行完全自定义。
 
 
@@ -24,50 +24,22 @@ perfetto - 捕获 traces
 `-d`, `--background`
 :: Perfetto 立即退出命令行界面并在后台继续采集你的 trace。
 
+`-D`, `--background-wait`
+:: 类似于 `--background`，但会等待（最多 30 秒）所有数据源启动完成后再退出。
+
+`--notify-fd` _FD_
+:：类似于 `--background-wait`，但不是守护进程化并在退出前等待，而是写入一个状态字节并关闭给定的文件描述符。成功时写入 `0`，超时/错误时写入非零值。Windows 上不支持。
+
 `-o`, `--out` _OUT_FILE_
 :：指定输出 trace 文件的所需路径，或 `-` 用于 stdout。
  `perfetto` 将输出写入上述标志描述的文件。
  输出格式符合 [AOSP `trace.proto`](/protos/perfetto/trace/trace.proto) 中定义的格式。
 
-`--dropbox` _TAG_
-:：通过 [DropBoxManager API](https://developer.android.com/reference/android/os/DropBoxManager.html)
- 使用你指定的标签上传你的 trace。仅限 Android。
-
-`--no-guardrails`
-:：在测试期间启用 `--dropbox` 标志时，禁用防止过度资源使用的保护措施。
-
-`--reset-guardrails`
-:：重置 guardrails 的持久状态并退出（用于测试）。
-
-`--query`
-:：查询服务状态并将其作为人类可读的文本打印。
-
-`--query-raw`
-:：类似于 `--query`，但打印 `tracing_service_state.proto` 的原始 proto 编码字节。
-
-`-h`, `--help`
-:：打印 `perfetto` 工具的帮助文本。
-
-`--attach` _KEY_
-:：使用给定的密钥重新附加到已分离的 tracing session。
-
-`--detach` _KEY_
-:：使用给定的密钥从 tracing session 分离。这允许中断与当前 tracing session 的连接，但 session 本身会在后台继续运行。
-
-`--is_detached` _KEY_
-:：检查 session 是否可以被重新附加。退出代码：0 = 可以附加，2 = 不能附加，1 = 错误。
-
-`--stop`
-:：仅在与 `--attach` 一起使用时支持。重新附加后停止 tracing。
-
-`--save-for-bugreport`
-:：如果有一个 `bugreport_score > 0` 的 trace 正在运行，则将其保存到文件中，并在完成后输出文件路径。
-
-`--save-all-for-bugreport`
-:：克隆所有符合条件的错误报告 session，并将它们保存到错误报告输出文件中。
+`--no-clobber`
+:：不覆盖已存在的输出文件。
 
 `--clone` _TSID_
-:：创建由 session ID（TSID）标识的现有 tracing session 的只读克隆。
+:：创建由 session ID（TSID）标识的现有 tracing session 的只读克隆（参见 `--query`）。
 
 `--clone-by-name` _NAME_
 :：创建由 `unique_session_name` 标识的现有 tracing session 的只读克隆。
@@ -78,6 +50,65 @@ perfetto - 捕获 traces
 `--add-attribute` _key[=value]_
 ::：添加一个 [trace attribute](/protos/perfetto/common/trace_attributes.proto)，即描述 trace 的键值对。如果省略 `=value`，值为空字符串。属性在 Trace Processor 的 `metadata` 表中显示为 `trace_attribute.<key>` 行。
 
+`--version`
+:：打印 `perfetto` 版本字符串并退出。
+
+`--dropbox` _TAG_
+:：**已弃用。**通过 [DropBoxManager API](https://developer.android.com/reference/android/os/DropBoxManager.html)
+ 使用你指定的标签上传你的 trace。仅限 Android。请改用 `--upload`。
+
+`--upload`
+:：将 trace 输出上传到 `TraceConfig`（`android_report_config`）中配置的
+ Android 框架报告路径。仅限 Android。
+
+`--alert-id` _ID_
+:：Statsd 元数据。触发此 trace 的 alert 的 ID。
+
+`--config-id` _ID_
+:：Statsd 元数据。触发配置的 ID。
+
+`--config-uid` _UID_
+:：Statsd 元数据。注册触发配置的应用的 UID。
+
+`--subscription-id` _ID_
+:：Statsd 元数据。触发此 trace 的 subscription 的 ID。
+
+`--save-for-bugreport`
+:：如果有一个 `bugreport_score > 0` 的 trace 正在运行，则将其保存到文件中，并在完成后输出文件路径。
+
+`--save-all-for-bugreport`
+:：克隆所有符合条件的错误报告 session，并将它们保存到错误报告输出文件中。
+
+`--no-guardrails`
+:：在使用 `--upload` 时禁用防止过度资源使用的保护措施（仅用于测试）。
+
+`--reset-guardrails`
+:：兼容性选项。Guardrails 在 `perfetto_cmd` 中已不再存在；保留此选项是为了向后兼容。
+
+`--query`
+:：查询服务状态并将其作为人类可读的文本打印。
+
+`--long`
+:：展开 `--query` 输出中的某些字段（例如类别列表）。只能与 `--query` 一起使用。
+
+`--query-raw`
+:：类似于 `--query`，但打印 `tracing_service_state.proto` 的原始 proto 编码字节。
+
+`--detach` _KEY_
+:：使用给定的密钥从 tracing session 分离。
+
+`--attach` _KEY_
+:：使用给定的密钥重新附加到已分离的 tracing session。
+
+`--stop`
+:：仅在与 `--attach` 一起使用时支持。重新附加后停止 tracing。
+
+`--is_detached` _KEY_
+:：检查 session 是否可以被重新附加。退出代码语义：`0` 可以，`2` 不可以，`1` 错误。
+
+`-h`, `--help`
+:：打印 `perfetto` 工具的帮助文本。
+
 
 ## 简单模式
 
@@ -87,10 +118,11 @@ perfetto - 捕获 traces
 
 ```
  adb shell perfetto [ --time TIMESPEC ] [ --buffer SIZE ] [ --size SIZE ]
+     [ --app APP_NAME ]
  [ ATRACE_CAT | FTRACE_GROUP/FTRACE_NAME]...
 ```
 
-以下列出了在 *简单模式* 下使用 `perfetto` 时的可用选项。
+以下列出了 `perfetto` 在*简单模式*下的可用选项。
 
 `-t`, `--time` _TIME[s|m|h]_
 :：指定 trace 持续时间（秒、分钟或小时）。
@@ -104,6 +136,9 @@ perfetto - 捕获 traces
 `-s`, `--size` _SIZE[mb|gb]_
 :：指定最大文件大小（兆字节或千兆字节）。
  默认情况下，`perfetto` 仅使用内存中的环形缓冲区。
+
+`-a`, `--app` _APP_NAME_
+:：为 atrace 应用级 tracing 指定 Android 应用名称。
 
 
 后面跟着事件说明符列表：
@@ -129,7 +164,7 @@ perfetto - 捕获 traces
  adb shell perfetto [ --txt ] --config CONFIG_FILE
 ```
 
-以下列出了在 *普通* 模式下使用 `perfetto` 时的可用选项。
+以下列出了 `perfetto` 在*普通模式*下的可用选项。
 
 `-c`, `--config` _CONFIG_FILE_
 :：指定配置文件的路径。在普通模式下，某些
@@ -137,6 +172,7 @@ perfetto - 捕获 traces
  此文件必须符合 AOSP [`trace_config.proto`](/protos/perfetto/config/trace_config.proto) 中定义的协议缓冲区模式。
  你使用 TraceConfig 的 DataSourceConfig 成员选择和配置数据源，如 AOSP
  [`data_source_config.proto`](/protos/perfetto/config/data_source_config.proto) 中所定义。
+ 使用 `-` 从 stdin 读取配置字节。
 
 `--txt`
 :：指示 `perfetto` 将配置文件解析为 pbtxt。此标志

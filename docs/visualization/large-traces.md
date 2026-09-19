@@ -14,7 +14,7 @@ chmod +x ./trace_processor
 
 然后像往常一样打开 https://ui.perfetto.dev。
 
-Perfetto UI 将通过探测 http://127.0.0.1:9001 自动检测 `trace_processor server http` 的存在。检测到后，它将提示一个对话框，询问你是否希望通过 WebSocket 使用外部加速器或在浏览器中运行的内置 WebAssembly 运行时。
+Perfetto UI 将自动检测 `trace_processor server http` 的存在（通过探测 http://127.0.0.1:9001）。检测到后，它将提示一个对话框，询问你是否希望通过 WebSocket 使用外部加速器或在浏览器中运行的内置 WebAssembly 运行时。
 
 NOTE: 经典的 `./trace_processor --httpd /path/to/trace.pftrace` 调用仍然受支持且行为相同。
 

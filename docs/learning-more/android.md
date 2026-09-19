@@ -15,7 +15,7 @@
 
 Perfetto 的tracing 守护进程（`traced`）内置在 Android 中，但它们仅在 **Android 11 (R) 及更新版本**上默认启用。
 
-如果你使用的是 **Android 9 (P)** 或 **Android 10 (Q)**，你必须首先运行以下命令来启用 tracing 服务：
+如果你使用的是 **Android 9 (P)** 或 **Android 10 (Q)** ，你必须首先运行以下命令来启用 tracing 服务：
 
 ```bash
 # 仅在非 Pixel 手机上的 Android 9 (P) 和 10 (Q) 上需要。
@@ -123,8 +123,6 @@ adb shell 'cat /data/local/tmp/config.pbtx | perfetto --txt -c - -o /data/misc/p
 NOTE: 由于严格的 SELinux 规则，在 Android 的非 root 版本上，直接将文件路径作为
  `-c /data/local/tmp/config` 传递将失败，因此需要上面的 `-c -` + stdin 管道。
  从 Android 12 (S) 开始，可以使用 `/data/misc/perfetto-configs/` 代替。
-
-如果你想确保采集 trace 时不会被其他 trace 干扰，Perfetto 支持独占 tracing 模式。参见下面的[独占 Tracing 会话](#exclusive-tracing-sessions)部分。
 
 使用 `adb pull /data/misc/perfetto-traces/trace ~/trace.perfetto-trace` 拉取文件并在 [Perfetto UI](https://ui.perfetto.dev) 中打开它。
 

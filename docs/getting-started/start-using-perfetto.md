@@ -6,7 +6,7 @@ Perfetto 是一个大型项目，对于新手来说，了解文档的哪些部�
 
 我们的文档使用了术语"Tutorials"、"Cookbooks"和"Case Studies"：
 
-- **Tutorials**（教程）是关于如何开始使用 Perfetto 工具的指南。它们侧重于教你使用工具本身，而不是如何使用工具来解决现实世界的问题。
+- **Tutorials**（教程）是关于如何开始使用 Perfetto 工具的指南。它们侧重于教你使用工具本身，而*不是*如何使用工具来解决现实世界的问题。
 - **Cookbooks**（实战指南）是包含小型、简明指南（配方）的页面，可以让你快速了解如何用 Perfetto 解决具体问题。它们会提供可以复制粘贴的代码片段或可以遵循的指令序列。
 - **Case Studies**（案例研究）是详细的、有明确观点的指南，会一步一步教你如何使用 Perfetto 调试和排查一个"垂直"问题的根本原因。它们更多是帮助你解决问题，而不是教你使用 Perfetto 工具。它们还可能大量使用非 Perfetto 工具或命令，只要合适的话。
 
@@ -83,6 +83,8 @@ TAB: AOSP/OEM/合作伙伴平台开发者
 
 ### {#android-understanding-system-behavior} 理解系统行为和调试功能问题
 
+当你需要理解系统的不同部分如何交互、调试复杂的功能问题，或查看导致意外状态的事件序列时，Perfetto 提供了强大的洞察能力。
+
 - **不同组件如何交互？导致问题的事件序列是什么？** 系统 trace 提供了跨内核、系统服务和应用程序活动的详细、时间相关的视图。这对于理解复杂的交互和调试跨多个组件的问题非常宝贵。Perfetto UI 是可视化这些 trace 的主要工具。
 
   - **教程**：[采集和分析系统 trace](/docs/getting-started/system-tracing.md)
@@ -123,7 +125,7 @@ TAB: AOSP/OEM/合作伙伴平台开发者
   - **教程**：[采集和分析系统 trace](/docs/getting-started/system-tracing.md)
   - **参考**：[FrameTimeline 数据源](/docs/data-sources/frametimeline.md)
 
-- **我的代码的哪些部分消耗最多 CPU 时间（如果 CPU 确实是瓶颈）？** 如果系统 trace 表明你的组件确实在 CPU 上花费了大量时间，那么 CPU 分析可以帮助识别具体负责的函数。Perfetto 可以捕获这些 profile 或可视化从 `simpleperf` 收集的 profile。
+- **我的代码的哪些部分消耗最多 CPU 时间（如果 CPU 确实是瓶颈）？** 如果系统 trace 表明你的组件*确实*在 CPU 上花费了大量时间，那么 CPU 分析可以帮助识别具体负责的函数。Perfetto 可以捕获这些 profile 或可视化从 `simpleperf` 收集的 profile。
   - **教程**：[使用 Perfetto 录制性能 Counters 和 CPU 分析](/docs/getting-started/cpu-profiling.md)
   - **教程**：[可视化 simpleperf 文件](/docs/getting-started/other-formats.md#firefox-json-format)
 
@@ -179,7 +181,9 @@ Perfetto 与 Linux 内核深度集成，为内核开发者提供了强大的工�
 
 ## {#c-cpp-developers} C/C++ 开发者（非 Android）
 
-如果你是开发非 Android C/C++ 应用的开发者，Perfetto 提供了强大的工具来理解和优化你的应用：
+如果你在 Linux、macOS 或 Windows 上开发 C/C++ 应用，Perfetto 的 [Tracing SDK](/docs/instrumentation/tracing-sdk.md) 允许你对代码进行插桩，以理解其行为并识别性能特征。在 Linux 上，Perfetto 还提供专门的 heap 和 CPU profiling 工具，用于对资源使用情况进行更深入的调查。
+
+以下是 Perfetto 可以提供帮助的方式：
 
 - **如何使用 Perfetto 对我的 C/C++ 代码进行插桩？** Perfetto 提供了一个低开销的 SDK，用于对用户空间代码进行插桩。这允许你添加自定义事件来理解代码执行流程。
   - **教程**：[使用 Perfetto 采集应用内 trace](/docs/getting-started/in-app-tracing.md)

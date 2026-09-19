@@ -1,5 +1,6 @@
 # PerfettoSQL 语法
-*本文档记录了 PerfettoSQL 的语法，这是一种用于 trace processor 和其他 Perfetto 分析工具查询 trace 的 SQL 方言。*
+*本文档记录了 PerfettoSQL 的语法，这是一种用于 trace
+processor 和其他 Perfetto 分析工具查询 trace 的 SQL 方言。*
 
 PerfettoSQL 是[SQLite 实现的 SQL 方言](https://www.sqlite.org/lang.html) 的直接后代。具体来说，在 SQLite 中有效的任何 SQL 在 PerfettoSQL 中也有效。
 
@@ -211,7 +212,7 @@ NOTE: 宏在任何执行发生*之前*通过预处理步骤扩展。扩展是纯
 -- 创建一个不带参数的宏。注意返回的 SQL 片段如何
 -- 需要用括号括起来以使其成为有效的 SQL 表达式。
 --
--- 注意:这是强烈不鼓励使用宏的用法,因为简单的 SQL
+-- Note: 这是强烈不鼓励使用宏的用法,因为简单的 SQL
 -- 函数也可以在这里工作。
 CREATE PERFETTO MACRO constant_macro() RETURNS Expr AS (SELECT 1);
 
@@ -232,7 +233,7 @@ SELECT constant_macro_no_bracket!();
 -- SELECT 2;
 
 -- 创建一个接受单个标量参数并返回标量的宏。
--- 注意：同样，这是强烈不鼓励使用宏的用法，因为函数也可以
+-- Note: 同样，这是强烈不鼓励使用宏的用法，因为函数也可以
 -- 执行此操作。
 CREATE PERFETTO MACRO single_arg_macro(x Expr) RETURNS Expr AS (SELECT $x);
 SELECT constant_macro!() + single_arg_macro!(100);
@@ -242,7 +243,7 @@ SELECT constant_macro!() + single_arg_macro!(100);
 -- 用括号括起来以使其成为子查询。这允许它用在任何
 -- 允许表或子查询的地方。
 --
--- 注意:如果表被多次使用,建议它们被
+-- Note: 如果表被多次使用,建议它们被
 -- "缓存"为通用表表达式(CTE),以提高性能。
 CREATE PERFETTO MACRO multi_arg_macro(x TableOrSubquery, y Expr)
 RETURNS TableOrSubquery AS

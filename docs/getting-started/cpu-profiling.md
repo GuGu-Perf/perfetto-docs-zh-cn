@@ -127,7 +127,7 @@ echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
 ./tracebox -c /tmp/config.txtpb --txt -o /tmp/trace.pb
 ```
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/trace.pb` 文件。
+打开 `/tmp/trace.pb` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）。
 
 </tabs?>
 
@@ -247,7 +247,7 @@ echo 0 | sudo tee /proc/sys/kernel/kptr_restrict
 ./tracebox -c /tmp/config.txtpb --txt -o /tmp/trace.pb
 ```
 
-采集停止后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/trace.pb` 文件。
+采集停止后，打开 `/tmp/trace.pb` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中）。
 
 要将 trace 转换为"pprof"格式的每个进程 profiles，你可以按如下方式使用 `trace_processor` 工具：
 
@@ -275,11 +275,11 @@ python3 trace_processor convert profile --perf /tmp/trace.pb
 
 1. 在 Perfetto UI 中，点击左侧菜单中的"Query (SQL)"标签。
 
- ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
+   ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
 
 2. 这将打开一个两部分窗口。你可以在顶部部分编写 PerfettoSQL 查询，并在底部部分查看结果。
 
- ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
+   ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
 
 3. 然后你可以执行查询 Ctrl/Cmd + Enter:
 

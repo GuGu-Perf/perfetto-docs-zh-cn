@@ -115,7 +115,7 @@ registerCoreNodes() {
 **阶段 1：分析(验证)**
 ```
 节点图 → 结构化查询 Protobuf → Engine.updateSummarizerSpec() + querySummarizer() →
-查询 {sql, textproto, columns} | 错误
+查询 {sql, textproto, columns} | Error
 ```
 - 通过 `createSummarizer(summarizerId)` 创建 summarizer(每个会话一次)
 - 通过 `updateSummarizerSpec(summarizerId, spec)` 向 TP 注册查询
@@ -124,8 +124,8 @@ registerCoreNodes() {
 
 **阶段 2：物化(执行)**
 ```
-engine.querySummarizer(summarizerId, nodeId) → TP 创建/重用表 →
-{tableName, rowCount, columns, durationMs} → SQLDataSource → DataGrid 显示
+engine.querySummarizer(summarizerId, nodeId) → TP creates/reuses table →
+{tableName, rowCount, columns, durationMs} → SQLDataSource → DataGrid Display
 ```
 - TP 为服务器端分页创建持久化表(延迟，在第一次 querySummarizer 时)
 - TP 在内部处理缓存(如果 proto 哈希未更改则重用表)
@@ -511,7 +511,7 @@ analyzeNode(node, engine) {
 - `ui/src/plugins/dev.perfetto.DataExplorer/history_manager.ts` - 撤销/重做管理
 - `ui/src/plugins/dev.perfetto.DataExplorer/json_handler.ts` - 序列化
 
-**Trace Processor (C++)**：
+**Trace Processor (C++)** ：
 - `src/trace_processor/trace_summary/summarizer.cc` - 带有更改检测和依赖传播的智能重新物化
 - `src/trace_processor/trace_summary/summarizer.h` - Summarizer 类定义和 QueryState
 - `src/trace_processor/perfetto_sql/generator/structured_query_generator.cc` - 从结构化查询生成 SQL

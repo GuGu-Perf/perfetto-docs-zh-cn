@@ -4,14 +4,14 @@
 
 本文档涵盖了 TraceBufferV2 的设计，这是 ProtoVM 之际对核心 trace buffer 代码的 2025 年重写。
 
-TraceBuffer 是 tracing service 用于在内存中保存 traced 数据的非共享用户空间 buffer，直到它被读回或写入文件。对于
-[trace config](/docs/concepts/config.md) 的每个 `buffers` 部分，都有一个 TraceBuffer 实例
+TraceBuffer 是 tracing service 用于在内存中保存 traced 数据的非共享用户空间 buffer，直到它被读回或写入文件。每个
+`buffers` 部分对应一个 TraceBuffer 实例（见 [trace config](/docs/concepts/config.md)）
 
 ## 基本操作原理
 
 NOTE: 本部分假设你熟悉 [Buffers and dataflow](/docs/concepts/buffers.md) 中介绍的核心概念。
 
-TraceBuffer 是一个_加强版 ring buffer_。不幸的是，由于协议的复杂性（请参阅[挑战](#key-challenges）部分），在读回和删除方面，它与普通的面向 byte 的 FIFO ring buffer 相去甚远。
+TraceBuffer 是一个*加强版 ring buffer*。不幸的是，由于协议的复杂性（请参阅[挑战](#key-challenges)部分），在读回和删除方面，它与普通的面向 byte 的 FIFO ring buffer 相去甚远。
 
 在深入研究其复杂性之前，让我们探索其关键操作。
 
@@ -52,7 +52,7 @@ TraceBuffer 中的一切都由该 key 标识。
   protobuf 编码的 TracePacket 消息。缺少 fragments、缺少 patches 或无效的 packets 将被丢弃。
 - 数据丢失总是通过
   `TracePacket.previous_packet_dropped` 字段（一个 `DataLossReason` 位掩码：非零表示已丢弃，TraceBufferV2 设置各位来标识丢弃原因）进行 tracking 和报告。
-- TraceBuffer 非常努力地避免_隐藏_有效数据：缺少 fragment
+- TraceBuffer 非常努力地避免*隐藏*有效数据：缺少 fragment
   或其他类似的协议违规不应使序列的其余数据无效。
 - 序列的 packets 总是以 FIFO 顺序读回，与写入顺序相同。
 - TraceBuffer 还非常努力地尊重属于不同序列的 packets 的 FIFO-ness（这是 TraceBufferV2 引入的新行为）。因此，数据以大致相同的顺序读回（+- 取决于待处理的 patches 和数据丢失，这可能会导致跳跃）。
@@ -177,7 +177,7 @@ TraceBufferV2 的逻辑将通过在按 ChunkID 排序 chunks 后识别的任何 
 - TraceWriter 在 Chunk 中空间不足。因此，它提交当前 chunk 到 SMB 并获取一个新的 chunk 以继续写入。
 - 正在提交的 chunk 包含带有 message 大小的 preamble。然而，该 preamble 目前填充为零，因为我们还不知道 message(s) 的大小，因为它们仍在被写入。
 - 只有在嵌套 messages 结束时，TraceWriter 才可能知道要放入 preamble 中的 messages 的大小。但此时，包含 preamble 的 chunk 已被提交到 SMB。TraceWriters 无法触及已提交的 chunks。更重要的是，它们可能已经被 TracingService 消耗了。
-- 为了处理这个问题，IPC 协议公开了通过 IPC patch Chunk 的能力，语义为：_如果你 (TracingService/TraceBuffer) 仍然为我的 `{ProducerID,WriterID}` 保留了 ChunkID 1234_，则用内容 `[DE,AD, BE,EF]` patch offset X。
+- 为了处理这个问题，IPC 协议公开了通过 IPC patch Chunk 的能力，语义为：*如果你 (TracingService/TraceBuffer) 仍然保留了 ChunkID 1234*，则为我的 `{ProducerID,WriterID}` 用内容 `[DE,AD, BE,EF]` patch offset X。
 
 从协议的角度来看，只有 chunk 的最后一个 fragment 可以被 patched：
 

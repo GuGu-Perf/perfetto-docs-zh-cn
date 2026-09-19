@@ -55,7 +55,7 @@ android_cpu {
 
 为了在开发 metrics 时获得最快的迭代时间，可以热重新加载 SQL 的任何更改；这将跳过重新编译（对于内置 metrics）和 trace 加载（对于内置和自定义 metrics）。
 
-为此，trace processor 在_交互模式_中启动，同时指定关于应该运行哪些 metrics 和任何扩展路径的命令行标志。然后，在 REPL shell 中，使用命令 `.load-metrics-sql`（导致磁盘上的任何 SQL 被重新读取）和 `.run-metrics`（运行 metrics 并打印结果）。
+为此，trace processor 在*交互模式*中启动，同时指定关于应该运行哪些 metrics 和任何扩展路径的命令行标志。然后，在 REPL shell 中，使用命令 `.load-metrics-sql`（导致磁盘上的任何 SQL 被重新读取）和 `.run-metrics`（运行 metrics 并打印结果）。
 
 例如，假设我们要迭代 `android_startup` metrics。我们可以从 Perfetto checkout 运行以下命令：
 
@@ -103,7 +103,7 @@ my_custom_metric {
 
 WARNING: 目前无法以相同的方式重新加载 protos。如果更改了 protos，则需要重新编译（对于内置 metrics）并重新调用 trace processor 以获取更改。
 
-WARNING: 从 `--metric-extension` 文件夹中删除的文件_不会_被删除，并且仍然可用，例如，对于 RUN_METRIC 调用。
+WARNING: 从 `--metric-extension` 文件夹中删除的文件*不会*被删除，并且仍然可用，例如，对于 RUN_METRIC 调用。
 
 ### 在不重新编译的情况下修改内置 metrics SQL
 
@@ -119,13 +119,13 @@ WARNING: 从 `--metric-extension` 文件夹中删除的文件_不会_被删除�
  <trace>
 ```
 
-这将使用 repo 中的实时 SQL 运行 CPU metrics_ 而不是_内置到二进制文件中的 SQL 定义。
+这将使用 repo 中的实时 SQL 运行 CPU metrics *而不是*内置到二进制文件中的 SQL 定义。
 
-NOTE: protos_ 不会_以相同方式被覆盖 - 如果更改了任何 proto 消息，则需要重新编译 trace processor 以使更改可用。
+NOTE: protos *不会*以相同方式被覆盖 - 如果更改了任何 proto 消息，则需要重新编译 trace processor 以使更改可用。
 
 NOTE: 使用此功能需要 `--dev` 标志。此标志确保此功能不会在生产中意外使用，因为它仅用于本地开发。
 
-WARNING: protos_ 不会_以相同方式被覆盖 - 如果更改了任何 proto 消息，则需要重新编译 trace processor 以使更改可用。
+WARNING: protos *不会*以相同方式被覆盖 - 如果更改了任何 proto 消息，则需要重新编译 trace processor 以使更改可用。
 
 ## metrics 辅助函数
 
@@ -133,7 +133,7 @@ WARNING: protos_ 不会_以相同方式被覆盖 - 如果更改了任何 proto �
 
 `RUN_METRIC` 允许你运行另一个 metrics 文件。这允许你使用在该文件中定义的视图或表，而无需重复。
 
-从概念上讲，`RUN_METRIC` 为 SQL 查询添加了_组合性_以将大型 SQL metrics 分解为更小的、可重用的文件。这类似于函数如何在传统编程语言中分解大块。
+从概念上讲，`RUN_METRIC` 为 SQL 查询添加了*组合性*以将大型 SQL metrics 分解为更小的、可重用的文件。这类似于函数如何在传统编程语言中分解大块。
 
 `RUN_METRIC` 的简单用法如下：
 
@@ -157,7 +157,7 @@ FROM view_defined_in_foo
 LIMIT 1;
 ```
 
-`RUN_METRIC` 还支持运行_模板化_metrics 文件。以下是一个示例：
+`RUN_METRIC` 还支持运行*模板化* metrics 文件。以下是一个示例：
 
 在文件 android/slice_template.sql 中：
 
@@ -183,7 +183,7 @@ FROM choreographer_slices
 WHERE dur > 1e6;
 ```
 
-当运行 `slice_template.sql` 时，trace processor 将在执行文件之前将传递给 `RUN_METRIC` 的参数替换到模板化文件中。
+当运行 `slice_template.sql` 时，trace processor 会将传递给 `RUN_METRIC` 的参数替换到模板化文件中，*之后才*使用 SQLite 执行该文件。
 
 换句话说，对于上述示例，SQLite 实际上看到和执行的是：
 
@@ -332,15 +332,15 @@ SELECT TopProcesses(
 
 1. 从最内层的 SELECT 语句开始，看起来像是对 ProcessInfo 函数的函数调用；实际上这并非巧合。对于 metrics 平台知道的每个 proto，都会生成一个与 proto 同名的 SQL 函数。此函数接受键值对，键为要填充的 proto 字段的名称，值为要存储在字段中的数据。输出是通过写入函数中描述的字段创建的 proto。（*）
 
- 在这种情况下，对于 `top_five_processes_by_cpu` 表中的每一行调用此函数一次。输出将是完全填充的 ProcessInfo proto。
+   在这种情况下，对于 `top_five_processes_by_cpu` 表中的每一行调用此函数一次。输出将是完全填充的 ProcessInfo proto。
 
- 对 `RepeatedField` 函数的调用是最有趣的部分，也是最重要的部分。在技术术语中，`RepeatedField` 是一个聚合函数。实际上，这意味着它接受一个完整的值表并生成一个包含传递给它的所有值的单个数组。
+   对 `RepeatedField` 函数的调用是最有趣的部分，也是最重要的部分。在技术术语中，`RepeatedField` 是一个聚合函数。实际上，这意味着它接受一个完整的值表并生成一个包含传递给它的所有值的单个数组。
 
- 因此，整个 SELECT 语句的输出是一个包含 5 个 ProcessInfo protos 的数组。
+   因此，整个 SELECT 语句的输出是一个包含 5 个 ProcessInfo protos 的数组。
 
 2. 接下来是创建 `TopProcesses` proto。现在，语法应该已经感觉有些熟悉；调用 proto 构建器函数来用来自内部函数的 proto 数组填充 `process_info` 字段。
 
- 此 SELECT 的输出是单个 `TopProcesses` proto，包含 ProcessInfos 作为重复字段。
+   此 SELECT 的输出是单个 `TopProcesses` proto，包含 ProcessInfos 作为重复字段。
 
 3. 最后，创建视图。此视图被特殊命名，以允许 metrics 平台查询它以获取每个 metrics 的根 proto（在这种情况下为 `TopProcesses`）。请参阅下面有关此视图名称背后的模式的说明。
 

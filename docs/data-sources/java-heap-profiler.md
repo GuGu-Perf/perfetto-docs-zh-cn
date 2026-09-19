@@ -6,7 +6,7 @@ NOTE: Perfetto ART Heap Dumps 与标准 JVM / HPROF heap dumps 不同。与 HPRO
 
 有关 ART（Android RunTime）heap dumps 的入门，请参阅[内存指南](/docs/case-studies/memory.md#java-hprof)。
 
-与 [heap profiles](native-heap-profiler.md) 相反，heap dumps 报告 Java 对象的完整保留图但不报告调用堆栈。在 heap dump 中记录的信息的形式为：_对象 X 通过其名为 Z 的类成员保留对象 Y，该对象 Y 大小为 N 字节_。
+与 [heap profiles](native-heap-profiler.md) 相反，heap dumps 报告 Java 对象的完整保留图但不报告调用堆栈。在 heap dump 中记录的信息的形式为：*对象 X 通过其名为 Z 的类成员保留对象 Y，该对象 Y 大小为 N 字节*。
 
 Heap dumps 不得与 [ART Allocation Profiling](native-heap-profiler.md#art-allocation-profiling) 采集的 profile 混淆，后者记录分配事件/调用堆栈。
 

@@ -260,7 +260,8 @@ duration_ms: 10000
 
 我们现在可以在 perfetto UI 中探索采集的 trace。导航到 https://ui.perfetto.dev 并将文件拖放到窗口中（或按 `Ctrl+O` 打开文件对话框）。
 
-展开 "Ftrace Events" track 组以获取每个 CPU 的事件视图，可以选择这些事件以显示其字段。此外，`Ctrl+shift+P -> "Show ftrace tab"` 会打开一个带有文本输出近似的标签页。但是请注意，由于 perfetto 记录事件的二进制表示，它不会根据 `TP_printk(..)` 说明符将事件文本化。
+展开 "Ftrace Events" track 组以获取每个 CPU 的事件视图，可以选择这些事件以显示其字段。此外，`Ctrl+shift+P -> "Show ftrace
+tab"` 会打开一个带有文本输出近似的标签页。但是请注意，由于 perfetto 记录事件的二进制表示，它不会根据 `TP_printk(..)` 说明符将事件文本化。
 
 ![Raw ticker events](https://storage.googleapis.com/perfetto-misc/ticker-raw.gif)
 

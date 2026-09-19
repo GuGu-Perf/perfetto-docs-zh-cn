@@ -4,15 +4,15 @@ ATrace 是向 Android 应用程序和服务添加自定义 trace 点的标准方
 
 ATrace API 通过以下表面暴露：
 
-- **Java/Kotlin 应用（SDK）:** [`android.os.Trace`](https://developer.android.com/reference/android/os/Trace)
-- **原生进程(NDK):** [`ATrace_beginSection()`](https://developer.android.com/ndk/reference/group/tracing) 和 `ATrace_setCounter()`
-- **Android 内部进程：** [`libcutils/trace.h`](https://cs.android.com/android/platform/superproject/main/+/main:system/core/libcutils/include/cutils/trace.h?q=f:trace%20libcutils) 中的 `ATRACE_BEGIN()` 和 `ATRACE_INT()`
+*   **Java/Kotlin 应用（SDK）:** [`android.os.Trace`](https://developer.android.com/reference/android/os/Trace)
+*   **原生进程(NDK):** [`ATrace_beginSection()`](https://developer.android.com/ndk/reference/group/tracing) 和 `ATrace_setCounter()`
+*   **Android 内部进程：** `ATRACE_BEGIN()` 和 `ATRACE_INT()`，位于 [`libcutils/trace.h`](https://cs.android.com/android/platform/superproject/main/+/main:system/core/libcutils/include/cutils/trace.h?q=f:trace%20libcutils)
 
 此 API 自 Android 4.3（API 级别 18）起可用，早于 Perfetto。所有这些注释（在内部都通过内部 libcutils API 路由）都已被 Perfetto 支持，并将继续受支持。
 
 有两种类型的 atrace 事件：系统事件和应用事件。
 
-**系统事件**：仅由 Android 内部使用 libcutils 发出。这些事件按类别（也称为 _标签_）分组，例如，"am"（ActivityManager）、"pm"（PackageManager）。有关类别的完整列表，请参见 [Perfetto UI](https://ui.perfetto.dev) 的 _采集新 trace_ 页面。
+**系统事件**：仅由 Android 内部使用 libcutils 发出。这些事件按类别（也称为 *标签*）分组，例如，"am"（ActivityManager）、"pm"（PackageManager）。有关类别的完整列表，请参见 *采集新 trace* 页面（[Perfetto UI](https://ui.perfetto.dev)）。
 
 类别可用于跨多个进程启用事件组，而无需担心哪个特定的系统进程发出它们。
 

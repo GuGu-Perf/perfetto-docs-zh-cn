@@ -24,13 +24,13 @@ Perfetto 提供了多种互补技术来调试上述内容：
 
 ## {#native-heap-profiling} Native (C/C++/Rust) Allocation Profiling (aka native heap profiling)
 
-C/C++/Rust 等 native 语言通常通过使用 libc 系列的 `malloc`/`free` 函数在最低级别分配和释放内存。Native heap profiling 通过_拦截_对这些函数的调用并注入跟踪已分配但未释放内存的调用栈的代码来工作。这允许跟踪每个分配的"代码来源"。malloc/free 可能是繁重堆进程中的性能热点：为了减轻 memory profiler 的开销，我们支持[采样](/docs/design-docs/heapprofd-sampling)以权衡准确性和开销。
+C/C++/Rust 等 native 语言通常通过使用 libc 系列的 `malloc`/`free` 函数在最低级别分配和释放内存。Native heap profiling 通过*拦截*对这些函数的调用并注入跟踪已分配但未释放内存的调用栈的代码来工作。这允许跟踪每个分配的"代码来源"。malloc/free 可能是繁重堆进程中的性能热点：为了减轻 memory profiler 的开销，我们支持[采样](/docs/design-docs/heapprofd-sampling)以权衡准确性和开销。
 
 NOTE: 使用 Perfetto 的 native heap profiling 仅适用于 Android 和 Linux;这是由于我们用于拦截 malloc 和 free 的技术仅在这些操作系统上工作。
 
-需要注意的一个非常重要的点是，heap profiling **不是追溯性的**。它只能报告在 tracing 开始_之后_发生的分配。它无法提供有关在 trace 开始之前发生的分配的任何见解。如果你需要从进程开始 profiling内存使用，必须在进程启动之前开始 tracing。
+需要注意的一个非常重要的点是，heap profiling **不是追溯性的**。它只能报告在 tracing 开始*之后*发生的分配。它无法提供有关在 trace 开始之前发生的分配的任何见解。如果你需要从进程开始 profiling内存使用，必须在进程启动之前开始 tracing。
 
-如果你的问题是_"为什么这个进程现在这么大？"_，你不能使用 heap profiling 来回答有关过去发生的问题。然而，我们的轶事经验是，如果你正在 Tracing 内存泄漏，很有可能泄漏会随着时间的推移继续发生，因此你将能够看到未来的增量。
+如果你的问题是 *"为什么这个进程现在这么大？"* ，你不能使用 heap profiling 来回答有关过去发生的问题。然而，我们的轶事经验是，如果你正在 Tracing 内存泄漏，很有可能泄漏会随着时间的推移继续发生，因此你将能够看到未来的增量。
 
 ### 采集你的第一个 heap profile
 
@@ -43,7 +43,7 @@ TAB: Android (Perfetto UI)
 #### 先决条件
 
 - 一台运行 Android 10+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
@@ -66,9 +66,9 @@ TAB: Android (Command line)
 #### 先决条件
 
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
-- _Windows 用户_：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
+- *Windows 用户*：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
 - 一台运行 Android 10+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
@@ -169,7 +169,7 @@ tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
 
 ### 可视化你的第一个 heap profile
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/heap_profile-latest/raw-trace` 文件，并点击 UI 中标记为_"Native heap profile"_的 UI track 中的 Slice。
+打开 `/tmp/heap_profile-latest/raw-trace` 文件（在 [Perfetto UI](https://ui.perfetto.dev) 中），并点击 UI 中标记为 *"Native heap profile"* 的 UI track 中的 slice。
 
 ![heapprofd snapshots in the UI tracks](/docs/images/profile-slice-malloc.png)
 ![heapprofd flamegraph](/docs/images/native-heap-prof.png)
@@ -191,11 +191,11 @@ tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
 
 1. 在 Perfetto UI 中，点击左侧菜单中的"Query (SQL)"标签。
 
- ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
+    ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
 
 2. 这将打开一个两部分窗口。你可以在顶部部分编写 PerfettoSQL 查询，并在底部部分查看结果。
 
- ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
+    ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
 
 3. 然后你可以执行查询 Ctrl/Cmd + Enter:
 
@@ -251,7 +251,7 @@ TAB: Android (Perfetto UI)
 #### 先决条件
 
 - 一台运行 Android 11+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
 - 打开 https://ui.perfetto.dev/#!/record
@@ -271,9 +271,9 @@ TAB: Android (Command line)
 #### 先决条件
 
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
-- _Windows 用户_：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
+- *Windows 用户*：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
 - 一台运行 Android 11+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
 
@@ -328,11 +328,11 @@ UI 将显示堆图的扁平版本，采用火焰图的形状。火焰图将共�
 
 1. 在 Perfetto UI 中，点击左侧菜单中的"Query (SQL)"标签。
 
- ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
+    ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
 
 2. 这将打开一个两部分窗口。你可以在顶部部分编写 PerfettoSQL 查询，并在底部部分查看结果。
 
- ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
+    ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
 
 3. 然后你可以执行查询 Ctrl/Cmd + Enter:
 

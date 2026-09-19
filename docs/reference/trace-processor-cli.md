@@ -90,7 +90,7 @@ cat queries.sql | trace_processor query trace.pftrace
 - `-i, --interactive`：查询结束后进入交互式 REPL。
 - `-W, --wide`：打印结果时使用双倍宽度的列。
 - `--perf-file FILE`：将 trace 加载和查询的耗时写入 `FILE`。
-- `--structured-query-id ID` 加 `--summary-spec FILE` _（高级）_：按 ID 运行来自一个或多个 [TraceSummarySpec](/docs/analysis/trace-summary.md) 文件的单个结构化查询，而不是使用上面的 SQL 来源。
+- `--structured-query-id ID` 加 `--summary-spec FILE` *（高级）*：按 ID 运行来自一个或多个 [TraceSummarySpec](/docs/analysis/trace-summary.md) 文件的单个结构化查询，而不是使用上面的 SQL 来源。
 
 ### {#subcommand-interactive} `interactive`：REPL
 
@@ -174,9 +174,9 @@ trace_processor export sqlite -o trace.db trace.pftrace
 
 格式：
 
-- **`perfetto`**：非空静态表的一个与版本耦合的归档。同一版本的新 trace processor 实例可以将其作为 trace 加载回来；不同版本或许能加载，但不保证。这是唯一可以重新加载的格式。
-- **`arrow_tar`**：一个由标准 [Apache Arrow](https://arrow.apache.org/) 文件组成的 tar，每个静态注册的表一个文件，包括空表和隐式 ID 列。跨版本稳定且向前兼容，适合外部消费者（例如 pandas、Polars、pyarrow）。无法加载回 trace processor。
-- **`sqlite`**：静态注册的表加上该 trace 的视图，作为一个任何 SQLite 工具都能读取的 SQLite 数据库。
+- **`perfetto`** ：非空静态表的一个与版本耦合的归档。同一版本的新 trace processor 实例可以将其作为 trace 加载回来；不同版本或许能加载，但不保证。这是唯一可以重新加载的格式。
+- **`arrow_tar`** ：一个由标准 [Apache Arrow](https://arrow.apache.org/) 文件组成的 tar，每个静态注册的表一个文件，包括空表和隐式 ID 列。跨版本稳定且向前兼容，适合外部消费者（例如 pandas、Polars、pyarrow）。无法加载回 trace processor。
+- **`sqlite`** ：静态注册的表加上该 trace 的视图，作为一个任何 SQLite 工具都能读取的 SQLite 数据库。
 
 标志：
 

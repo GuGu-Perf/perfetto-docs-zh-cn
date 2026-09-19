@@ -14,9 +14,10 @@ NOTE: **Googlers**：请使用 [go/perfetto-ai-skills](http://go/perfetto-ai-ski
 ### 即兴问题
 
 ```
-> 找出 trace.pftrace 中 com.example.myapp 的不可中断休眠的主要原因。
+> Find the top causes of uninterruptible sleep for com.example.myapp in
+  trace.pftrace.
 
-> 此 trace 中哪个进程的峰值内存使用最高？
+> Which process had the highest peak memory usage in this trace?
 ```
 
 ### 内存调试
@@ -24,11 +25,13 @@ NOTE: **Googlers**：请使用 [go/perfetto-ai-skills](http://go/perfetto-ai-ski
 针对内存泄漏、OOM、内存抖动和分配热点路径的引导式工作流。
 
 ```
-> 调查 /tmp/heap_dump.pftrace 中的对象保留和潜在泄漏。
+> Investigate object retention and potential leaks in /tmp/heap_dump.pftrace.
 
-> 分析 /tmp/native_heap.pftrace 中的原生堆分配并识别内存增长热点路径。
+> Analyze native heap allocations and identify memory growth hot paths in
+  /tmp/native_heap.pftrace.
 
-> 从已连接设备录制 com.example.app 的 Java 堆转储，并找出是什么在保持内存存活。
+> Record a Java heap dump of com.example.app from my connected device and
+  find what is keeping memory alive.
 ```
 
 助手会在需要时录制 trace，运行经过测试的 SQL 来提取支配路径、原生调用栈或分配摘要，然后在你的工作区中搜索可疑的类并指出确切的文件和行来修复。
@@ -38,7 +41,8 @@ NOTE: **Googlers**：请使用 [go/perfetto-ai-skills](http://go/perfetto-ai-ski
 对于设备群中的 OOM 激增，聚类工作流会在批量堆转储中找到共同的泄漏特征。
 
 ```
-> 这里有 40 个 ~/dumps/ 中 com.example.app 的堆转储。聚类内存归因路径并确定共同的根因。
+> Here are 40 heap dumps of com.example.app in ~/dumps/. Cluster the memory
+  attribution paths and determine the common root causes.
 ```
 
 助手从每个 trace 中提取支配路径，将其归一化为规范类链，对其进行聚类（TF-IDF + K-Means），并折叠包装链，从而获得简短的根因列表而不是每个转储的噪音。

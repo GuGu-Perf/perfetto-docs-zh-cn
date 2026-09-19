@@ -16,23 +16,23 @@ Heap Dump Explorer 是 Perfetto UI 中用于分析 Android ART heap dump 的页�
      (docs/case-studies/memory.md or docs/getting-started/memory-profiling.md)
      and cross-link from here instead of duplicating. -->
 
-- **ART 分配 Profile** 采样_随时间变化的分配_，以调用栈的火焰图呈现。它回答的是在采集 trace 期间哪些代码路径正在分配内存。参见 [ART 分配 sampler](/docs/data-sources/native-heap-profiler.md#art-allocation-profiling)。
+- **ART 分配 Profile** 采样*随时间变化的分配*，以调用栈的火焰图呈现。它回答的是在采集 trace 期间哪些代码路径正在分配内存。参见 [ART 分配 sampler](/docs/data-sources/native-heap-profiler.md#art-allocation-profiling)。
 
-- **ART Heap Dump** 是_某一时间点堆的快照_。它采集每个可达对象、对象之间的引用、GC root，以及——取决于格式——字段值、字符串、原始数组字节和 Bitmap 像素缓冲区。
+- **ART Heap Dump** 是*某一时间点堆的快照*。它采集每个可达对象、对象之间的引用、GC root，以及——取决于格式——字段值、字符串、原始数组字节和 Bitmap 像素缓冲区。
 
 Heap Dump Explorer 用于 dump。如果你需要分配调用路径分析，请改用 ART 分配 Profile。
 
 ### Heap Dump 适合的场景
 
 - **内存泄漏。** 一个不应该可达的对象却是可达的。从 GC root 出发的引用路径指向持有者——通常是静态字段、缓存的 Listener 或向已销毁的 Context 发送消息的 `Handler`。
-- **保留大小意外。** 一个对象本身很小，但通过其引用保留了许多兆字节。支配者树和 _Immediately dominated objects_ 部分准确显示它持有什么。
+- **保留大小意外。** 一个对象本身很小，但通过其引用保留了许多兆字节。支配者树和 *Immediately dominated objects* 部分准确显示它持有什么。
 - **重复内容。** 同一 Bitmap、字符串或原始数组的多个副本。Overview 按内容哈希对它们分组，并显示浪费的字节数。
 - **Bitmap 统计。** 哪些 Bitmap 是存活的、它们有多大以及是什么持有它们。
 - **类分解。** 哪些类拥有最大份额的保留内存。
 
 ### Heap Dump 不适合的场景
 
-- **分配调用路径。** Heap Dump 是快照，不是录制——它不会告诉你_是哪段代码_分配了一个对象。请使用 [ART 分配 Profile](/docs/data-sources/native-heap-profiler.md#art-allocation-profiling)。
+- **分配调用路径。** Heap Dump 是快照，不是录制——它不会告诉你*是哪段代码*分配了一个对象。请使用 [ART 分配 Profile](/docs/data-sources/native-heap-profiler.md#art-allocation-profiling)。
 - **纯 Native 内存。** Dump 覆盖的是 Java 堆。对于 native 分配，请使用 [native heap profiler](/docs/data-sources/native-heap-profiler.md)。
 - **时间和性能。** Heap Dump 不涉及对象创建时间或操作耗时。
 
@@ -93,38 +93,38 @@ File: /data/local/tmp/heap.hprof
 
 `-b` 将 Bitmap 像素缓冲区编码为指定格式（`png`、`jpg` 或 `webp`），Bitmaps 画廊渲染像素需要此选项。`-g` 在 dump 前强制 GC，因此不可达的实例不会出现在结果中——在追踪疑似泄漏时使用它。目标进程必须是 `debuggable` 的（`userdebug`/`eng` 构建，或 APK 设置了 `android:debuggable="true"`）。
 
-NOTE: 下面标记为 _requires HPROF_ 的部分在使用 heap graph 格式采集的 trace 上是隐藏的。
+NOTE: 下面标记为 *requires HPROF* 的部分在使用 heap graph 格式采集的 trace 上是隐藏的。
 
-将生成的 trace 拖放到 [ui.perfetto.dev](https://ui.perfetto.dev) 或在侧边栏点击 _"Open trace file"_ 来打开。
+将生成的 trace 拖放到 [ui.perfetto.dev](https://ui.perfetto.dev) 或在侧边栏点击 *"Open trace file"* 来打开。
 
 ## 打开 Explorer
 
 有两个入口：
 
-1. **侧边栏。** 在当前 trace 下点击 _"Heapdump Explorer"_。此条目仅在 trace 包含 heap dump 时出现。
+1. **侧边栏。** 在当前 trace 下点击 *"Heapdump Explorer"* 。此条目仅在 trace 包含 heap dump 时出现。
 
    ![Perfetto UI 加载了 heap dump；侧边栏在"Current Trace"下显示"Heapdump Explorer"。](../images/heap_docs/01-sidebar.png)
 
-2. **从 Heap Graph 火焰图。** 在 _"ART heap dump"_ Track 上点击菱形图标打开 heap graph 火焰图，点击节点选中它，然后打开节点详情弹出窗口中的 _Drill down_ 菜单，选择 _"Open in Heapdump Explorer"_。这在[从火焰图跳转](#jumping-from-a-flamegraph)中详细介绍。
+2. **从 Heap Graph 火焰图。** 在 *"ART heap dump"* Track 上点击菱形图标打开 heap graph 火焰图，点击节点选中它，然后打开节点详情弹出窗口中的 *Drill down* 菜单，选择 *"Open in Heapdump Explorer"* 。这在[从火焰图跳转](#jumping-from-a-flamegraph)中详细介绍。
 
    ![Heap graph 火焰图，`java.lang.String` 节点被选中；详情弹出窗口列出其 Cumulative size、Root Type 和 Self Count，溢出菜单已打开并显示"Open in Heapdump Explorer"。](../images/heap_docs/02-flamegraph-menu.png)
 
-Explorer 顶部以标签页形式组织。_Overview_、_Classes_、_Objects_、_Dominators_、_Bitmaps_、_Strings_ 和 _Arrays_ 是固定的。通过钻取特定对象或火焰图选择打开的标签页会附加在右侧，可以关闭。
+Explorer 顶部以标签页形式组织。*Overview*、*Flamegraph*、*Classes*、*Objects*、*Dominators*、*Bitmaps*、*Strings*、*Arrays* 和 *Callstack* 是固定的（*Callstack* 显示触发 dump 的分配栈，仅对较新 Android 版本上因 `OutOfMemoryError` 捕获的 dump 有数据）。通过钻取特定对象或火焰图选择打开的标签页会附加在右侧，可以关闭。
 
 ![标签栏显示七个固定标签页和一个为 `ProfileActivity 0x00032f52` 打开的动态对象标签页。](../images/heap_docs/03-tab-bar.png)
 
-所有标签页共享底层的 `heap_graph_*` 表。蓝色链接——类名、对象 id、_Copies_ 计数——导航到相应标签页并预过滤。
+所有标签页共享底层的 `heap_graph_*` 表。蓝色链接——类名、对象 id、*Copies* 计数——导航到相应标签页并预过滤。
 
 ## Overview
 
-NOTE: 重复部分 _requires HPROF_。
+NOTE: 重复部分 *requires HPROF*。
 
 Overview 是默认着陆页，汇总 dump 信息：
 
 - **常规信息。** 进程、类数量以及可达和不可达实例数。
 - **按堆保留的字节数。** 每个堆（通常是 `app`、`zygote`、`image`）的 Java、native 和总大小，顶部有总计行。使用此信息查看问题是在 Java 堆上、native 内存中还是两者都有。
-- **Out of Memory Error**（仅限 OOM dump）。对于由 `OutOfMemoryError` 触发的 dump，会细分失败的分配 — 分配大小、距离堆增长限制的空闲余量，以及原始错误消息。分配 stack 本身位于 [Callstack](#callstack) 标签页。
-- **重复的 Bitmap / 字符串 / 原始数组。** 按内容哈希分组的重复内容。每行显示副本数量和浪费的字节数；点击 _Copies_ 打开相关标签页并按该组过滤。
+- **Out of Memory Error** *（仅限 OOM dump）*。对于由 `OutOfMemoryError` 触发的 dump，会细分失败的分配 — 分配大小、距离堆增长限制的空闲余量，以及原始错误消息。分配 stack 本身位于 [Callstack](#callstack) 标签页。
+- **重复的 Bitmap / 字符串 / 原始数组。** 按内容哈希分组的重复内容。每行显示副本数量和浪费的字节数；点击 *Copies* 打开相关标签页并按该组过滤。
 
 ![Overview 标签页：General Information（跨 app/image/zygote 堆的 437,681 个可达实例），Bytes Retained by Heap（总计 24.4 MiB，app 堆上 1.5 MiB），以及一个重复 Bitmap 组，同一 128×128 图像的 12 个副本浪费 785.8 KiB。](../images/heap_docs/04-overview.png)
 
@@ -134,15 +134,15 @@ Overview 是默认着陆页，汇总 dump 信息：
 
 ## Flamegraph
 
-Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 和 Objects 回答"类 X 拥有多少内存"，那么火焰图还会显示这些内存在引用图中的_位置_：从 GC root 开始的哪些引用链指向它。它通常是发现堆中某个子树异常庞大的最快方式。
+Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 和 Objects 回答"类 X 拥有多少内存"，那么火焰图还会显示这些内存在引用图中的*位置*：从 GC root 开始的哪些引用链指向它。它通常是发现堆中某个子树异常庞大的最快方式。
 
-同样的火焰图也会出现在 Timeline 中，当你点击 _"ART heap dump"_ Track 上的 heap dump 菱形图标时——以下所有功能在那里完全相同。仅在 Timeline 变体中才有的几个额外功能在[Timeline 火焰图](#the-timeline-flamegraph)末尾说明。
+同样的火焰图也会出现在 Timeline 中，当你点击 *"ART heap dump"* Track 上的 heap dump 菱形图标时——以下所有功能在那里完全相同。仅在 Timeline 变体中才有的几个额外功能在[Timeline 火焰图](#the-timeline-flamegraph)末尾说明。
 
 ![顶部 Timeline，点击进程 Track 上的 heap dump 菱形后底部面板中的 heap graph 火焰图。](../images/heap_docs/14-flamegraph-bottom-panel.png)
 
 ### 如何阅读火焰图
 
-堆是一个_图_——对象可以自由地相互引用——但火焰图绘制的是_树_，因此图首先被转换：
+堆是一个*图*——对象可以自由地相互引用——但火焰图绘制的是*树*，因此图首先被转换：
 
 - 从 GC root 开始，每个可达对象被放置在其从 root 出发的**最短引用路径**上（广度优先搜索；平局以确定性方式解决）。每个对象在树中恰好出现一次。
 - 同一路径上的对象然后**按类合并**：每个类每个路径一个节点。名为 `ArrayList` 且位于 `Class<ProfileActivity>` 之下的节点表示"所有最短路径从 root 出发经过 `ProfileActivity` 类对象的 `ArrayList` 实例"。
@@ -164,7 +164,7 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 | **Dominated Object Size** | 支配者树 | 如果子树顶部对象消亡将释放的字节数 |
 | **Dominated Object Count** | 支配者树 | 如果子树顶部对象消亡将释放的对象数 |
 
-两个 **Dominated** 指标从[支配者树](#dominators)而非最短路径构建树：每个对象挂在_独占_保留它的对象下方。因此节点的 Cumulative 值就是它的真正保留大小——正是垃圾回收器在那些对象变为不可达时将回收的确切大小。使用 _Object Size_ 来跟踪堆的实际引用结构，使用 _Dominated Object Size_ 将内存归因于负责保留它的对象。
+两个 **Dominated** 指标从[支配者树](#dominators)而非最短路径构建树：每个对象挂在*独占*保留它的对象下方。因此节点的 Cumulative 值就是它的真正保留大小——正是垃圾回收器在那些对象变为不可达时将回收的确切大小。使用 *Object Size* 来跟踪堆的实际引用结构，使用 *Dominated Object Size* 将内存归因于负责保留它的对象。
 
 大小计算的是每个对象的 Java 浅大小。注册到 Java 对象的 Native 内存（例如现代 Android 上的 Bitmap 像素缓冲区）显示为标记为 `[native] <ClassName>` 的单独子节点，并计入所有 Cumulative 总数。未以此方式注册的 Native 内存根本不会出现在 dump 中；请使用 [native heap profiler](/docs/data-sources/native-heap-profiler.md) 来处理。
 
@@ -174,8 +174,8 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 
 ![火焰图，选中 `java.lang.String`。其详情弹出窗口列出 Cumulative size（2.48 MiB，10.48%）、Root Type（`ROOT_INTERNED_STRING`）、Heap Type 和 Self Count（53,546）。](../images/heap_docs/02-flamegraph-menu.png)
 
-- **Cumulative**——此节点 _及其下方所有内容_ 的指标总和。这与节点的宽度匹配。显示两个百分比：`all`（占整个未过滤 dump 的份额）和 `parent`（占父节点 Cumulative 值的份额）。
-- **Self**——_仅此节点_ 合并的对象的指标，不包括后代。对于 _Object Size_，即此节点自身实例的浅大小合计。Self 值大的节点本身就很重；Self 值小但 Cumulative 值大的节点是一个廉价的容器，持有一个昂贵的子树。
+- **Cumulative**——此节点 *及其下方所有内容* 的指标总和。这与节点的宽度匹配。显示两个百分比：`all`（占整个未过滤 dump 的份额）和 `parent`（占父节点 Cumulative 值的份额）。
+- **Self**——*仅此节点* 合并的对象的指标，不包括后代。对于 *Object Size*，即此节点自身实例的浅大小合计。Self 值大的节点本身就很重；Self 值小但 Cumulative 值大的节点是一个廉价的容器，持有一个昂贵的子树。
 - **Self Count**——合并到此节点中的对象实例数量。在上面的截图中，`java.lang.String` 节点代表 53,546 个共享相同引用路径的独立字符串。（与大小指标一起显示；使用计数指标时主值本身已经是计数。）
 - **Root Type**——仅出现在本身是 GC root 的节点上：运行时如何固定它们，例如 `ROOT_STATIC`（静态字段）、`ROOT_JNI_GLOBAL`（JNI 全局引用）、`ROOT_JAVA_FRAME`（存活线程的栈）、`ROOT_INTERNED_STRING`。
 - **Heap Type**——对象所在的 ART 堆：`app`（进程自身的分配）、`zygote`（从 zygote fork 继承的）或 `image`（预加载的 boot image）。泄漏几乎总是在 `app` 堆上。
@@ -187,11 +187,11 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 右上角的单选按钮翻转聚合方向：
 
 - **Top Down**（默认）——如上所述：root 在顶部，每一行距离 root 多一跳引用。
-- **Bottom Up**——每个类的每次出现，无论其在树中的位置，都被合并到底部的单一行中；指向它的引用链堆叠在_上方_，最宽的引用者优先。用它来回答"所有 `X` 总共持有多少，无论路径？"和"谁是 `X` 的最大引用者？"——这相当于整个堆上反向引用查询的火焰图等价物。
+- **Bottom Up**——每个类的每次出现，无论其在树中的位置，都被合并到底部的单一行中；指向它的引用链堆叠在*上方*，最宽的引用者优先。用它来回答"所有 `X` 总共持有多少，无论路径？"和"谁是 `X` 的最大引用者？"——这相当于整个堆上反向引用查询的火焰图等价物。
 
 ### 缩放
 
-双击节点（或从其弹出窗口使用 _Zoom in_）将其拉伸到全宽。没有任何内容被过滤掉——祖先节点保持可见但变灰，总数不改变。双击 `root` 行即可缩小回原样。缩放纯粹是视觉上的；要实际削减数据，请使用过滤器。
+双击节点（或从其弹出窗口使用 *Zoom in*）将其拉伸到全宽。没有任何内容被过滤掉——祖先节点保持可见但变灰，总数不改变。双击 `root` 行即可缩小回原样。缩放纯粹是视觉上的；要实际削减数据，请使用过滤器。
 
 ### 过滤器
 
@@ -199,7 +199,7 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 
 模式是对类名的匹配；裸文本为字面量、不区分大小写的子串匹配（`String` 匹配 `java.lang.String`），而 `/.../` 是区分大小写的正则表达式（`^`/`$` 将其锚定为精确匹配），`/.../i` 则为不区分大小写的正则表达式。模式也会匹配节点的 Root Type 和 Heap Type 值，因此 `SS: ROOT_JNI_GLOBAL` 或 `SS: zygote` 也同样有效。
 
-有四种过滤器类型加上 [Pivot](#pivot)。在过滤器栏中，在模式前加上短名称或全名作为前缀；没有前缀的文本成为 _Show Stack_ 过滤器。多个过滤器可以一次性输入，用空格分隔：`SS: main HF: /alloc.*/`。
+有四种过滤器类型加上 [Pivot](#pivot)。在过滤器栏中，在模式前加上短名称或全名作为前缀；没有前缀的文本成为 *Show Stack* 过滤器。多个过滤器可以一次性输入，用空格分隔：`SS: main HF: /alloc.*/`。
 
 - **Show Stack**（`SS:`）——仅保留包含匹配节点的路径；其他所有内容被移除。`root` 行显示 dump 的剩余比例，例如 `root: 1.2 MiB (4.92%)`。多个 Show Stack 过滤器 AND 组合：路径必须匹配所有。
 - **Hide Stack**（`HS:`）——反向操作：移除包含匹配节点的每条路径。在某些其他 profiler 中称为"Drop function"。
@@ -210,7 +210,7 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 
 ### Pivot
 
-Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on this frame_）将火焰图在匹配模式的每个节点处重新根图：
+Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 *Pivot on this frame*）将火焰图在匹配模式的每个节点处重新根图：
 
 - 匹配的类成为中心行。
 - 它引用的所有内容向**下**生长，与往常一样。
@@ -218,36 +218,36 @@ Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on this 
 
 这是"在一个画面中显示关于这个类的所有信息"的视图：它的总占用空间、由什么组成以及谁在持有它，无需逐个遍历对象。Pivot 显示为 `Pivot: ...` 芯片；一次只能有一个活跃（设置新的会替换旧的），Pivot 时 Top Down 和 Bottom Up 均不处于选中状态（选择其中一个会清除 Pivot），移除芯片返回 Top Down。
 
-对象标签页与 Pivot 直接集成：_Shortest Path from GC Root_ 和 _Dominator Tree Path_ 部分各有一个 _View in Flamegraph_ 按钮，打开此标签页并 Pivot 到该特定实例的路径（芯片显示 `ClassName (this instance)`），分别使用 _Object Size_ 或 _Dominated Object Size_ 指标。
+对象标签页与 Pivot 直接集成：*Shortest Path from GC Root* 和 *Dominator Tree Path* 部分各有一个 *View in Flamegraph* 按钮，打开此标签页并 Pivot 到该特定实例的路径（芯片显示 `ClassName (this instance)`），分别使用 *Object Size* 或 *Dominated Object Size* 指标。
 
 ### 节点操作
 
 点击节点打开其详情弹出窗口，包含四个菜单，汇集了从节点可做的所有操作：
 
-- **Focus**——在不移除数据的情况下重新构图：_Zoom in_、_Show from this frame_（Show From Frame）和 _Pivot on this frame_。
-- **Filter**——重塑树结构：_Keep stacks matching name_（Show Stack）、_Hide stacks matching name_（Hide Stack）和 _Merge matching frames into caller_（Hide Frame）。
-- **Drill down**——_Show objects from this class_ 打开一个可关闭的 [Flamegraph objects](#jumping-from-a-flamegraph) 标签页，列出节点背后的各个实例，从那里只需一次点击即可打开任何对象的[对象标签页](#inspecting-a-single-object)。（在 Timeline 火焰图中，此操作称为 _Open in Heapdump Explorer_。）
-- **Copy**——_Copy stack_ 将类名链从 root 到此节点复制为纯文本；_Copy stack with details_ 将其复制为 markdown 表格，每行包含 Root Type、Heap Type、Cumulative、Self 和 Self Count——便于 bug 报告和代码审查评论。
+- **Focus**——在不移除数据的情况下重新构图：*Zoom in*、*Show from this frame*（Show From Frame）和 *Pivot on this frame*。
+- **Filter**——重塑树结构：*Keep stacks matching name*（Show Stack）、*Hide stacks matching name*（Hide Stack）和 *Merge matching frames into caller*（Hide Frame）。
+- **Drill down**——*Show objects from this class* 打开一个可关闭的 [Flamegraph objects](#jumping-from-a-flamegraph) 标签页，列出节点背后的各个实例，从那里只需一次点击即可打开任何对象的[对象标签页](#inspecting-a-single-object)。（在 Timeline 火焰图中，此操作称为 *Open in Heapdump Explorer*。）
+- **Copy**——*Copy stack* 将类名链从 root 到此节点复制为纯文本；*Copy stack with details* 将其复制为 markdown 表格，每行包含 Root Type、Heap Type、Cumulative、Self 和 Self Count——便于 bug 报告和代码审查评论。
 
 从节点启动的操作精确匹配该节点（模式锚定为 `^name$`），因此对 `java.lang.String` 过滤不会意外匹配 `java.lang.StringBuilder`。
 
 ### Timeline 火焰图
 
-Timeline 的 _"ART heap dump"_ 详情面板中的火焰图有两个额外功能：
+Timeline 的 *"ART heap dump"* 详情面板中的火焰图有两个额外功能：
 
-- 每个节点的 _Drill down_ 菜单中有 _Open in Heapdump Explorer_，它会跳转到 Explorer 并打开该节点的 _Flamegraph objects_ 标签页——参见[从火焰图跳转](#jumping-from-a-flamegraph)。
-- `root` 节点的菜单中有 _Reference paths by class_，打开一个聚合每条不同引用路径的表格：每个类和路径一行，包含路径数量、对象计数、总大小和总 Native 大小。它是火焰图的表格孪生体——相同的数据，但可排序和导出。
+- 每个节点的 *Drill down* 菜单中有 *Open in Heapdump Explorer*，它会跳转到 Explorer 并打开该节点的 *Flamegraph objects* 标签页——参见[从火焰图跳转](#jumping-from-a-flamegraph)。
+- `root` 节点的菜单中有 *Reference paths by class*，打开一个聚合每条不同引用路径的表格：每个类和路径一行，包含路径数量、对象计数、总大小和总 Native 大小。它是火焰图的表格孪生体——相同的数据，但可排序和导出。
 
 在两个火焰图中，如果 trace 中的 heap graph 不完整（dump 被截断），警告弹窗会提供显示导入错误的选项；火焰图仍用已到达的数据渲染。
 
 ## Classes
 
-Classes 标签页列出 dump 中的每个类，按 _Retained_ 降序排列：
+Classes 标签页列出 dump 中的每个类，按 *Retained* 降序排列：
 
 - **Count**——可达实例。
 - **Shallow / Shallow Native**——所有实例的自大小合计。
 - **Retained / Retained Native**——如果每个实例变为不可达将释放的字节数。
-- **Retained #**——将随之释放的对象数。
+- **Retained #** ——将随之释放的对象数。
 
 ![Classes 标签页按 Retained 排序；`byte[]` 和 `java.lang.String` 在顶部，`com.heapleak.ProfileActivity` 较下方 Count 为 1。](../images/heap_docs/05-classes.png)
 
@@ -265,7 +265,7 @@ Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应
 
 ## 检查单个对象
 
-**_Shortest Path from GC Root_、_Dominator Tree Path_ 和 _Objects with References to this Object_ 是大多数调查的关键部分。** 最短路径显示保持对象存活的最少引用跳数；支配者树路径显示独占保留它的对象链；反向引用列出每个持有指向它的字段指针的对象。
+**_Shortest Path from GC Root_, _Dominator Tree Path_ 和 _Objects with References to this Object_ 是大多数调查的关键部分。** 最短路径显示保持对象存活的最少引用跳数；支配者树路径显示独占保留它的对象链；反向引用列出每个持有指向它的字段指针的对象。
 
 点击任何标签页中的任何对象都会为该实例打开一个可关闭的标签页。多个对象标签页可以同时打开。
 
@@ -278,7 +278,7 @@ Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应
 - **Object info**——类、堆、root 类型。
 - **Object size**——按 Java / native / 计数细分的浅大小、保留大小和可达大小。
 - **Class hierarchy**——直到 `java.lang.Object` 的完整继承链，加上类对象的实例大小。点击任何类打开按该类及其子类过滤的 **Classes**。
-- **Static fields**（类对象）、**instance fields**（普通对象）或 **array elements**（数组）。引用值可点击并跳转到被引用对象。对于 byte 数组，_Download bytes_ 导出原始数据。
+- **Static fields**（类对象）、**instance fields**（普通对象）或 **array elements**（数组）。引用值可点击并跳转到被引用对象。对于 byte 数组，*Download bytes* 导出原始数据。
 - **Objects with references to this object**——反向引用。每个具有指向此对象字段的实例。
 - **Immediately dominated objects**——如果此实例变为不可达将释放什么。
 
@@ -290,33 +290,33 @@ Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应
 
 ## Dominators
 
-Dominators 标签页显示堆的[支配者树](https://en.wikipedia.org/wiki/Dominator_(graph_theory))。在有向图中，节点 `a` _支配_ 节点 `b` 当从 root 到 `b` 的每条路径都必须经过 `a`。应用于堆：如果你释放 `a`，它支配的一切——每个_仅_通过 `a` 可达的对象——也会被释放。支配者树将堆分组为这些"一起释放"的子树，使你容易看到哪些单个对象控制着最大的保留内存块。
+Dominators 标签页显示堆的[支配者树](https://en.wikipedia.org/wiki/Dominator_(graph_theory))。在有向图中，节点 `a` *支配* 节点 `b` 当从 root 到 `b` 的每条路径都必须经过 `a`。应用于堆：如果你释放 `a`，它支配的一切——每个*仅*通过 `a` 可达的对象——也会被释放。支配者树将堆分组为这些"一起释放"的子树，使你容易看到哪些单个对象控制着最大的保留内存块。
 
 ![Dominators 标签页按 Retained 排序；`Class<ProfileActivity>`（root 类型 `STATIC`）和一个 `ProfileActivity` 实例靠近顶部，各自保留一个大型子图。](../images/heap_docs/07-dominators.png)
 
-_Root Type_（例如 `THREAD`、`STATIC`、`JNI_GLOBAL`）标识每个支配者本身是如何被保持存活的。点击行打开其对象标签页并遍历引用路径。
+*Root Type*（例如 `THREAD`、`STATIC`、`JNI_GLOBAL`）标识每个支配者本身是如何被保持存活的。点击行打开其对象标签页并遍历引用路径。
 
 当没有特定的可疑对象，问题仅仅是内存去了哪里时，使用此标签页。
 
 ## Bitmaps
 
-NOTE: 像素预览和重复检测 _requires HPROF_。
+NOTE: 像素预览和重复检测 *requires HPROF*。
 
 Bitmaps 标签页是 dump 中每个 `android.graphics.Bitmap` 的画廊。使用 HPROF 时，每个 Bitmap 的像素会内联渲染。
 
 ![Bitmaps 画廊：15 个 Bitmap，971.2 KiB 保留。同一图像的 12 个 128×128 副本内联渲染，每个 64.2 KiB。](../images/heap_docs/08-bitmaps-gallery.png)
 
-每张卡片显示渲染的像素、尺寸（px 和 dp）、DPI、保留内存和打开对象标签页的 _Details_ 按钮。像素缓冲区可能是 RGBA、PNG、JPEG 或 WebP，取决于它们的存储方式。
+每张卡片显示渲染的像素、尺寸（px 和 dp）、DPI、保留内存和打开对象标签页的 *Details* 按钮。像素缓冲区可能是 RGBA、PNG、JPEG 或 WebP，取决于它们的存储方式。
 
-画廊上方的路径下拉菜单选择要在每张卡片上覆盖的引用路径：_Shortest path_（从 GC root 的最少边数）、_Dominator path_（支配者链）或 _None_。显示路径是发现持有泄漏 Bitmap 的 `Activity`、`Fragment` 或 `Handler` 的最快方式。
+画廊上方的路径下拉菜单选择要在每张卡片上覆盖的引用路径：*Shortest path*（从 GC root 的最少边数）、*Dominator path*（支配者链）或 *None*。显示路径是发现持有泄漏 Bitmap 的 `Activity`、`Fragment` 或 `Handler` 的最快方式。
 
 ![启用了"Show Paths"的 Bitmaps 画廊；每张卡片下方的引用链为 `Class<FeedAdapter>.cache → ArrayList → Bitmap`，显示唯一的静态持有者。](../images/heap_docs/09-bitmaps-show-paths.png)
 
-底部的两个表列出有和没有像素数据的 Bitmap，带有过滤器、排序和导出控件。通过 Overview 上的 _Copies_ 到达会按缓冲区内容哈希预过滤标签页，只留下该组中视觉上相同的 Bitmap。
+底部的两个表列出有和没有像素数据的 Bitmap，带有过滤器、排序和导出控件。通过 Overview 上的 *Copies* 到达会按缓冲区内容哈希预过滤标签页，只留下该组中视觉上相同的 Bitmap。
 
 ## Strings
 
-NOTE: Strings 标签页 _requires HPROF_。
+NOTE: Strings 标签页 *requires HPROF*。
 
 Strings 标签页列出每个 `java.lang.String` 及其值。摘要卡片报告字符串总数、不同值的数量和总保留内存。总数和不同值之间的差距是花在重复上的内存。
 
@@ -326,9 +326,9 @@ Strings 标签页列出每个 `java.lang.String` 及其值。摘要卡片报告�
 
 ## Arrays
 
-NOTE: Arrays 标签页 _requires HPROF_。
+NOTE: Arrays 标签页 *requires HPROF*。
 
-Arrays 标签页列出原始数组（`byte[]`、`int[]`、`long[]`、...）及其稳定的内容哈希。按 _Content Hash_ 过滤返回具有相同字节的每个数组；这是 Overview 检测重复数组的方式。
+Arrays 标签页列出原始数组（`byte[]`、`int[]`、`long[]`、...）及其稳定的内容哈希。按 *Content Hash* 过滤返回具有相同字节的每个数组；这是 Overview 检测重复数组的方式。
 
 ![Arrays 标签页按 Shallow 排序，Content Hash 列可见；按哈希过滤返回共享相同字节的每个数组。](../images/heap_docs/11-arrays.png)
 
@@ -350,21 +350,21 @@ stack 告诉你失败点*分配了什么*；其他标签页告诉你*已经保�
 
 ## 从火焰图跳转
 
-Timeline heap graph 火焰图（完整功能参考参见上方的 [Flamegraph](#flamegraph) 部分）有一个 _Open in Heapdump Explorer_ 操作，可以在匹配选定引用路径的对象列表上打开 Explorer。使用它逐对象检查火焰图节点：
+Timeline heap graph 火焰图（完整功能参考参见上方的 [Flamegraph](#flamegraph) 部分）有一个 *Open in Heapdump Explorer* 操作，可以在匹配选定引用路径的对象列表上打开 Explorer。使用它逐对象检查火焰图节点：
 
-1. 在 _"ART heap dump"_ Track 上点击菱形图标打开火焰图。
+1. 在 *"ART heap dump"* Track 上点击菱形图标打开火焰图。
 
    ![顶部 Timeline，点击进程 Track 上的 heap dump 菱形后底部面板中的 heap graph 火焰图。](../images/heap_docs/14-flamegraph-bottom-panel.png)
 
-2. 点击节点选中它，然后打开节点详情弹出窗口中的 _Drill down_ 菜单。选择 _"Open in Heapdump Explorer"_。
+2. 点击节点选中它，然后打开节点详情弹出窗口中的 *Drill down* 菜单。选择 *"Open in Heapdump Explorer"* 。
 
    ![火焰图，`java.lang.String` 被选中。其详情弹出窗口列出 Cumulative size（2.48 MiB, 10.48%）、Root Type（`ROOT_INTERNED_STRING`）、Heap Type 和 Self Count（53,546）。弹出窗口的溢出菜单已打开，"Open in Heapdump Explorer"在"Copy Stack"和"Copy Stack With Details"下方可见。](../images/heap_docs/02-flamegraph-menu.png)
 
-   这会打开一个新的可关闭的 _Flamegraph Objects_ 标签页，列出沿选定路径分配的每个对象。支配者火焰图节点产生基于支配者的选择；常规节点产生基于路径的选择。
+   这会打开一个新的可关闭的 *Flamegraph Objects* 标签页，列出沿选定路径分配的每个对象。支配者火焰图节点产生基于支配者的选择；常规节点产生基于路径的选择。
 
    ![在 `java.lang.String` 上选择"Open in Heapdump Explorer"后打开的 Flamegraph Objects 标签页：53,546 行，每行有类、浅/保留大小和堆。标签页附加在固定七标签栏的右侧，右上角有"Back to Timeline"链接。](../images/heap_docs/15-flamegraph-objects-tab.png)
 
-3. 从那里，点击任何对象打开其[对象标签页](#inspecting-a-single-object)，或使用 _Back to Timeline_ 返回火焰图视图。
+3. 从那里，点击任何对象打开其[对象标签页](#inspecting-a-single-object)，或使用 *Back to Timeline* 返回火焰图视图。
 
 多个火焰图选择可以同时打开，每个作为自己的标签页——对于并排比较两个调用栈很有用。
 
@@ -376,7 +376,7 @@ Timeline heap graph 火焰图（完整功能参考参见上方的 [Flamegraph](#
 
 ### 查找泄漏的 Activity
 
-一个 Kotlin 应用的开发者报告，旋转个人资料屏幕几次后 Java 堆持续上升且不会回落。这个屏幕很普通——一个 `Activity`、一个视图层次结构、一个头像——旋转_应该_销毁旧实例。但它没有。
+一个 Kotlin 应用的开发者报告，旋转个人资料屏幕几次后 Java 堆持续上升且不会回落。这个屏幕很普通——一个 `Activity`、一个视图层次结构、一个头像——旋转*应该*销毁旧实例。但它没有。
 
 快速 grep 发现了一个团队之前为崩溃报告添加的"面包屑"列表。它存储了每个创建的 `ProfileActivity` 实例，并且从未清除：
 
@@ -405,27 +405,27 @@ Dumping Java Heap.
 Wrote profile to /tmp/profile.pftrace
 ```
 
-先旋转设备几次以积累多个实例。将文件拖放到 [ui.perfetto.dev](https://ui.perfetto.dev) 并在侧边栏点击 _Heapdump Explorer_。
+先旋转设备几次以积累多个实例。将文件拖放到 [ui.perfetto.dev](https://ui.perfetto.dev) 并在侧边栏点击 *Heapdump Explorer*。
 
 **确认泄漏。** 打开 **Classes** 并找到 `com.heapleak.ProfileActivity`。用户导航离开后 `Count` 应该为 0；这里是 5，每次旋转一个：
 
 ![Classes 标签页。com.heapleak.ProfileActivity 的 Count 为 5——每次旋转一个实例，没有被回收。](../images/heap_docs/05-classes.png)
 
-点击类名打开过滤到 `ProfileActivity` 的 **Objects**。每行是一个存活实例：
+点击类名打开 **Objects**（过滤到 `ProfileActivity`）。每行是一个存活实例：
 
 ![Objects 标签页过滤到 com.heapleak.ProfileActivity：五个实例，每个保留约 116.6 KiB 和 1,566 个可达对象。](../images/heap_docs/12a-objects-profile-activity.png)
 
-**阅读引用路径。** 点击顶部行打开其对象标签页。_Shortest Path from GC Root_ 是保持此实例存活的字段引用链：
+**阅读引用路径。** 点击顶部行打开其对象标签页。*Shortest Path from GC Root* 是保持此实例存活的字段引用链：
 
 ![泄漏 ProfileActivity 的对象标签页。Sample Path from GC Root：Class<ProfileActivity> → com.heapleak.ProfileActivity.history → ArrayList.elementData → Object[0] → ProfileActivity。保留 117.6 KiB，约 1,600 个可达对象。](../images/heap_docs/12-object-tab-top.png)
 
 从下往上读：运行时保持 `java.lang.Class<ProfileActivity>` 存活（就像每个已加载的类一样）；该类有一个 companion-object 字段 `history`；该字段指向一个 `ArrayList`，其元素 0 是这个 `ProfileActivity`。从类对象到 `history` 的跳转点出了 bug——一个 Activity 的静态列表。
 
-_Object Size_ 块量化了代价：一个泄漏的 Activity 固定了 117.6&nbsp;KiB 和约 1,600 个可达对象。乘以五（`Count`），泄漏已经是堆中约 600&nbsp;KiB 的 Activity 图。同一标签页更下方是 _Objects with References to this Object_ 和 _Immediately Dominated Objects_ 部分：
+*Object Size* 块量化了代价：一个泄漏的 Activity 固定了 117.6&nbsp;KiB 和约 1,600 个可达对象。乘以五（`Count`），泄漏已经是堆中约 600&nbsp;KiB 的 Activity 图。同一标签页更下方是 *Objects with References to this Object* 和 *Immediately Dominated Objects* 部分：
 
 ![对象标签页底部。来自 android.app.Activity 的实例字段，"Objects with References to this Object"和"Immediately Dominated Objects"。](../images/heap_docs/13-object-tab-bottom.png)
 
-展开 _Immediately Dominated Objects_ 显示随泄漏一起释放的所有内容——`Activity` 的视图层次结构和它传递保留的其余状态。这些都不应该比 Activity 活得更久；但它们都活着，因为一个 companion-object 列表持有 root。
+展开 *Immediately Dominated Objects* 显示随泄漏一起释放的所有内容——`Activity` 的视图层次结构和它传递保留的其余状态。这些都不应该比 Activity 活得更久；但它们都活着，因为一个 companion-object 列表持有 root。
 
 **修复。** 永远不要在 `static` 或 companion-object 容器中存储 `Activity`。如果你想要崩溃报告的面包屑轨迹，请改为存储有界容量的字符串：
 
@@ -492,13 +492,13 @@ $ adb pull /data/local/tmp/feed.hprof
 
 ![Overview 标签页。Duplicate Bitmaps 卡片有一个 128×128 组：12 个副本，770.0 KiB 总计，785.8 KiB 浪费——正是 adapter 缓存列表的形状。](../images/heap_docs/04-overview.png)
 
-该行显示积累的内容：一个 128×128 资产的 12 个副本，都具有相同的内容哈希。下面的 _Duplicate Strings_ 和 _Duplicate Primitive Arrays_ 卡片工作方式相同——相同的分组、相同的大小计算——当浪费的内存是文本（例如重复数千次的配置负载）或原始缓冲区时很有用。所有三个重复检测器都需要 HPROF，因为它们哈希实际内容，而 heap graph 格式不携带这些内容。
+该行显示积累的内容：一个 128×128 资产的 12 个副本，都具有相同的内容哈希。下面的 *Duplicate Strings* 和 *Duplicate Primitive Arrays* 卡片工作方式相同——相同的分组、相同的大小计算——当浪费的内存是文本（例如重复数千次的配置负载）或原始缓冲区时很有用。所有三个重复检测器都需要 HPROF，因为它们哈希实际内容，而 heap graph 格式不携带这些内容。
 
-**钻入副本。** 点击该行的 _Copies_。**Bitmaps** 打开并预过滤到该内容哈希组，因此只有那些副本渲染为卡片：
+**钻入副本。** 点击该行的 *Copies*。**Bitmaps** 打开并预过滤到该内容哈希组，因此只有那些副本渲染为卡片：
 
 ![过滤到 128×128 组的 Bitmaps 画廊。12 个副本每个 64.2 KiB，标签页中共 971.2 KiB 保留。](../images/heap_docs/08-bitmaps-gallery.png)
 
-**找到持有者。** 将路径下拉菜单设置为 _Shortest path_。每张卡片下方的引用链是保持该 Bitmap 存活的字段：
+**找到持有者。** 将路径下拉菜单设置为 *Shortest path*。每张卡片下方的引用链是保持该 Bitmap 存活的字段：
 
 ![启用了 Show Paths 的 Bitmaps 画廊。每张卡片的链为 Class&lt;FeedAdapter&gt;.cache → ArrayList → Bitmap——companion-object 列表是唯一的持有者。](../images/heap_docs/09-bitmaps-show-paths.png)
 
@@ -506,8 +506,8 @@ $ adb pull /data/local/tmp/feed.hprof
 
 链的形状就是诊断。在未来的调查中要注意的另外两种模式：
 
-- _每个副本有不同的链_→调用点 bug。没有缓存，或者调用者绕过了它。
-- _链经过一个 `Activity`_→先修复 Activity 泄漏（[上一个案例研究](#finding-a-leaked-activity)）；Bitmap 会随之释放。
+- *每个副本有不同的链*→调用点 bug。没有缓存，或者调用者绕过了它。
+- *链经过一个 `Activity`* →先修复 Activity 泄漏（[上一个案例研究](#finding-a-leaked-activity)）；Bitmap 会随之释放。
 
 **修复。** 完全没有理由保留 `Bitmap` 的旁路列表——Android 已经有 `LruCache<K, Bitmap>`，作用域限定到应用，具有你控制的淘汰策略：
 
@@ -532,7 +532,7 @@ class FeedAdapter(private val res: Resources) : RecyclerView.Adapter<VH>() {
 
 ![修复后 trace 的 Overview 标签页。Duplicate Bitmaps 卡片现在显示"No duplicate bitmaps found"，app 堆保留内存从 2.1 MiB 降至 580.2 KiB。](../images/heap_docs/16-fixed-overview.png)
 
-Overview 上所有组的 _wasted bytes_ 总计是最清晰的单数字记分卡——观察它从一次 dump 到下一次 dump 下降，就是你确认每个修复和捕获回归的方式。
+Overview 上所有组的 *wasted bytes* 总计是最清晰的单数字记分卡——观察它从一次 dump 到下一次 dump 下降，就是你确认每个修复和捕获回归的方式。
 
 ## 另见
 

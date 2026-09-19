@@ -48,16 +48,16 @@ TraceConfig 是一个 protobuf 消息([参考文档](/docs/reference/trace-confi
 
 1. 整个 trace 系统的一般行为，例如：
 
-  - trace 的最大持续时间。
-  - 内存中缓冲区的数量及其大小。
-  - 输出 trace 文件的最大大小。
+   - trace 的最大持续时间。
+   - 内存中缓冲区的数量及其大小。
+   - 输出 trace 文件的最大大小。
 
 2. 启用哪些数据源及其配置，例如：
 
-  - 对于 [内核 trace 数据源](/docs/data-sources/cpu-scheduling.md)，启用哪些 ftrace 事件。
-  - 对于 [heap profiler](/docs/data-sources/native-heap-profiler.md)，目标进程名称和采样率。
+   - 对于 [内核 trace 数据源](/docs/data-sources/cpu-scheduling.md)，启用哪些 ftrace 事件。
+   - 对于 [heap profiler](/docs/data-sources/native-heap-profiler.md)，目标进程名称和采样率。
 
- 有关如何配置 Perfetto 捆绑的数据源的详细信息，请参见文档的 _数据源_ 部分。
+   有关如何配置 Perfetto 捆绑的数据源的详细信息，请参见文档的 _数据源_ 部分。
 
 3. `{数据源} x {缓冲区}` 映射：每个数据源应该写入哪个缓冲区(参见下面的 [缓冲区部分](#buffers))。
 
@@ -214,7 +214,7 @@ Perfetto 读取器会透明地解压缩：压缩后的 trace 可以直接在 [Pe
 - **zstd** — 推荐。在相似速度下比 deflate 产生更小的 trace。
 - **deflate**（zlib）— 较旧的 codec，保留用于兼容。
 
-<?tabs?>
+<?tabs>
 
 TAB: zstd（推荐）
 

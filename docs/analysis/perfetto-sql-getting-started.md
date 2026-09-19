@@ -76,7 +76,7 @@ WHERE cpu = 0
 LIMIT 10;
 ```
 
-与之互补的 `thread_state` 表显示了线程在_未_运行时正在做什么——无论它是在休眠、不可中断睡眠中阻塞、可运行并等待 CPU，等等。
+与之互补的 `thread_state` 表显示了线程在*未*运行时正在做什么——无论它是在休眠、不可中断睡眠中阻塞、可运行并等待 CPU，等等。
 
 要查询带有线程和进程名称的调度数据，请使用 `sched.with_context` stdlib 模块，该模块提供了 `sched_with_thread_process` 视图：
 
@@ -383,7 +383,7 @@ SQL 查询通常足以从 trace processor 检索数据。但有时，某些构�
 
 Span join 是一个自定义运算符表，用于计算来自两个表或视图的时间段的交集。在此概念中，span 是表/视图中包含"ts"（时间戳）和"dur"（持续时间）列的一行。
 
-可以指定一个列（称为 _partition_），在计算交集之前将每个表的行划分为分区。
+可以指定一个列（称为 *partition*），在计算交集之前将每个表的行划分为分区。
 
 ![Span join 框图](/docs/images/span-join.png)
 
@@ -417,9 +417,9 @@ FROM sched_with_frequency;
 
 NOTE: 可以在两个表、一个表或都不表上指定分区。如果在两个表上指定，则必须在每个表上指定相同的列名称。
 
-WARNING: span joined 表的一个重要限制是，同一分区中同一表的 span _不能_重叠。出于性能原因，span join 不会尝试检测并在这种情况下出错；相反，将静默产生错误的行。
+WARNING: span joined 表的一个重要限制是，同一分区中同一表的 span *不能*重叠。出于性能原因，span join 不会尝试检测并在这种情况下出错；相反，将静默产生错误的行。
 
-WARNING: 分区必须是整数。重要的是，不支持字符串分区；请注意，可以通过将 `HASH` 函数应用于字符串列将字符串转换为整数。
+WARNING: 分区必须是整数。重要的是，字符串分区*不*受支持；请注意，字符串*可以*通过将 `HASH` 函数应用于字符串列来转换为整数。
 
 还支持左连接和外 span join；两者的功能类似于 SQL 中的左连接和外连接。
 
@@ -433,7 +433,7 @@ CREATE VIRTUAL TABLE outer_join
 USING SPAN_OUTER_JOIN(table_x, table_y);
 ```
 
-NOTE: 如果分区表为空，并且是 a) 外连接的一部分 b) 左连接的右侧，则存在细微差别。在这种情况下，即使另一个表非空，也不会发出任何 slice。在考虑实际中如何使用 span join 之后，决定此方法是最自然的。
+NOTE: 如果分区表为空，并且是 a) 外连接的一部分 b) 左连接的右侧，则存在细微差别。在这种情况下，即使另一个表非空，也*不会*发出任何 slice。在考虑实际中如何使用 span join 之后，决定此方法是最自然的。
 
 #### Ancestor slice
 
@@ -524,7 +524,7 @@ SELECT (SELECT COUNT(*) FROM FOLLOWING_FLOW(slice_id)) as following FROM slice;
 
 既然你对 PerfettoSQL 有了基础了解，你可以探索以下主题以加深你的知识：
 
-- **[PerfettoSQL 语法](perfetto-sql-syntax.md)**：了解 Perfetto 支持的 SQL 语法，包括用于创建函数、表和视图的特殊功能。
-- **[标准库](stdlib-docs.autogen)**：探索标准库中可用的丰富模块集，用于分析常见场景，如 CPU 使用率、内存和功耗。
-- **[Trace Processor (C++)](trace-processor.md)**：了解如何使用交互式 shell 和底层 C++ 库。
-- **[Trace Processor (Python)](trace-processor-python.md)**：利用 Python API 将 trace 分析与丰富的数据科学和可视化生态系统结合起来。
+- **[PerfettoSQL 语法](perfetto-sql-syntax.md)**: 了解 Perfetto 支持的 SQL 语法，包括用于创建函数、表和视图的特殊功能。
+- **[标准库](stdlib-docs.autogen)**: 探索标准库中可用的丰富模块集，用于分析常见场景，如 CPU 使用率、内存和功耗。
+- **[Trace Processor (C++)](trace-processor.md)**: 了解如何使用交互式 shell 和底层 C++ 库。
+- **[Trace Processor (Python)](trace-processor-python.md)**: 利用 Python API 将 trace 分析与丰富的数据科学和可视化生态系统结合起来。

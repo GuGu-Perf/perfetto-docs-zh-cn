@@ -10,7 +10,7 @@ Perfetto 在 tracing 快速路径中广泛使用 protobuf。Perfetto 中的每�
 
 跟踪快速路径必须具有非常低的开销，因为检测点散布在 Android 和 Chrome 等项目的代码库中，并且对性能至关重要。
 
-此处的开销不仅定义为执行检测点所需的 CPU 时间（或退休的指令）。tracing 系统中的一个主要开销源是检测点的工作集，具体来说是额外的 I 缓存和 D 缓存未命中，这会减慢 tracing 检测点之后的非 tracing 代码的速度。
+此处的开销不仅定义为执行检测点所需的 CPU 时间（或退休的指令）。tracing 系统中的一个主要开销源是检测点的工作集，具体来说是额外的 I 缓存和 D 缓存未命中，这会减慢 tracing 检测点*之后*的非 tracing 代码的速度。
 
 Protozero 与规范 C++ protobuf 库如 [libprotobuf](https://github.com/google/protobuf) 的主要设计区别在于：
 
@@ -34,19 +34,19 @@ Protozero 在构建时对 libprotobuf 有依赖（插件依赖于 libprotobuf �
 为了从 proto 生成 Protozero 存根，你需要：
 
 1. 构建 Protozero 编译器插件，位于 [src/protozero/protoc_plugin/](/src/protozero/protoc_plugin/)。
- ```bash
- tools/ninja -C out/default protozero_plugin protoc
- ```
+   ```bash
+   tools/ninja -C out/default protozero_plugin protoc
+   ```
 
 2. 调用 libprotobuf `protoc` 编译器传递 `protozero_plugin`:
- ```bash
- out/default/protoc \
- --plugin=protoc-gen-plugin=out/default/protozero_plugin \
- --plugin_out=wrapper_namespace=pbzero:/tmp/ \
- test_msg.proto
- ```
- 这会生成 `/tmp/test_msg.pbzero.{cc,h}`。
- 
+   ```bash
+  out/default/protoc \
+      --plugin=protoc-gen-plugin=out/default/protozero_plugin \
+      --plugin_out=wrapper_namespace=pbzero:/tmp/  \
+      test_msg.proto
+   ```
+   这会生成 `/tmp/test_msg.pbzero.{cc,h}`。
+   
    NOTE: .cc 文件始终为空。Protozero 生成的代码仅是头文件。发出 .cc 文件仅因为某些构建系统的规则假设 protobuf 代码生成生成 .cc 和 .h 文件。
 
 ## Proto 序列化
@@ -103,10 +103,10 @@ class TestMsg : public protobuf::MessageLite {
 - 从 .proto 消息生成的代码可以在代码库中用作通用对象，而无需使用 `SerializeAs*()` 或 `ParseFrom*()` 方法（尽管轶事证据表明大多数项目仅在反/序列化端点使用这些 proto 生成的类）。
 
 - 序列化 proto 的端到端旅程涉及两个步骤：
- 1. 设置生成类的各个 int / string / vector 字段。
- 2. 对这些字段进行序列化传递。
+  1. 设置生成类的各个 int / string / vector 字段。
+  2. 对这些字段进行序列化传递。
 
- 依次，这会对生成的代码产生副作用。字符串和向量的 STL 复制/赋值运算符是非平凡的，因为，例如，它们需要处理动态内存调整大小。
+  依次，这会对生成的代码产生副作用。字符串和向量的 STL 复制/赋值运算符是非平凡的，因为，例如，它们需要处理动态内存调整大小。
 
 #### Protozero 方法
 
@@ -298,7 +298,7 @@ struct SOLMsg {
 };
 ```
 
-光速序列化器作为参考，如果参数封送和边界检查是零成本，_序列化器可能有多快_。
+光速序列化器作为参考，如果参数封送和边界检查是零成本，*序列化器可能有多快*。
 
 #### 基准测试结果
 

@@ -19,7 +19,7 @@ trace 数据流的设计原则是：
 
 #### trace 服务的中央缓冲区
 
-这些缓冲区（上图中为黄色）由用户在 [trace config](config.md) 的 `buffers` 部分中定义。在最简单的情况下，一个 trace 会话 = 一个缓冲区，无论数据源和生产者的数量如何。
+这些缓冲区（上图中为黄色）由用户在 `buffers` 部分中定义，该部分位于 [trace config](config.md) 内。在最简单的情况下，一个 trace 会话 = 一个缓冲区，无论数据源和生产者的数量如何。
 
 这是 trace 数据最终保存在内存中的地方，无论它来自内核 ftrace 基础结构、`traced_probes` 中的其他数据源还是使用 [Perfetto SDK](/docs/instrumentation/tracing-sdk.md) 的另一个用户空间进程。在 trace 结束时（或期间，如果处于[流模式]），这些缓冲区被写入输出 trace 文件。
 
@@ -200,19 +200,19 @@ Summary: 检测和调试数据丢失的最佳方法是使用 Trace Processor 并
 
 ## trace 数据包中的增量状态
 
-在许多情况下，trace 数据包彼此完全独立，可以在没有进一步上下文的情况下处理和解释。然而，在某些情况下，它们可以具有_增量状态_并且行为类似于帧间视频编码技术，其中某些帧需要关键帧的存在才能有意义地解码。
+在许多情况下，trace 数据包彼此完全独立，可以在没有进一步上下文的情况下处理和解释。然而，在某些情况下，它们可以具有*增量状态*并且行为类似于帧间视频编码技术，其中某些帧需要关键帧的存在才能有意义地解码。
 
 这里是两个具体示例：
 
 1. Ftrace 调度 slice 和 /proc/pid 扫描。ftrace 调度事件由线程 id 键控。在大多数情况下，用户希望将这些事件映射回父进程（线程组）。为了解决这个问题，当在 Perfetto trace 中同时启用 `linux.ftrace` 和 `linux.process_stats` 数据源时，后者确实会从 /proc 伪文件系统中捕获进程<>线程关联，每当 ftrace 看到新的线程-id 时。在这种情况下，典型的 trace 如下所示：
- ```bash
- # 来自 process_stats 的 /proc 扫描器。
- pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"
+    ```bash
+    # 来自 process_stats 的 /proc 扫描器。
+    pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"
 
- # 来自 ftrace
- timestamp: 95054961131912; sched_wakeup: pid: 610; target_cpu: 2;
- timestamp: 95054977528943; sched_switch: prev_pid: 610 prev_prio: 98
- ```
+    # 来自 ftrace
+    timestamp: 95054961131912; sched_wakeup: pid: 610; target_cpu: 2;
+    timestamp: 95054977528943; sched_switch: prev_pid: 610 prev_prio: 98
+    ```
  /proc 条目每个进程只发出一次，以避免使 trace 的大小膨胀。在没有数据丢失的情况下，这可以很好地重建该 pid 的所有调度事件。但是，如果 process_stats 数据包在环形缓冲区中被丢弃，则将无法为引用该 PID 的所有其他 ftrace 事件计算进程详细信息。
 
 2. Perfetto SDK 中的 [Track Event 库](/docs/instrumentation/track-events) 大量使用字符串驻留。大多数字符串和描述符（例如，关于进程/线程的详细信息）只发出一次，随后使用单调 ID 引用。在描述符数据包丢失的情况下，不可能完全理解这些事件。
@@ -229,7 +229,7 @@ Trace Processor 具有内置机制，可以检测驻留数据的丢失，并跳�
 
 ## 刷新和窗口化 trace 导入
 
-另一个在涉及多个数据源的 trace 中遇到的常见问题是 trace 提交的非同步性质。如上面的[trace 数据包的生命周期](#life-of-a-trace-packet）部分所述，trace 数据仅在共享内存缓冲区的完整内存页面被填满时（或在 trace 会话结束时）提交。在大多数情况下，如果数据源以定期节奏产生事件，页面会被相当快地填充，并且事件在几秒钟内提交到中央缓冲区。
+另一个在涉及多个数据源的 trace 中遇到的常见问题是 trace 提交的非同步性质。如上面的[trace 数据包的生命周期](#life-of-a-trace-packet) 部分所述，trace 数据仅在共享内存缓冲区的完整内存页面被填满时（或在 trace 会话结束时）提交。在大多数情况下，如果数据源以定期节奏产生事件，页面会被相当快地填充，并且事件在几秒钟内提交到中央缓冲区。
 
 然而，在其他情况下，数据源可能只是零星地发出事件。想象一下数据源在显示器打开/关闭时发出事件的情况。这种不频繁的事件最终可能会在共享内存缓冲区中暂存很长时间，并且可能会在发生数小时后才提交到 trace 缓冲区。
 

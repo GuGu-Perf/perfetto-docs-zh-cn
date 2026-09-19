@@ -73,7 +73,7 @@ data_sources: {
 
 `counter_period_ns` 设置所需的采样间隔。
 
-或者，可以使用 `counter_names` 按名称选择 Counter。选择其中一种方式，不要两者同时使用。并非所有生产者都支持此方式——请检查 DataSource 描述符中的 `supports_counter_names`。`counter_names` 中可以使用 glob 模式按名称匹配多个 Counter；请检查描述符中的 `supports_counter_name_globs` 是否支持。
+或者，可以使用 `counter_names` 按名称选择 Counter。选择其中一种方式，不要两者同时使用。并非所有生产者都支持此方式——请检查 `GpuCounterDescriptor` 数据源描述符中的 `supports_counter_names`。`counter_names` 中可以使用 glob 模式按名称匹配多个 Counter；请检查描述符中的 `supports_counter_name_globs` 是否支持。
 
 ### GPU 内存
 

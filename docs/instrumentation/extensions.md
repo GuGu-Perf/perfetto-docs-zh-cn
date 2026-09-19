@@ -73,7 +73,8 @@ Trace Processor 需要你的扩展的 proto 描述符才能解析它们。一旦
 
 这是最便携的选项：trace 是自描述的，因此 Trace Processor 可以在任何地方解析它而无需额外配置。
 
-将你的 `.proto` 编译为 `FileDescriptorSet`（例如 `protoc --include_imports --descriptor_set_out=acme.desc acme_extension.proto`），并在 trace 前面添加一个包含该描述符集字节的 [`ExtensionDescriptor`](/docs/reference/trace-packet-proto.autogen#ExtensionDescriptor) Packet。
+将你的 `.proto` 编译为 `FileDescriptorSet`（例如 `protoc --include_imports
+--descriptor_set_out=acme.desc acme_extension.proto`），并在 trace 前面添加一个包含该描述符集字节的 [`ExtensionDescriptor`](/docs/reference/trace-packet-proto.autogen#ExtensionDescriptor) Packet。
 
 如果你在启动服务时将描述符集传递给 `TracingService::InitOpts::extension_descriptors`，Tracing 服务可以自动执行此操作。如果你需要在特定 Session 中退出，请设置 `TraceConfig.disable_extension_descriptors = true`。
 

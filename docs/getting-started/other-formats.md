@@ -75,7 +75,7 @@ Perfetto 能够打开和分析由各种外部工具和系统生成的 trace 文�
   - `Instant` markers（阶段 0）成为零持续时间的 slice。
   - `Interval` markers（阶段 1）成为 `dur = endTime - startTime` 的 slice。
   - `IntervalStart`/`IntervalEnd` 对（阶段 2 和 3）在同一线程上按名称 LIFO 匹配，并生成跨越其时间范围的单个 slice。
-  - 同一线程上两个同名 marker **部分重叠是不支持的**：该格式没有每 marker ID，因此导入器无法区分它们。第二个 slice 会被丢弃并计入 `slice_drop_overlapping_complete_event` 统计信息。严格嵌套的同名 marker 会被保留并在不同深度渲染。
+  - 同一线程上两个同名 marker 部分重叠是**不支持**的：该格式没有每 marker ID，因此导入器无法区分它们。第二个 slice 会被丢弃并计入 `slice_drop_overlapping_complete_event` 统计信息。严格嵌套的同名 marker 会被保留并在不同深度渲染。
   - marker 名称和解析后的 `meta.categories[i].name` 填充到 slice 的 `name` 和 `category` 列中。
   - marker 的 `data` 负载被扁平化为 `data.` 前缀下的 args。例如，一个 `DOMEvent` marker 带有 `{"type":"DOMEvent","eventType":"mousedown","latency":2.96}` 会生成 args `data.type`、`data.eventType` 和 `data.latency`。嵌套对象会递归扁平化（`data.cause.tid` 等）。
 - **支持的格式变体：** Perfetto 支持 Firefox Profiler JSON 格式的两种变体：
@@ -180,7 +180,8 @@ TAB: <code>samply</code> profiles (Linux/macOS/Windows)
 
     不指定 `-o` 时，samply 默认写入 `profile.json.gz`；两种扩展名 Perfetto 都接受。
 
-3.  **在 [ui.perfetto.dev](https://ui.perfetto.dev) 中打开文件**，检查样本和 samply 记录的任何 markers。
+3.  **在
+    [ui.perfetto.dev](https://ui.perfetto.dev) 中打开文件**，检查样本和 samply 记录的任何 markers。
 
 TAB: Python <code>profiling.sampling</code> (Python 3.15+)
 
@@ -198,7 +199,8 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
     python -m profiling.sampling attach --gecko -o profile.json <pid>
     ```
 
-2.  **在 [ui.perfetto.dev](https://ui.perfetto.dev) 中打开文件**。栈样本显示在火焰图中，GIL/GC/代码类型 markers 填充在每个 Python 线程的 slice track 上。
+2.  **在
+    [ui.perfetto.dev](https://ui.perfetto.dev) 中打开文件**。栈样本显示在火焰图中，GIL/GC/代码类型 markers 填充在每个 Python 线程的 slice track 上。
 
 </tabs?>
 
@@ -227,7 +229,8 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 - 使用 `systrace.py` 命令行工具采集的历史 traces。
 - 检查来自非常旧版本的 Android Studio profiler 的 traces。
 
-**对于 Android 上的任何当前或新 tracing(9 Pie 及更新版本)，Perfetto 是标准且强烈推荐的工具。**
+**对于 Android
+上的任何当前或新 tracing(9 Pie 及更新版本)，Perfetto 是标准且强烈推荐的工具。**
 
 **Perfetto 支持：**
 
@@ -235,7 +238,8 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 - **Trace Processor：** Trace Processor 还支持解析 Systrace 报告中找到的原始文本 ftrace 数据。此数据被导入到标准的 Perfetto SQL 表中（例如，`slice`、`sched_slice`、`ftrace_event`），使其可通过 SQL 查询。
 - **重要说明：** Perfetto 对 Systrace 的支持是为了**向后兼容。** Systrace 是现代 Android（Android 9 Pie 及更新版本）上已弃用的 trace 收集工具。Perfetto 已经取代它，提供更多数据源、更低开销和更高级的分析能力。**新的 tracing 工作应专门使用 Perfetto。**
 
-**如何生成(旧版方法)：** 以下方法描述了 Systrace 文件的历史创建方式，为了在处理旧 traces 时提供上下文。**这些方法已弃用，不应在 Android 9 (Pie) 或更新版本上用于新的 trace 收集。**
+**如何生成(旧版方法)：** 以下方法描述了 Systrace 文件的历史创建方式，为了在处理旧 traces 时提供上下文。**这些方法已弃用，不应在 Android
+9 (Pie) 或更新版本上用于新的 trace 收集。**
 
 - **使用 `systrace.py`(已弃用)：** 历史上，这些 traces 是使用 Android SDK Platform Tools 中的 `systrace.py` 脚本生成的。示例命令可能如下所示：
   ```bash
@@ -246,7 +250,8 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 **外部资源：**
 
 - **Systrace 命令行参考(旧版)：** [developer.android.com/topic/performance/tracing/command-line](https://developer.android.com/topic/performance/tracing/command-line) (此页面还强调 Perfetto 取代 Android 9+ 的 Systrace)
-- **了解 ATrace(用户空间注释 - 与 Systrace 中的数据相关)：** [ATrace: Android 系统和应用 trace 事件](/docs/data-sources/atrace.md)
+- **了解
+  ATrace(用户空间注释 - 与 Systrace 中的数据相关)：** [ATrace: Android 系统和应用 trace 事件](/docs/data-sources/atrace.md)
 
 ## {#perf-textual-format} Perf 文本格式(来自 `perf script`)
 
@@ -261,7 +266,8 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 **Perfetto 支持：**
 
 - **Perfetto UI & Trace Processor：** Perfetto 的 Trace Processor 可以解析 `perf script` 生成的文本输出。
-  - 此导入器的主要重点是 **CPU 样本及其关联的调用栈**。
+  - 此导入器的主要重点是 **CPU
+    样本及其关联的调用栈**。
   - 当解析此类数据时，它会填充 Perfetto 的标准 profiling 表（例如，`cpu_profile_stack_sample` 用于样本，`stack_profile_callsite`、`stack_profile_frame`、`stack_profile_mapping` 用于调用栈信息）。
   - 这允许将 `perf script` 输出的 CPU profile 数据在 Perfetto UI 中可视化为火焰图，并使用 SQL 进行查询。
 - **限制：**
@@ -388,10 +394,12 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
   - 文本文件中存在的其他 ftrace 事件如果无法映射到识别的 Perfetto UI 元素，则可能无法可视化。
 - **Trace Processor：** 解析 ftrace 文本日志时，Perfetto 的 Trace Processor 将：
   - 将识别的事件（例如，`sched_switch`、`sched_waking`、`cpu_frequency`、atrace 兼容的 `print` 事件）解析到其对应的结构化 SQL 表中（例如，`sched_slice`、`slice`、`counter`）。
-  - **与 Perfetto 的原生 ftrace protobuf 摄取不同，文本 ftrace 文件中未识别或通用的 ftrace 事件通常不会填充到广泛的 `ftrace_event` 全捕获表中。** 支持通常限于具有用于创建结构化表的特定解析器的事件。
+  - **与 Perfetto
+    的原生 ftrace protobuf 摄取不同，文本 ftrace 文件中未识别或通用的 ftrace 事件通常不会填充到广泛的 `ftrace_event` 全捕获表中。** 支持通常限于具有用于创建结构化表的特定解析器的事件。
 - **建议：** 对于在 Perfetto 可用系统上的新 tracing 活动（特别是 Android 9+ 或安装了 Perfetto 的 Linux 系统），**强烈建议使用 Perfetto 的原生 ftrace 数据源。** Perfetto 的直接收集将 ftrace 数据记录到其自己的高效二进制 protobuf 格式中，提供更好的性能、更丰富的功能（包括将通用 ftrace 事件解析为 protobuf `GenericFtraceEvent` 类型）和更稳健的支持。导入文本格式应保留用于分析预先存在的日志。
 
-**如何生成(关于现有日志的上下文)：** 这些方法描述了如何使用 `tracefs`（通常挂载在 `/sys/kernel/tracing`）创建 ftrace 文本日志。**对于新的 tracing，首选直接使用 Perfetto 的 ftrace 数据源。**
+**如何生成(关于现有日志的上下文)：** 这些方法描述了如何使用 `tracefs`（通常挂载在 `/sys/kernel/tracing`）创建 ftrace 文本日志。**对于新的
+tracing，首选直接使用 Perfetto 的 ftrace 数据源。**
 
 - **使用 `trace-cmd`：** `trace-cmd` 是 ftrace 的用户空间前端。
 
@@ -570,7 +578,8 @@ select name, value from stats where name glob 'strace*' and value > 0;
 
 ## macOS Instruments 格式(XML 导出)
 
-**描述：** Apple 的 Instruments 工具是 Xcode 的一部分，用于 macOS 和 iOS 的性能分析。虽然 Instruments 将其完整数据保存在专有的 `.trace` 包格式中，但 Perfetto 的支持专注于可以从这些 Instruments traces 导出的 **XML 格式**。此 XML 导出主要用于提取 CPU profiling 数据（栈样本）。
+**描述：** Apple 的 Instruments 工具是 Xcode 的一部分，用于 macOS 和 iOS 的性能分析。虽然 Instruments 将其完整数据保存在专有的 `.trace` 包格式中，但 Perfetto 的支持专注于可以从这些 Instruments traces 导出的 **XML
+格式**。此 XML 导出主要用于提取 CPU profiling 数据（栈样本）。
 
 **常见场景：** 此导入路径在以下情况下相关：
 
@@ -695,7 +704,7 @@ xcrun xctrace export --input profile.trace \
   - 当加载 bugreport zip 时，Perfetto 自动：
     - 将主要的 **`dumpstate` 输出**（`bugreport-*.txt` 文件）解析到 `android_dumpstate` SQL 表中，每行一条记录，并标记其来源的 dumpstate `section` 和 dumpsys `service`。
     - 将 dumpstate 输出的 **logcat** 部分以及持久化的 logcat 文件（`FS/data/misc/logd/logcat*`）导入到 `android_logs` SQL 表中。
-    - 从 dumpstate 的 `CHECKIN BATTERYSTATS` 部分提取 **电池统计信息** 到 `battery_stats.*` counter 和事件 track 中。
+    - 将 **电池统计信息** 从 dumpstate 的 `CHECKIN BATTERYSTATS` 部分提取到 `battery_stats.*` counter 和事件 track 中。
   - 这种集成方法允许用户在统一的 Perfetto 环境中分析来自 bugreport 的关键系统状态（来自 `dumpstate`）、日志和电池信息，无需手动提取这些组件。
   - **注意：** Perfetto 处理 bugreport 时的重点是 `dumpstate` 的这些特定结构化部分。它 **不会** 加载可能存在于 bugreport 中的 Perfetto trace 文件或旧版 Systrace 文件（`systrace.html` 或 `systrace.txt`）。要分析这些，请手动提取并直接打开（对于 Systrace 文件，请参见 [Android systrace 格式](#android-systrace-format) 部分）。
 
@@ -765,7 +774,7 @@ xcrun xctrace export --input profile.trace \
 
 - **可视化 Go CPU profiles：** 开发者经常使用 Go pprof profiler 收集 CPU 样本，并需要一种方式来可视化它们。
 - **使用跨平台 profiling 工具：** 一些 profiling 工具和库旨在输出或将其数据转换为此格式，以便使用与 pprof 兼容的工具进行 profile。
-- **分析 Linux `perf` profiles：** `pprof` 可以使用 [perf_data_converter](https://github.com/google/perf_data_converter) 包中的 `perf_to_profile` 程序读取 [Linux perf](https://perf.wiki.kernel.org/index.php/Main_Page) 工具生成的 `perf.data` 文件。
+- **分析 Linux `perf` profiles：** `pprof` 可以读取 `perf.data` 文件（由 [Linux perf](https://perf.wiki.kernel.org/index.php/Main_Page) 工具生成），方法是使用 `perf_to_profile` 程序（来自 [perf_data_converter](https://github.com/google/perf_data_converter) 包）。
 
 **Perfetto 支持：**
 

@@ -90,7 +90,7 @@ trace 的错误统计中。在合并的 trace 中，最常见的原因是 manife
 ## 机器
 
 合并后的数据保持归属于其来源机器。一个机器是 [`machine`](/docs/analysis/sql-tables.autogen#machine) 表中的
-一行（是 `process` 和 `thread` 的父级）；合并从多个来源填充它：
+一行，而机器作用域表（`process`、`thread`、`cpu`、`sched` 等）通过 `machine_id` 列引用它。这与[实时多机器采集](/docs/deployment/multi-machine-architecture.md)使用的模型相同；合并从多个来源填充它：
 
 - **trace 中嵌入的 ID。**带有机器 ID 的数据包（通过
   traced_relay，或配置了 `TracingInitArgs::machine_id` 的 SDK

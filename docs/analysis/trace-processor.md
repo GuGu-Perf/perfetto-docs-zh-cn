@@ -55,6 +55,8 @@ python trace_processor trace.perfetto-trace
 
 这会打开一个交互式 SQL shell，你可以在其中查询 trace。有关如何编写查询，请参阅 [PerfettoSQL 入门指南](perfetto-sql-getting-started.md)。
 
+TIP: trace 文件也可以是包含多个 trace 的 ZIP 或 TAR 归档文件：它们会被合并到单一时间线上。参见[从命令行合并 trace](/docs/analysis/merging-traces.md)。
+
 例如，要查看 trace 中的所有 Slice：
 
 ```sql
@@ -68,8 +70,6 @@ ts                   dur                  name
      261187121345235                  153 query
 ...
 ```
-
-TIP:trace 文件也可以是一个包含多个 trace 的 ZIP 或 TAR 归档文件：它们会被合并到一条时间线上。参见[从命令行合并 trace](/docs/analysis/merging-traces.md)。
 
 或者，要查看所有 Counter 的值：
 
@@ -130,7 +130,7 @@ trace_processor query --remote mysession "SELECT count(*) FROM slice"
 
 ## {#embedding} 嵌入 C++ 库
 
-公共 API 以 [`trace_processor.h`](/include/perfetto/trace_processor/trace_processor.h) 中的 `TraceProcessor` 类为中心。所有高级操作（解析 trace 字节、执行 SQL 查询、计算汇总）都是此类的成员函数。
+公共 API 以 `TraceProcessor` 类为中心，该类位于 [`trace_processor.h`](/include/perfetto/trace_processor/trace_processor.h) 中。所有高级操作（解析 trace 字节、执行 SQL 查询、计算汇总）都是此类的成员函数。
 
 使用 `CreateInstance` 创建实例：
 
@@ -156,7 +156,7 @@ while (/* more data available */) {
 base::Status status = tp->NotifyEndOfFile();
 ```
 
-由于从文件系统读取 trace 是一个常见场景，因此在 [`read_trace.h`](/include/perfetto/trace_processor/read_trace.h) 中提供了辅助函数 `ReadTrace`：
+由于从文件系统读取 trace 是一个常见场景，因此提供了辅助函数 `ReadTrace`（位于 [`read_trace.h`](/include/perfetto/trace_processor/read_trace.h) 中）：
 
 ```cpp
 #include "perfetto/trace_processor/read_trace.h"

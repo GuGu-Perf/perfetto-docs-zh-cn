@@ -100,7 +100,8 @@ NOTE: 此更改与*从非 track 表中删除 `type` 列*更改密切相关，请
 
 **迁移**
 
-如果你正在执行形式如 `select * from track where type = 'process_track'` 的查询，这可以轻松替换为 `select * from process_track`。
+如果你正在执行形式如 `select * from track where type = 'process_track'` 的查询，这可以轻松
+替换为 `select * from process_track`。
 
 相反，如果你尝试从 trace_processor 导出 `type` 的值，你可以通过对 track 进行多个 UNION 操作来恢复旧的 type 列。
 
@@ -143,7 +144,7 @@ select * from track where dimension_arg_set_id is null
 
 **背景**
 
-NOTE: 此更改与*`type` 列的语义更改*更改密切相关，请参见上文。
+NOTE: 此更改与*更改 `type` 列的语义*这一更改密切相关，请参见上文。
 
 `type` 列在表中已存在很长时间，用于指示包含 track 的"最具体表"。随着时间的推移，随着 trace processor 表中表结构的变化（即更多地使用标准库，具有多个维度的 track），我们已经超越了使 `type` 列有意义的"面向对象表"概念。
 
@@ -153,6 +154,7 @@ NOTE: 此更改与*`type` 列的语义更改*更改密切相关，请参见上�
 
 **迁移**
 
-你对 `type` 列的依赖很可能是因为使用了 `select *` 而非主动选择列。在这种情况下，迁移应该很简单，只需删除对 `type` 列的引用（例如在对执行 `select *` 的查询输出的断言中）。
+你对 `type` 列的依赖很可能是因为使用了 `select *` 而非主动
+选择列。在这种情况下，迁移应该很简单，只需删除对 `type` 列的引用（例如在对执行 `select *` 的查询输出的断言中）。
 
 如果你的工作流程因这次更改而中断，我们很乐意帮助你解决此问题。请向 http://go/perfetto-bug（如果你是 Google 员工）或 https://github.com/google/perfetto/issues/new（否则）提交错误报告。

@@ -20,7 +20,8 @@ FrameTimeline 是 SurfaceFlinger 内的一个模块，它检测掉帧并报告�
 每个 Slice 代表给应用程序渲染帧的时间。为了避免系统中的掉帧，应用程序应在此时间范围内完成。开始时间是安排 Choreographer 回调运行的时间。
 
 - 实际 Timeline
-这些 Slice 代表应用程序完成帧(包括 GPU 工作并将其发送到 SurfaceFlinger 进行合成所花费的实际时间。开始时间是 `Choreographer#doFrame` 或 `AChoreographer_vsyncCallback` 开始运行的时间。此处 Slice 的结束时间代表 `max(gpu 时间， 发布时间)`。**发布时间**是应用程序的帧发布到 SurfaceFlinger 的时间。
+这些 Slice 代表应用程序完成帧(包括 GPU 工作并将其发送到 SurfaceFlinger 进行合成所花费的实际时间。开始时间是 `Choreographer#doFrame` 或 `AChoreographer_vsyncCallback` 开始运行的时间。此处 Slice 的结束时间代表 `max(gpu 时间，
+发布时间)`。**发布时间**是应用程序的帧发布到 SurfaceFlinger 的时间。
 
 ![](/docs/images/frametimeline/app-timelines.png)
 

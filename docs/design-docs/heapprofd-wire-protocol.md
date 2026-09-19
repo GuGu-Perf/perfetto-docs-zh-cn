@@ -17,11 +17,11 @@ _**最后更新**： 2019-02-11_
 ## 高级设计
 在客户端和 heapprofd 之间使用共享内存缓冲区消除了服务中尽可能快地排空 socket 的需要，我们以前需要这样做以确保不阻塞客户端的 malloc 调用。这允许我们简化 heapprofd 的线程设计。
 
-_主线程_具有与 traced 的 Perfetto producer 连接，并处理 `/dev/socket/heapprofd` 的传入客户端连接。它执行查找匹配传入 TraceConfig 的进程的逻辑，将进程与客户端配置匹配，并与客户端进行握手。在此握手期间，服务创建共享内存缓冲区。握手完成后，客户端的 socket 移交给特定的 _Unwinder Thread_。
+*主线程*具有与 traced 的 Perfetto producer 连接，并处理 `/dev/socket/heapprofd` 的传入客户端连接。它执行查找匹配传入 TraceConfig 的进程的逻辑，将进程与客户端配置匹配，并与客户端进行握手。在此握手期间，服务创建共享内存缓冲区。握手完成后，客户端的 socket 移交给特定的 *Unwinder Thread*。
 
-握手完成后，sockets 由分配的 _Unwinder Thread's_ 事件循环处理。展开器线程拥有展开所需的元数据（`/proc/pid/{mem,maps}` FD，派生的 libunwindstack 对象和共享内存缓冲区）。在信号 socket 上接收到数据时，_展开线程_展开客户端提供的调用堆栈并发布任务到 _主线程_ 以应用于记账。重复此操作，直到缓冲区中没有更多待处理的记录。
+握手完成后，sockets 由分配的 _Unwinder Thread's_ 事件循环处理。展开器线程拥有展开所需的元数据（`/proc/pid/{mem,maps}` FD，派生的 libunwindstack 对象和共享内存缓冲区）。在信号 socket 上接收到数据时，*展开线程*展开客户端提供的调用堆栈并发布任务到 *主线程* 以应用于记账。重复此操作，直到缓冲区中没有更多待处理的记录。
 
-要关闭 tracing session，_主线程_ 在相应的 _展开线程_ 上发布任务以关闭连接。当客户端断开连接时，_展开线程_ 在 _主线程_ 上发布任务以通知它断开连接。意外断开连接也是如此。
+要关闭 tracing session，*主线程* 在相应的 *展开线程* 上发布任务以关闭连接。当客户端断开连接时，*展开线程* 在 *主线程* 上发布任务以通知它断开连接。意外断开连接也是如此。
 
 ![](/docs/images/heapprofd-design/shmem-detail.png)
 
@@ -45,15 +45,15 @@ _主线程_具有与 traced 的 Perfetto producer 连接，并处理 `/dev/socke
 请参阅下面序列图中的以下阶段：
 
 ### 1. 握手
-_主线程_ 从 traced 接收包含 `HeapprofdConfig` 的 `TracingConfig`。它将预期连接的进程及其 `ClientConfiguration` 添加到 `ProcessMatcher`。然后它查找匹配的进程（通过 PID 或 cmdline）并发送 heapprofd RT 信号以触发初始化。
+*主线程* 从 traced 接收包含 `HeapprofdConfig` 的 `TracingConfig`。它将预期连接的进程及其 `ClientConfiguration` 添加到 `ProcessMatcher`。然后它查找匹配的进程（通过 PID 或 cmdline）并发送 heapprofd RT 信号以触发初始化。
 
-接收此配置的进程连接到 `/dev/socket/heapprofd` 并发送 `/proc/self/{map,mem}` fd。_主线程_ 在 `ProcessMatcher` 中查找匹配的配置，创建新的共享内存缓冲区，并通过信号 socket 发送两者。客户端使用它们完成其内部状态的初始化。_主线程_ 将信号 socket 移交（`RemoveFiledescriptorWatch` + `AddFiledescriptorWatch`）给 _展开线程_。它还移交 `/proc` fd 的 `ScopedFile`s。这些用于创建 `UnwindingMetadata`。
+接收此配置的进程连接到 `/dev/socket/heapprofd` 并发送 `/proc/self/{map,mem}` fd。*主线程* 在 `ProcessMatcher` 中查找匹配的配置，创建新的共享内存缓冲区，并通过信号 socket 发送两者。客户端使用它们完成其内部状态的初始化。*主线程* 将信号 socket 移交（`RemoveFiledescriptorWatch` + `AddFiledescriptorWatch`）给 *展开线程*。它还移交 `/proc` fd 的 `ScopedFile`s。这些用于创建 `UnwindingMetadata`。
 
 
 ### 2. 采样
-既然握手已完成，所有通信都在 _客户端_ 和其对应的 _展开线程_ 之间进行。
+既然握手已完成，所有通信都在 *客户端* 和其对应的 *展开线程* 之间进行。
 
-对于每个 malloc，客户端决定是否采样分配，如果是，将 `AllocMetadata` + 原始堆栈写入共享内存缓冲区，然后在信号 socket 上发送一个字节以唤醒 _展开线程_。_展开线程_ 使用 `DoUnwind` 获取 `AllocRecord`(元数据，如大小、地址等 + 帧向量)。然后它发布任务到 _主线程_ 以将其应用于记账。
+对于每个 malloc，客户端决定是否采样分配，如果是，将 `AllocMetadata` + 原始堆栈写入共享内存缓冲区，然后在信号 socket 上发送一个字节以唤醒 *展开线程*。*展开线程* 使用 `DoUnwind` 获取 `AllocRecord`(元数据，如大小、地址等 + 帧向量)。然后它发布任务到 *主线程* 以将其应用于记账。
 
 
 ### 3. 转储/并发采样
@@ -62,13 +62,13 @@ _主线程_ 从 traced 接收包含 `HeapprofdConfig` 的 `TracingConfig`。它�
 - 连续转储
 - 来自 traced 的刷新请求
 
-这两种情况的处理方式相同。_主线程_ 转储相关进程的记账并将缓冲区刷新到 traced。
+这两种情况的处理方式相同。*主线程* 转储相关进程的记账并将缓冲区刷新到 traced。
 
-通常，_展开线程_ 将从客户端接收并发记录。它们将继续展开并发布任务以应用记账。记账将在转储完成后应用，因为记账数据不能被并发修改。
+通常，*展开线程* 将从客户端接收并发记录。它们将继续展开并发布任务以应用记账。记账将在转储完成后应用，因为记账数据不能被并发修改。
 
 
 ### 4. 断开连接
-traced 发送 `StopDataSource` IPC。_主线程_ 发布任务到 _展开线程_ 要求它断开与客户端的连接。它取消映射共享内存，关闭 memfd，然后关闭信号 socket。
+traced 发送 `StopDataSource` IPC。*主线程* 发布任务到 *展开线程* 要求它断开与客户端的连接。它取消映射共享内存，关闭 memfd，然后关闭信号 socket。
 
 客户端在下次尝试通过该 socket 发送数据时收到 `EPIPE`，然后拆除客户端。
 

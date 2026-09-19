@@ -109,8 +109,7 @@ adb pull /data/misc/perfetto-traces/boottrace.perfetto-trace
 
 该文件在下次启动 trace 开始前会被移除，因此在预装下一次之前先拉取它。
 
-**6. 查看。**在 [Perfetto UI](https://ui.perfetto.dev) 中打开
-`boottrace.perfetto-trace`。要使用 SQL 深入分析数据，参见
+**6. 查看。**打开 `boottrace.perfetto-trace`（用 [Perfetto UI](https://ui.perfetto.dev) 查看）。要使用 SQL 深入分析数据，参见
 [Android trace 分析实战指南](/docs/getting-started/android-trace-analysis.md)。
 
 ### Trace 在启动的哪个阶段开始？
@@ -203,7 +202,7 @@ adb pull /data/misc/perfetto-traces/oome.pftrace
 
 ### 分析 heap dump
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `oome.pftrace`，
+打开 `oome.pftrace` 并在 [Perfetto UI](https://ui.perfetto.dev) 中查看，
 点击 _"ART heap dump"_ track 中的 V 形标记，即可获取保留内存的火焰图。
 关于引导式调查，请参见：
 

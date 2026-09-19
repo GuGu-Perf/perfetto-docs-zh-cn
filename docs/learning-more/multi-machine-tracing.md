@@ -10,15 +10,6 @@
 
 在本指南的其余部分，`host` 是运行 `traced` 并拥有 Trace Buffer 的机器，`guest` 是第二台机器，其 Producer 通过 `traced_relay` 接入同一个 Trace。将 `<host-ip>` 替换为 `guest` 可达的 `host` 的 IP 地址（或主机名）。
 
-## 前提条件
-
-* 两台机器上都可用的 `tracebox`。获取二进制文件的方法请参阅[开始使用 Perfetto](/docs/getting-started/start-using-perfetto.md)。
-* 从 `guest` 到 `host` 在选定 TCP 端口（例如端口 `20001`）上的网络路径。如果两者之间有防火墙，请开放该端口。
-* 两台机器上都没有已运行的 `traced`。在 `guest` 上，`traced` 和 `traced_relay` 会争用同一个本地 Producer Socket；在 `host` 上，你需要下面启动的 `traced`，而不是系统自带的。
-* `host` 和 `guest` 是独立的 OS 镜像——两台机器、宿主机加 VM 等。将两个 Producer 指向同一个内核是不行的。
-
-NOTE: 本指南以 ftrace 事件为例进行记录，在 Linux 上通常需要以 root（或具有 `CAP_SYS_ADMIN`）身份运行 Producer 命令。IPC 命令本身不需要 root。
-
 ## {#approaches} 选择方案
 
 实时中继（本指南涵盖的内容）是获取跨多台机器的单一 trace 的三种方式之一。哪种方式适合取决于录制时机器之间是否能够互相连接，以及你对生产者的控制程度：
@@ -30,6 +21,15 @@ NOTE: 本指南以 ftrace 事件为例进行记录，在 Linux 上通常需要�
 3. **独立录制，后续合并。** 每台机器录制普通的 trace；录制时无需协调。机器归属和 trace 中未携带的任何时钟关系在合并时提供，可以通过 [Perfetto UI](/docs/visualization/merging-traces.md) 交互式提供，或通过 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 文件提供。这是最灵活的选择，也是唯一适用于已存在 trace 的方式。
 
 这三种方式在 trace 模型中产生相同的结果：一个 trace、一个 Timeline、每个机器一行 [`machine` 表][machine-table]记录。它们也可以组合使用，例如将来自不同站点的两个中继录制的 trace 合并。
+
+## 前提条件
+
+* 两台机器上都可用的 `tracebox`。获取二进制文件的方法请参阅[开始使用 Perfetto](/docs/getting-started/start-using-perfetto.md)。
+* 从 `guest` 到 `host` 在选定 TCP 端口（例如端口 `20001`）上的网络路径。如果两者之间有防火墙，请开放该端口。
+* 两台机器上都没有已运行的 `traced`。在 `guest` 上，`traced` 和 `traced_relay` 会争用同一个本地 Producer Socket；在 `host` 上，你需要下面启动的 `traced`，而不是系统自带的。
+* `host` 和 `guest` 是独立的 OS 镜像——两台机器、宿主机加 VM 等。将两个 Producer 指向同一个内核是不行的。
+
+NOTE: 本指南以 ftrace 事件为例进行记录，在 Linux 上通常需要以 root（或具有 `CAP_SYS_ADMIN`）身份运行 Producer 命令。IPC 命令本身不需要 root。
 
 ## 用法
 
@@ -81,7 +81,7 @@ PERFETTO_RELAY_SOCK_NAME=<host-ip>:20001 \
 Started traced_relay, listening on /tmp/perfetto-producer, forwarding to <host-ip>:20001
 ```
 
-（如果存在 `/run/perfetto/` 目录，监听路径可能是 `/run/perfetto/traced-producer.sock`——两者都是有效的 Linux 默认值。）
+（如果该目录存在，监听路径可能是 `/run/perfetto/traced-producer.sock`——两者都是有效的 Linux 默认值。）
 
 保持此进程运行。
 
@@ -128,7 +128,7 @@ tracebox perfetto --txt -c config.pbtx -o trace.pftrace
 
 ### 步骤 6：验证两台机器都在 Trace 中
 
-在 <https://ui.perfetto.dev> 打开 `trace.pftrace`。在 SQL 查询视图中运行：
+打开 `trace.pftrace`（<https://ui.perfetto.dev>）。在 SQL 查询视图中运行：
 
 ```sql
 SELECT id, raw_id, sysname, release, arch, num_cpus FROM machine;

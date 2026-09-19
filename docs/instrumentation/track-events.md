@@ -83,7 +83,7 @@ void LoadGame() {
 }
 ```
 
-请注意，你不需要为 `TRACE_EVENT_END` 提供名称，因为它会自动关闭在同一线程上开始的最近事件。换句话说，给定线程上的所有事件共享同一个堆栈。这意味着不建议在单独的函数中使用匹配的 `TRACE_EVENT_BEGIN` 和 `TRACE_EVENT_END` 标记对，因为无关的事件可能会意外终止原始事件；对于跨越函数边界的事件，通常最好在[单独的 track](#tracks）上发出它们。
+请注意，你不需要为 `TRACE_EVENT_END` 提供名称，因为它会自动关闭在同一线程上开始的最近事件。换句话说，给定线程上的所有事件共享同一个堆栈。这意味着不建议在单独的函数中使用匹配的 `TRACE_EVENT_BEGIN` 和 `TRACE_EVENT_END` 标记对，因为无关的事件可能会意外终止原始事件；对于跨越函数边界的事件，通常最好在[单独的 track](#tracks)上发出它们。
 
 你还可以与事件一起提供（最多两个）debug 注解。
 
@@ -305,113 +305,114 @@ TRACE_EVENT("cat", "name"[, track][, timestamp]
 
 1. 用于编写自定义 TrackEvent 字段的 lambda：
 
- ```C++
- TRACE_EVENT("category", "Name", [&](perfetto::EventContext ctx) {
- auto* debug_annotation = ctx.event()->add_debug_annotations();
- debug_annotation->set_name("key");
- debug_annotation->set_string_value("value");
- });
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", [&](perfetto::EventContext ctx) {
+       auto* debug_annotation = ctx.event()->add_debug_annotations();
+       debug_annotation->set_name("key");
+       debug_annotation->set_string_value("value");
+     });
+   ```
 
 2. 时间戳和 lambda：
 
- ```C++
- TRACE_EVENT("category", "Name", time_in_nanoseconds,
- [&](perfetto::EventContext ctx) {
- auto* debug_annotation = ctx.event()->add_debug_annotations();
- debug_annotation->set_name("key");
- debug_annotation->set_string_value("value");
- });
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", time_in_nanoseconds,
+         [&](perfetto::EventContext ctx) {
+       auto* debug_annotation = ctx.event()->add_debug_annotations();
+       debug_annotation->set_name("key");
+       debug_annotation->set_string_value("value");
+     });
+   ```
 
    `time_in_nanoseconds` 默认是 trace 时钟上的 `uint64_t`。要传递自己的时间戳类型，或在不同时钟上的时间戳，请参阅[自定义时间戳和时钟](#custom-timestamps-and-clocks)。
 
 3. 任意数量的 debug 注解：
 
- ```C++
- TRACE_EVENT("category", "Name", "arg", value);
- TRACE_EVENT("category", "Name", "arg", value, "arg2", value2);
- TRACE_EVENT("category", "Name", "arg", value, "arg2", value2,
- "arg3", value3);
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2,
+                 "arg3", value3);
+   ```
 
- 有关将自定义类型采集为 debug 注解，请参阅 |TracedValue|。
+   有关将自定义类型采集为 debug 注解，请参阅 |TracedValue|。
 
 4. 任意数量的 TrackEvent 字段（包括扩展）：
 
- ```C++
- TRACE_EVENT("category", "Name",
- perfetto::protos::pbzero::TrackEvent::kFieldName, value);
- ```
+  ```C++
+    TRACE_EVENT("category", "Name",
+                perfetto::protos::pbzero::TrackEvent::kFieldName, value);
+  ```
 
 5. debug 注解和 TrackEvent 字段的任意组合：
 
- ```C++
- TRACE_EVENT("category", "Name",
- perfetto::protos::pbzero::TrackEvent::kFieldName, value1,
- "arg", value2);
- ```
+  ```C++
+    TRACE_EVENT("category", "Name",
+                perfetto::protos::pbzero::TrackEvent::kFieldName, value1,
+                "arg", value2);
+  ```
 
 6. debug 注解 / TrackEvent 字段和 lambda 的任意组合：
 
- ```C++
- TRACE_EVENT("category", "Name", "arg", value1,
- pbzero::TrackEvent::kFieldName, value2,
- [&](perfetto::EventContext ctx) {
- auto* debug_annotation = ctx.event()->add_debug_annotations();
- debug_annotation->set_name("key");
- debug_annotation->set_string_value("value");
- });
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value1,
+                 pbzero::TrackEvent::kFieldName, value2,
+                 [&](perfetto::EventContext ctx) {
+                     auto* debug_annotation = ctx.event()->add_debug_annotations();
+                     debug_annotation->set_name("key");
+                     debug_annotation->set_string_value("value");
+                 });
+   ```
 
 7. 覆盖的 track：
 
- ```C++
- TRACE_EVENT("category", "Name", perfetto::Track(1234));
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234));
+   ```
 
- 有关可能使用的其他 track 类型，请参阅 |Track|。
+   有关可能使用的其他 track 类型，请参阅 |Track|。
 
 8. track 和 lambda：
 
- ```C++
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- [&](perfetto::EventContext ctx) {
- auto* debug_annotation = ctx.event()->add_debug_annotations();
- debug_annotation->set_name("key");
- debug_annotation->set_string_value("value");
- });
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 [&](perfetto::EventContext ctx) {
+                     auto* debug_annotation = ctx.event()->add_debug_annotations();
+                     debug_annotation->set_name("key");
+                     debug_annotation->set_string_value("value");
+                 });
+   ```
 
 9. track 和时间戳：
 
- ```C++
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- time_in_nanoseconds);
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 time_in_nanoseconds);
+   ```
 
 10. track、时间戳和 lambda：
 
- ```C++
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- time_in_nanoseconds, [&](perfetto::EventContext ctx) {
- auto* debug_annotation = ctx.event()->add_debug_annotations();
- debug_annotation->set_name("key");
- debug_annotation->set_string_value("value");
- });
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 time_in_nanoseconds, [&](perfetto::EventContext ctx) {
+                     auto* debug_annotation = ctx.event()->add_debug_annotations();
+                     debug_annotation->set_name("key");
+                     debug_annotation->set_string_value("value");
+                 });
+   ```
 
 11. track 和 debug 注解及 TrackEvent 字段的任意组合：
 
- ```C++
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- "arg", value);
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- "arg", value, "arg2", value2);
- TRACE_EVENT("category", "Name", perfetto::Track(1234),
- "arg", value, "arg2", value2,
- pbzero::TrackEvent::kFieldName, value3);
- ```
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value);
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value, "arg2", value2);
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value, "arg2", value2,
+                 pbzero::TrackEvent::kFieldName, value3);
+   ```
+
 
 ### Track
 
@@ -604,7 +605,7 @@ TRACE_EVENT("category", "Scope", MyTimestamp{123456789});
 
 #### 自定义时钟上的时间戳
 
-如果你的时间戳是依据一个*不是*trace 时钟的时钟（例如硬件计数器，或运行在不同偏移量下的时钟），你必须告诉 Trace Processor 该时钟如何与 trace 时间相关联。通过在发出任何引用它的事件**之前**，发出一个将你的时钟映射到参考时钟的 `ClockSnapshot` 来实现。快照每个时钟（每个 `TraceWriter`）只需要发出一次。
+如果你的时间戳是依据一个*不是*trace 时钟的时钟（例如硬件计数器，或运行在不同偏移量下的时钟），你必须告诉 Trace Processor 该时钟如何与 trace 时间相关联。做法是发出一个将你的时钟映射到参考时钟的 `ClockSnapshot`，并且要在发出任何引用它的事件**之前**发出。快照每个时钟（每个 `TraceWriter`）只需要发出一次。
 
 ```C++
 // 在序列作用域范围 [64, 127] 中选择一个时钟 ID，或使用内置时钟。

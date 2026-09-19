@@ -53,71 +53,72 @@ ds_cfg->mutable_interceptor_config()->set_name("my_interceptor");
 
 2. **每个数据源实例状态：** 由于 interceptor 类为每个拦截的数据源自动实例化，其字段可以用于存储每个实例的数据，例如 trace config。此数据可以通过 OnSetup/OnStart/OnStop 回调维护：
 
- ```C++
- class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
- public:
- void OnSetup(const SetupArgs& args) override {
- enable_foo_ = args.config.interceptor_config().enable_foo();
- }
+   ```C++
+   class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
+    public:
+     void OnSetup(const SetupArgs& args) override {
+       enable_foo_ = args.config.interceptor_config().enable_foo();
+     }
 
- bool enable_foo_{};
- };
- ```
+     bool enable_foo_{};
+   };
+   ```
 
- 在 interceptor 函数中，必须通过作用域锁访问此数据以确保安全：
+   在 interceptor 函数中，必须通过作用域锁访问此数据以确保安全：
 
- ```C++
- class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
- ...
- static void OnTracePacket(InterceptorContext context) {
- auto my_interceptor = context.GetInterceptorLocked();
- if (my_interceptor) {
- // 在此处访问 MyInterceptor 的字段。
- if (my_interceptor->enable_foo_) { ... }
- }
- ...
- }
- };
- ```
+   ```C++
+   class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
+     ...
+     static void OnTracePacket(InterceptorContext context) {
+       auto my_interceptor = context.GetInterceptorLocked();
+       if (my_interceptor) {
+          // 在此处访问 MyInterceptor 的字段。
+          if (my_interceptor->enable_foo_) { ... }
+       }
+       ...
+     }
+   };
+   ```
 
- 由于访问此数据涉及持有锁，因此应该谨慎使用。
+   由于访问此数据涉及持有锁，因此应该谨慎使用。
 
 3. **每个线程/TraceWriter 状态：** 许多数据源使用 interning 来避免在 trace 中重复常见数据。由于 interning 字典通常为每个 TraceWriter 序列（即每个线程）单独保留，interceptor 可以声明一个与 TraceWriter 生命周期匹配的数据结构：
 
- ```C++
- class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
- public:
- struct ThreadLocalState
- : public perfetto::InterceptorBase::ThreadLocalState {
- ThreadLocalState(ThreadLocalStateArgs&) override = default;
- ~ThreadLocalState() override = default;
+   ```C++
+   class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
+    public:
+     struct ThreadLocalState
+         : public perfetto::InterceptorBase::ThreadLocalState {
+       ThreadLocalState(ThreadLocalStateArgs&) override = default;
+       ~ThreadLocalState() override = default;
 
- std::map<size_t, std::string> event_names;
- };
- };
- ```
+       std::map<size_t, std::string> event_names;
+     };
+   };
+   ```
 
- 然后可以在 `OnTracePacket` 中访问和维护此每个线程的状态，如下所示：
+   然后可以在 `OnTracePacket` 中访问和维护此每个线程的状态，如下所示：
 
- ```C++
- class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
- ...
- static void OnTracePacket(InterceptorContext context) {
- // 更新 interning 数据。
- auto& tls = context.GetThreadLocalState();
- if (parsed_packet.sequence_flags() & perfetto::protos::pbzero::
- TracePacket::SEQ_INCREMENTAL_STATE_CLEARED) {
- tls.event_names.clear();
- }
- for (const auto& entry : parsed_packet.interned_data().event_names())
- tls.event_names[entry.iid()] = entry.name();
+   ```C++
+   class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
+     ...
+     static void OnTracePacket(InterceptorContext context) {
+       // 更新 interning 数据。
+       auto& tls = context.GetThreadLocalState();
+       if (parsed_packet.sequence_flags() & perfetto::protos::pbzero::
+               TracePacket::SEQ_INCREMENTAL_STATE_CLEARED) {
+         tls.event_names.clear();
+       }
+       for (const auto& entry : parsed_packet.interned_data().event_names())
+         tls.event_names[entry.iid()] = entry.name();
 
- // 查找 interning 数据。
- if (parsed_packet.has_track_event()) {
- size_t name_iid = parsed_packet.track_event().name_iid();
- const std::string& event_name = tls.event_names[name_iid];
- }
- ...
- }
- };
- ```
+       // 查找 interning 数据。
+       if (parsed_packet.has_track_event()) {
+         size_t name_iid = parsed_packet.track_event().name_iid();
+         const std::string& event_name = tls.event_names[name_iid];
+       }
+       ...
+     }
+   };
+   ```
+

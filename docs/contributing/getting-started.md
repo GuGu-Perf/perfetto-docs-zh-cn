@@ -110,6 +110,7 @@ gh pr create # 需要 cli.github.com
 
 由于 Perfetto 具有相当复杂的测试策略，我们将在每次推送到仓库时自动运行我们的 presubmit。
 手动运行：`tools/run_presubmit`。
+
 有关测试 Perfetto 的更多信息，请参阅[测试页面](testing)。
 
 ## 接下来做什么？
@@ -119,8 +120,8 @@ gh pr create # 需要 cli.github.com
 - 如果你想为 UI 添加新功能，最可能的下一步是 [UI 快速入门](ui-getting-started)。
 - 如果你想编辑 UI 的核心功能：这是一个大得多的更改，需要深入了解 Perfetto UI。大多数请求/错误现在与各种插件相关，而不是核心。
 - 如果你想添加新的 ftrace 事件，请查看[常见任务页面](common-tasks)。
-- 如果你想为 Perfetto SQL 标准库添加新表/视图/函数，你需要先理解 [Perfetto SQL 语法](/docs/analysis/perfetto-sql-syntax.md)，然后阅读[常见任务页面](common-tasks）中更新标准库的详细信息。
-- 如果你想为 Perfetto 添加对新文件类型的支持，你需要向 Trace Processor C++ 代码添加新的导入器。
+- 如果你想为 Perfetto SQL 标准库添加新表/视图/函数，你需要先理解 [Perfetto SQL 语法](/docs/analysis/perfetto-sql-syntax.md)，然后阅读[常见任务页面](common-tasks) 中更新标准库的详细信息。
+- 如果你想为 Perfetto 添加对新文件类型的支持，你需要向 Trace Processor C++ 代码添加新的 `importer`。
 
 ## {#community} 社区交流
 
@@ -142,7 +143,7 @@ gh pr create # 需要 cli.github.com
 
 对于影响 Chrome Tracing 的错误：
 
-- 使用 http://crbug.com `Component:Speed>Tracing 标签：Perfetto`。
+- 使用 http://crbug.com `Component:Speed>Tracing label:Perfetto`。
 
 ## 贡献者许可协议
 

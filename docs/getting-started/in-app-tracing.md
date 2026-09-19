@@ -13,7 +13,7 @@ Perfetto SDK 是一个 C++ 库，允许你为你的应用程序添加插桩以�
 
 ### 设置
 
-从 https://github.com/google/perfetto/releases/latest 的最新 Perfetto release 下载 `perfetto-cpp-sdk-src.zip` 并解压。
+从最新 Perfetto release 下载 `perfetto-cpp-sdk-src.zip`（地址：https://github.com/google/perfetto/releases/latest）并解压。
 
 SDK 由两个文件组成，`perfetto.h` 和 `perfetto.cc`。这些是客户端 API 的 amalgamation，旨在易于集成到现有构建系统。源代码是自包含的，只需要符合 C++17 的标准库。
 
@@ -40,40 +40,41 @@ add_executable(example example.cc)
 TAB: CMake
 
 ```
-# 建议使用最新版本的 CMake。
+# It's recommended to use a recent version of CMake.
 cmake_minimum_required(VERSION 3.13)
 
-# 项目名称。
+# Name of the project.
 project(Example)
 
-# 查找线程库，这是 Perfetto 的依赖项。
+# Find the thread library, which is a dependency of Perfetto.
 find_package(Threads)
 
-# 将 Perfetto SDK 源文件添加到静态库。
+# Add the Perfetto SDK source files to a static library.
 include_directories(perfetto/sdk)
 add_library(perfetto STATIC perfetto/sdk/perfetto.cc)
 
-# 将应用程序的源文件添加到可执行文件。
+# Add your application's source files to an executable.
 add_executable(example example.cc)
 
-# 将 Perfetto 库和线程库链接到你的可执行文件。
+# Link the Perfetto library and the thread library to your executable.
 target_link_libraries(example perfetto ${CMAKE_THREAD_LIBS_INIT})
 
-# Windows 特定设置。
+# Windows-specific settings.
 if (WIN32)
- # Perfetto 库包含许多符号，因此需要"big object"格式。
- target_compile_options(perfetto PRIVATE "/bigobj")
+  # The Perfetto library contains many symbols, so it needs the "big object"
+  # format.
+  target_compile_options(perfetto PRIVATE "/bigobj")
 
- # 禁用 windows.h 中的旧功能。
- add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+  # Disable legacy features in windows.h.
+  add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 
- # 在 Windows 上，我们需要链接到 WinSock2 库。
- target_link_libraries(example ws2_32)
+  # On Windows, we need to link to the WinSock2 library.
+  target_link_libraries(example ws2_32)
 endif (WIN32)
 
-# 使用 Visual Studio 编译器时启用标准兼容模式。
+# Enable standards-compliant mode when using the Visual Studio compiler.
 if (MSVC)
- target_compile_options(example PRIVATE "/permissive-")
+  target_compile_options(example PRIVATE "/permissive-")
 endif (MSVC)
 ```
 
@@ -204,7 +205,7 @@ TAB: C++
 
 ## 可视化你的第一个 app trace
 
-你现在可以使用 https://ui.perfetto.dev/ 打开 `example.pftrace` 文件
+你现在可以打开 `example.pftrace` 文件，使用地址 https://ui.perfetto.dev/
 
 它将显示通过执行你的插桩点捕获的事件：
 
@@ -214,15 +215,15 @@ TAB: C++
 
 除了在时间轴上可视化 trace 之外，Perfetto 还支持使用 SQL 查询 trace。执行此操作的最简单方法是使用 UI 中直接可用的查询引擎。
 
-1. 在 Perfetto UI 中，点击左侧菜单中的"Query (SQL)"标签。
+1.  在 Perfetto UI 中，点击左侧菜单中的"Query (SQL)"标签。
 
- ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
+    ![Perfetto UI Query SQL](/docs/images/perfetto-ui-query-sql.png)
 
-2. 这将打开一个两部分窗口。你可以在顶部部分编写 PerfettoSQL 查询，并在底部部分查看结果。
+2.  这将打开一个两部分窗口。你可以在顶部部分编写 PerfettoSQL 查询，并在底部部分查看结果。
 
- ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
+    ![Perfetto UI SQL Window](/docs/images/perfetto-ui-sql-window.png)
 
-3. 然后你可以执行查询 Ctrl/Cmd + Enter:
+3.  然后你可以执行查询 Ctrl/Cmd + Enter:
 
 例如，通过运行：
 
@@ -253,47 +254,47 @@ WHERE name = 'Framerate';
 
 要启用组合 tracing，你需要更改应用程序以连接到系统范围的 tracing 服务，然后使用标准系统 tracing 工具采集 trace。
 
-1. **修改你的应用程序代码**：
+1.  **修改你的应用程序代码**：
 
-  - 更改初始化以连接到系统后端（`kSystemBackend`）。这告诉 Perfetto SDK 将 trace 事件发送到中央系统 tracing 服务，而不是在应用程序内收集它们。
-  - 删除所有与管理 tracing session 相关的代码(`perfetto::Tracing::NewTrace()`, `tracing_session->Setup()`, `tracing_session->StartBlocking()` 等)。你的应用程序现在仅充当 trace 数据的生产者，系统 tracing 服务将控制何时开始和停止 tracing。
+    - 更改初始化以连接到系统后端（`kSystemBackend`）。这告诉 Perfetto SDK 将 trace 事件发送到中央系统 tracing 服务，而不是在应用程序内收集它们。
+    - 删除所有与管理 tracing session 相关的代码(`perfetto::Tracing::NewTrace()`, `tracing_session->Setup()`, `tracing_session->StartBlocking()` 等)。你的应用程序现在仅充当 trace 数据的生产者，系统 tracing 服务将控制何时开始和停止 tracing。
 
- 你的 `main` 函数现在应该看起来像这样：
+    你的 `main` 函数现在应该看起来像这样：
 
- ```cpp
- #include <perfetto.h>
+    ```cpp
+    #include <perfetto.h>
 
- // 像以前一样定义你的 categories。
- PERFETTO_DEFINE_CATEGORIES(
- perfetto::Category("rendering")
- .SetDescription("Events from the graphics subsystem"),
- perfetto::Category("network")
- .SetDescription("Network upload and download statistics"));
+    // 像以前一样定义你的 categories。
+    PERFETTO_DEFINE_CATEGORIES(
+    perfetto::Category("rendering")
+    .SetDescription("Events from the graphics subsystem"),
+    perfetto::Category("network")
+    .SetDescription("Network upload and download statistics"));
 
- PERFETTO_TRACK_EVENT_STATIC_STORAGE();
+    PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
- int main(int argc, char** argv) {
- // 连接到系统 tracing 服务。
- perfetto::TracingInitArgs args;
- args.backends |= perfetto::kSystemBackend;
- perfetto::Tracing::Initialize(args);
+    int main(int argc, char** argv) {
+    // 连接到系统 tracing 服务。
+    perfetto::TracingInitArgs args;
+    args.backends |= perfetto::kSystemBackend;
+    perfetto::Tracing::Initialize(args);
 
- // 注册你的 track event 数据源。
- perfetto::TrackEvent::Register();
+    // 注册你的 track event 数据源。
+    perfetto::TrackEvent::Register();
 
- // 你的应用程序逻辑放在这里。
- // 当在外部启用 tracing 时,TRACE_EVENT 宏现在将写入系统 trace 缓冲区。
- // ...
- }
- ```
+    // 你的应用程序逻辑放在这里。
+    // 当在外部启用 tracing 时,TRACE_EVENT 宏现在将写入系统 trace 缓冲区。
+    // ...
+    }
+    ```
 
-2. **采集系统 trace**：
+2.  **采集系统 trace**：
 
- 运行你的应用程序，你现在可以使用 [采集 system traces](/docs/getting-started/system-tracing.md) 指南中描述的方法采集组合 trace。
+    运行你的应用程序，你现在可以使用 [采集 system traces](/docs/getting-started/system-tracing.md) 指南中描述的方法采集组合 trace。
 
- 配置 trace 时，除了你想要收集的任何系统数据源（例如，`linux.ftrace`）之外，你还需要启用 `track_event` 数据源。这将确保你的应用程序的自定义事件包含在 trace 中。
+    配置 trace 时，除了你想要收集的任何系统数据源（例如，`linux.ftrace`）之外，你还需要启用 `track_event` 数据源。这将确保你的应用程序的自定义事件包含在 trace 中。
 
- 当你在 Perfetto UI 中打开生成的 trace 文件时，你将看到应用程序的自定义 tracks 与系统级别 tracks 一起显示。
+    当你在 Perfetto UI 中打开生成的 trace 文件时，你将看到应用程序的自定义 tracks 与系统级别 tracks 一起显示。
 
 ## 后续步骤
 

@@ -4,14 +4,14 @@
 
 常见测试目标(所有平台/检出):
 
-`perfetto_unittests`: 
+`perfetto_unittests`:  
 与平台无关的单元测试。
 
-`perfetto_integrationtests`: 
+`perfetto_integrationtests`:  
 端到端测试，涉及基于 protobuf 的 IPC 传输和 ftrace
 集成（仅限 Linux/Android）。
 
-`perfetto_benchmarks`: 
+`perfetto_benchmarks`:  
 基准测试跟踪以下性能：(i) trace 写入，(ii) trace 回读
 以及 (iii) ftrace 原始管道 -> protobuf 翻译。
 
@@ -51,18 +51,18 @@ tools/run_android_test out/default perfetto_unittests
 
 Perfetto 在各种位置进行测试：
 
-**Perfetto CI**： https://ci.perfetto.dev/ 
+**Perfetto CI**： https://ci.perfetto.dev/  
 从独立检出构建和运行 perfetto\_{unittests,integrationtests,benchmarks}。
 基准测试以简化形式运行以进行冒烟测试。
 有关更多详细信息，请参阅 [此文档](/docs/design-docs/continuous-integration.md)。
 
-**Android CI**(参见 go/apct 和 go/apct-guide): 
+**Android CI**(参见 go/apct 和 go/apct-guide):  
 仅运行 `perfetto_integrationtests`
 
-**Android 预提交(TreeHugger)** ： 
+**Android 预提交(TreeHugger)** ：  
 在提交每个 `external/perfetto` 的 AOSP CL 之前运行。
 
-**Android CTS**(用于确保 API 兼容性的 Android 测试套件): 
+**Android CTS**(用于确保 API 兼容性的 Android 测试套件):  
 内部滚动运行。
 
 请注意，Perfetto CI 使用独立构建系统，其他构建为
@@ -83,13 +83,13 @@ Perfetto 中大多数代码在类级别都存在单元测试。它们
 
 集成测试可以在两种配置中运行：
 
-**1. 生产模式**(仅限 Android) 
+**1. 生产模式**(仅限 Android)  
 此模式假设 tracing 服务（`traced`）和 OS 探测
 服务（`traced_probes`）都已运行。在此模式下，测试仅启用
 消费者端点并测试与生产
 服务的交互。这是我们的 Android CTS 和 APCT 测试的工作方式。
 
-**2. 独立模式**： 
+**2. 独立模式**：  
 在测试本身中启动守护程序，然后针对它们进行测试。
 这是独立构建的测试方式。这是在 Linux 和 MacOS 上
 运行集成测试的唯一受支持的方式。
@@ -127,13 +127,13 @@ class DiffTestBlueprint:
   out: Union[Path, Json, Csv, TextProto, ExpectedError]
 ```
 
-_Trace_ 和 _Out_：对于 `Path` 以外的每种类型，对象的内容将被视为文件内容，因此必须遵循相同的规则。
+*Trace* 和 *Out*：对于 `Path` 以外的每种类型，对象的内容将被视为文件内容，因此必须遵循相同的规则。
 
-_Zip_ 和 _Tar_：trace 也可以是直接从 dict 内联组装的归档文件，按键为归档中的路径。每个成员可以是 `str`（直接写入，例如 JSON trace 或 systrace）、`TextProto`（序列化为二进制 proto trace）或 `Path`/`DataPath`（外部文件的原始字节）。这是 [trace 合并](/docs/analysis/merging-traces.md) 和 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 处理测试的方式；示例参见 `diff_tests/parser/trace_manifest/`。
+*Zip* 和 *Tar*：trace 也可以是直接从 dict 内联组装的归档文件，按键为归档中的路径。每个成员可以是 `str`（直接写入，例如 JSON trace 或 systrace）、`TextProto`（序列化为二进制 proto trace）或 `Path`/`DataPath`（外部文件的原始字节）。这是 [trace 合并](/docs/analysis/merging-traces.md) 和 [perfetto_manifest](/docs/reference/perfetto-manifest.md) 处理测试的方式；示例参见 `diff_tests/parser/trace_manifest/`。
 
-_Query_：对于 metric 测试，只需提供 metric 名称。对于查询测试，可以是原始 SQL 语句，例如 `"SELECT * FROM SLICE"`，或 `.sql` 文件的路径。
+*Query*：对于 metric 测试，只需提供 metric 名称。对于查询测试，可以是原始 SQL 语句，例如 `"SELECT * FROM SLICE"`，或 `.sql` 文件的路径。
 
-_ExpectedError_：设置 `out=ExpectedError('error substring')` 会反转测试：当且仅当加载 trace 失败且 `trace_processor_shell` 打印的错误消息包含给定子字符串时，测试才通过。使用此方式测试严格的解析/导入错误，即预期整个 trace 加载会失败的情况。查询仍然是必需的，但永远不会被执行。
+*ExpectedError*：设置 `out=ExpectedError('error substring')` 会反转测试：当且仅当加载 trace 失败且 `trace_processor_shell` 打印的错误消息包含给定子字符串时，测试才通过。使用此方式测试严格的解析/导入错误，即预期整个 trace 加载会失败的情况。查询仍然是必需的，但永远不会被执行。
 
 NOTE: 运行 `tools/diff_test_trace_processor.py` 之前，需要先构建 `trace_processor_shell` 及相关 proto 描述符。最简单的方法是在首次和每次更改 Trace Processor 代码时运行 `tools/ninja -C <out directory>`。
 
@@ -147,19 +147,19 @@ NOTE: 运行 `tools/diff_test_trace_processor.py` 之前，需要先构建 `trac
 
 **场景**：正在添加新的 stdlib 模块 `foo/bar.sql`。
 
-_答案_：将测试添加到 `stdlib/foo/bar_tests.py`。
+*答案*：将测试添加到 `stdlib/foo/bar_tests.py`。
 
 **场景**：正在解析一个新事件，测试的重点是确保该事件被正确解析。
 
-_答案_：在 `parser` 子目录之一中添加测试。如果存在相关目录（例如 `sched`、`power`），优先将测试添加到现有目录中。
+*答案*：在 `parser` 子目录之一中添加测试。如果存在相关目录（例如 `sched`、`power`），优先将测试添加到现有目录中。
 
 **场景**：正在添加新的动态表，测试的重点是确保动态表被正确计算。
 
-_答案_：将测试添加到 `stdlib/dynamic_tables`。
+*答案*：将测试添加到 `stdlib/dynamic_tables`。
 
 **场景**：正在修改 Trace Processor 的内部实现，测试旨在确保 Trace Processor 正确过滤/排序重要的内置表。
 
-_答案_：将测试添加到 `tables`。
+*答案*：将测试添加到 `tables`。
 
 ## UI 像素差异测试
 

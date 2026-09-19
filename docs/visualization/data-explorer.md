@@ -147,7 +147,7 @@ Data Explorer 的核心概念是**节点**。节点分为四个类别：
 
 - **列排序**——点击列标题排序
 - **列过滤**——在网格内内联过滤值
-- **导出到 Timeline**——使用结果面板菜单中的 **Export to Timeline** 项将结果发送回主 Timeline 作为 [Debug Track](/docs/analysis/debug-tracks.md)
+- **导出到 Timeline**——将结果作为 [Debug Track](/docs/analysis/debug-tracks.md) 发送回主 Timeline，通过结果面板菜单中的 **Export to Timeline** 项完成
 
 要查看选中节点生成的 SQL，点击节点侧边栏中的 **SQL** 标签。**Proto** 标签显示节点的内部查询表示为结构化 Proto——用于调试或以编程方式共享查询图。
 

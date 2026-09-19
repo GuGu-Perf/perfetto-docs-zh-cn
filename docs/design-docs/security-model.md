@@ -28,5 +28,8 @@ Consumers 始终被信任。它们仍然不应该能够崩溃或利用服务。�
 内存仅在每个 producer 和 tracing 服务之间点对点共享。我们永远不应该跨 producers 共享内存（以避免泄漏属于不同 producers 的 trace 数据），也不应该在 producers 和 consumers 之间共享（这将打开难以审计的路径，连接不受信任和无特权实体与受信任和更多权限实体）。
 
 ## trace 内容的证明
-tracing 服务保证 Service 编写的 `TracePacket` 字段不能由 Producer(s) 欺骗。尝试定义这些字段的数据包将被拒绝，除了时钟快照。有关更多详细信息，请参阅 [PacketStreamValidator](/src/tracing/service/packet_stream_validator.cc) 和 [其单元测试](/src/tracing/service/packet_stream_validator_unittest.cc)。
-目前没有什么可以阻止 producer 编写不属于其数据源的 `TracePacket(s)`。实际上，服务永远不会阻止这样做，因为这样做意味着服务知道所有可能的数据包类型，这无法扩展。但是，服务将 producer 的 POSIX uid 附加到每个 `TracePacket` 以执行 trace 内容的离线证明。
+tracing 服务保证 Service 编写的 `TracePacket` 字段不能由 Producer(s) 欺骗。  
+尝试定义这些字段的数据包将被拒绝，除了时钟快照。  
+有关更多详细信息，请参阅 [PacketStreamValidator](/src/tracing/service/packet_stream_validator.cc) 和 [其单元测试](/src/tracing/service/packet_stream_validator_unittest.cc)。  
+目前没有什么可以阻止 producer 编写不属于其数据源的 `TracePacket(s)`。实际上，服务永远不会阻止这样做，因为这样做意味着服务知道所有可能的数据包类型，这无法扩展。  
+但是，服务将 producer 的 POSIX uid 附加到每个 `TracePacket` 以执行 trace 内容的离线证明。

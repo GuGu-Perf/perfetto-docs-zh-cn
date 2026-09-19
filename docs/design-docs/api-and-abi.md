@@ -21,11 +21,11 @@
 
 ### Track Event (公共)
 
-这主要由 [`track_event.h`](/include/perfetto/tracing/track_event.h) 中定义的 `TRACE_EVENT*` 宏组成。这些宏为应用程序提供了一种快速简便的方法来添加常见类型的检测点（Slice、Counter、即时事件）。有关详细信息和说明，请参见 [客户端库文档][cli_lib]。
+这主要由 `TRACE_EVENT*` 宏组成，这些宏定义于 [`track_event.h`](/include/perfetto/tracing/track_event.h)。这些宏为应用程序提供了一种快速简便的方法来添加常见类型的检测点（Slice、Counter、即时事件）。有关详细信息和说明，请参见 [客户端库文档][cli_lib]。
 
 ### 自定义数据源(公共)
 
-这包括 [`tracing.h`](/include/perfetto/tracing.h) 中定义的 `perfetto::DataSource` 基类和 `perfetto::Tracing` 控制器类。这些类允许应用程序创建自定义数据源，这些数据源可以获取有关 trace 会话生命周期的通知并在 trace 中发出自定义 proto(例如，内存快照、合成器图层等)。
+这包括 `perfetto::DataSource` 基类和 `perfetto::Tracing` 控制器类，它们定义于 [`tracing.h`](/include/perfetto/tracing.h)。这些类允许应用程序创建自定义数据源，这些数据源可以获取有关 trace 会话生命周期的通知并在 trace 中发出自定义 proto(例如，内存快照、合成器图层等)。
 
 有关详细信息和说明，请参见 [客户端库文档][cli_lib]。
 
@@ -57,7 +57,7 @@ Tracing 协议 ABI 包括以下二进制接口，允许操作系统中的各种�
 
 ![Socket protocol](/docs/images/socket-protocol.png)
 
-两个 socket 使用相同的线路协议，即 [wire_protocol.proto](/protos/perfetto/ipc/wire_protocol.proto) 中定义的 `IPCFrame` 消息。线路协议简单基于以下形式的长度前缀消息序列：
+两个 socket 使用相同的线路协议，即 `IPCFrame` 消息，该消息定义于 [wire_protocol.proto](/protos/perfetto/ipc/wire_protocol.proto)。线路协议简单基于以下形式的长度前缀消息序列：
 ```
 < 4 字节 len little-endian > < proto 编码的 IPCFrame >
 
@@ -75,10 +75,10 @@ Tracing 协议 ABI 包括以下二进制接口，允许操作系统中的各种�
 
 3. `InvokeMethod {producer, consumer} -> service`<br>
  调用由 `BindServiceReply` 返回的 ID 标识的 RPC 方法。调用将唯一的参数作为 proto 子消息。每个方法定义一对 _请求_ 和 _响应_ 方法类型。<br>
- 例如，[producer_port.proto] 中定义的 `RegisterDataSource` 接受 `perfetto.protos.RegisterDataSourceRequest` 并返回 `perfetto.protos.RegisterDataSourceResponse`。
+ 例如，`RegisterDataSource` 定义在 [producer_port.proto] 中，它接受 `perfetto.protos.RegisterDataSourceRequest` 并返回 `perfetto.protos.RegisterDataSourceResponse`。
 
 4. `InvokeMethodReply service -> {producer, consumer}`<br>
- 返回相应调用的结果或错误标志。如果方法返回签名被标记为 `stream`(例如 `returns (stream GetAsyncCommandResponse)`)，则方法调用后可以跟多个 `InvokeMethodReply`，所有 `InvokeMethodReply` 都具有相同的 `request_id`。流中的所有回复（最后一个除外）都将具有 `has_more: true`，以通知客户端同一调用的更多回复将跟随。
+ 返回相应调用的结果或错误标志。如果方法返回签名被标记为 `stream`(例如 `returns (stream GetAsyncCommandResponse)`)，则方法调用后可以跟多个 `InvokeMethodReply`，它们都具有相同的 `request_id`。流中的所有回复（最后一个除外）都将具有 `has_more: true`，以通知客户端同一调用的更多回复将跟随。
 
 以下是 IPC socket 上的流量外观：
 
@@ -200,15 +200,13 @@ SMB 页面的大小由每个生产者在连接时通过 `InitializeConnectionReq
 - `Complete`：生产者已完成写入块，并且不会再次触及它。服务可以将其移动到其非共享环形缓冲区，并在完成后将块标记为 `BeingRead` -> `Free`。
 
 - `BeingRead`：服务正在将页面移动到其非共享环形缓冲区中。生产者永远不应触及此状态的块。
- _注意:此状态最终从未使用，因为服务直接将块从 `Complete` 转换回 `Free`_。
+ *注意:此状态最终从未使用，因为服务直接将块从 `Complete` 转换回 `Free`* 。
 
 块由生产者的一个数据源的一个线程独占拥有。
 
 块本质上是单写入者单线程无锁竞技场。锁定仅在块已满并且需要获取新块时发生。
 
-锁定仅在生产者进程范围内发生。通常不允许进程间锁定。生产者无法锁定服务，反之亦然。在最坏的情况下，两者中的任何一个都可以饿死 SMB，通过将所有块标记为正在被读取或写入。但这只有丢失 trace 数据的副作用。
-
-只有当生产者中的数据源选择使用 [`BufferExhaustedPolicy.kStall`](/docs/concepts/buffers.md) 策略并且 SMB 已满时，才会在写入端（生产者）发生停滞。
+锁定仅在生产者进程范围内发生。通常不允许进程间锁定。生产者无法锁定服务，反之亦然。在最坏的情况下，两者中的任何一个都可以饿死 SMB，通过将所有块标记为正在被读取或写入。但这只有丢失 trace 数据的副作用。只有当生产者中的数据源选择使用 [`BufferExhaustedPolicy.kStall`](/docs/concepts/buffers.md) 策略并且 SMB 已满时，才会在写入端（生产者）发生停滞。
 
 **[TracePacket][trace-packet-ref]** 是 trace 的原子。撇开页面和块，trace 在概念上只是 TracePacket 的串联。TracePacket 可以很大（最多 64 MB），并且可以跨越多个块，因此跨越多个页面。因此，TracePacket 可以 >> 块大小，>> 页面大小，甚至 >> SMB 大小。块头带有用于处理 TracePacket 分割的元数据。
 
@@ -236,7 +234,7 @@ Protobuf 中的嵌套消息以其长度为前缀。在零拷贝直接序列化�
 
 以下 protobuf 消息是整个 trace 协议 ABI 的一部分，并在更新时保持向后兼容，除非在注释中标记为实验性。
 
-TIP: 另请参见 [Protobuf 语言指南][proto-updating] 的 _更新消息类型_ 部分，了解在更新 protobuf 消息模式时的有效 ABI 兼容更改。
+TIP: 另请参见 _更新消息类型_ 部分（见 [Protobuf 语言指南][proto-updating]），了解在更新 protobuf 消息模式时的有效 ABI 兼容更改。
 
 #### DataSourceDescriptor
 
@@ -270,7 +268,7 @@ trace 服务需要支持客户端与旧版本的生产者或消费者 trace 协�
 
 - 不要从服务中删除 IPC 方法。
 - 假定稍后添加到现有方法的字段可能不存在。
-- 对于较新的生产者/消费者行为，通过连接到服务时的功能标志通告这些行为。这方面的好例子是 [data_source_descriptor.proto] 中的 `will_notify_on_stop` 或 `handles_incremental_state_clear` 标志。
+- 对于较新的生产者/消费者行为，通过连接到服务时的功能标志通告这些行为。这方面的好例子是 `will_notify_on_stop` 或 `handles_incremental_state_clear` 标志（定义于 [data_source_descriptor.proto]）。
 
 #### 生产者/消费者客户端比 trace 服务新
 
@@ -301,7 +299,7 @@ Perfetto C++ 客户端库仅以静态库和单源合并 SDK 的形式可用（�
 [cli_lib]: /docs/instrumentation/tracing-sdk.md
 [selinux_producer]: https://cs.android.com/search?q=perfetto_producer%20f:sepolicy.*%5C.te&sq=
 [selinux_consumer]:https://cs.android.com/search?q=f:sepolicy%2F.*%5C.te%20traced_consumer&sq=
-[mjom]: https://source.chromium.org/chromium/chromium/src/+/master:services/tracing/public/mojom/perfetto_service.mojom?q=producer%20f:%5C.mojom$%20perfetto&ss=chromium&originalUrl=https:%2F%2Fcs.chromium.org%2F
+[mojom]: https://source.chromium.org/chromium/chromium/src/+/master:services/tracing/public/mojom/perfetto_service.mojom?q=producer%20f:%5C.mojom$%20perfetto&ss=chromium&originalUrl=https:%2F%2Fcs.chromium.org%2F
 [proto_rpc]: https://developers.google.com/protocol-buffers/docs/proto#services
 [producer_port.proto]: /protos/perfetto/ipc/producer_port.proto
 [consumer_port.proto]: /protos/perfetto/ipc/consumer_port.proto

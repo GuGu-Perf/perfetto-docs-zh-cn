@@ -37,7 +37,8 @@ bundle`），而**内核**符号始终在设备上录制时解析（Perfetto 故
 
 这适用于任何采集调用栈的 DataSource：native heap profiler、基于 perf 的 CPU profiler（`traced_perf` 和导入的 Linux `perf` 数据）以及 ART 分配 profiler。
 
-这些数据源记录原始的**用户空间**指令地址（在 Android 上还包括混淆的 Java/Kotlin 帧），你可以在**录制后**使用以下步骤在主机上解析。只要你仍然有匹配的二进制文件和 mapping 文件，你**不需要**重新采集即可获得用户空间符号或反混淆名称。
+这些数据源记录原始的**用户空间**指令地址（在 Android 上还包括混淆的 Java/Kotlin 帧），你可以在**录制
+后**使用以下步骤在主机上解析。只要你仍然有匹配的二进制文件和 mapping 文件，你**不需要**重新采集即可获得用户空间符号或反混淆名称。
 
 调用栈还可能包含**内核**帧，它们的处理方式不同；请参阅本节末尾的[调用栈中的内核帧](#callstack-kernel-frames)。
 
@@ -60,7 +61,7 @@ NOTE: 作为实现细节，丰富化的 trace 目前被打包为 TAR 归档文�
 - 磁盘上有匹配的未剥离二进制文件 / Breakpad 符号（Build ID 必须与设备上采集的匹配）。
 - 对于 Java/Kotlin：需要设备上运行的构建所产生的 `mapping.txt`。
 
-### 自动路径发现
+#### 自动路径发现
 
 相比[方式 2](#option-2-legacy-traceconv-symbolize-deobfuscate) 的主要优势是，`bundle` 会在所有常见位置查找符号和 mapping 文件，无需配置。它搜索：
 
@@ -69,7 +70,7 @@ NOTE: 作为实现细节，丰富化的 trace 目前被打包为 TAR 归档文�
 - trace 的 `stack_profile_mapping` 中记录的绝对库路径（当在你用于分析的同一台机器上进行 profile 时很有用）。
 - ProGuard/R8 mapping 文件的标准 Android Gradle 项目布局（`./app/build/outputs/mapping/<variant>/mapping.txt`）。
 
-### 使用标志补充发现
+#### 使用标志补充发现
 
 当自动发现不够时：
 
@@ -87,14 +88,14 @@ trace_processor bundle \
 
 有关选项语义、颜色控制、输出替换和退出状态，请参阅 [bundle 命令参考](/docs/reference/trace-processor-cli.md#subcommand-bundle)。
 
-## {#option-2-legacy-traceconv-symbolize-deobfuscate} 方式 2：传统 `trace_processor util symbolize` / `util deobfuscate`
+### {#option-2-legacy-traceconv-symbolize-deobfuscate} 方式 2：传统 `trace_processor util symbolize` / `util deobfuscate`
 
 NOTE: 此流程是为了与已有的脚本和 CI 流水线向后兼容而保留的。对于新使用场景，请始终优先使用[方式 1](#option-1-traceconv-bundle)——它更简单，具有自动发现功能，并且适用于非 Perfetto trace 格式。
 
 较旧的 `trace_processor util symbolize` 和 `trace_processor util
 deobfuscate` 子命令生成独立的符号和反混淆文件，完全由环境变量驱动，然后必须手动拼接到 trace 上。
 
-### Native 符号化
+#### Native 符号化
 
 所有工具（`trace_processor`、`heap_profile` 脚本）都遵循 `PERFETTO_BINARY_PATH` 环境变量：
 
@@ -110,7 +111,7 @@ PERFETTO_BINARY_PATH=somedir trace_processor util symbolize raw-trace > symbols
 
 或者，设置 `PERFETTO_SYMBOLIZER_MODE=index`，符号化器将按 Build ID 递归索引目录中的 ELF 文件，因此文件名不需要匹配。
 
-### Java/Kotlin 反混淆
+#### Java/Kotlin 反混淆
 
 通过 `PERFETTO_PROGUARD_MAP` 提供 ProGuard/R8 mapping，使用格式 `packagename=map_filename[:packagename=map_filename...]`：
 
@@ -126,7 +127,7 @@ PERFETTO_PROGUARD_MAP=com.example.pkg=proguard_map.txt \
   trace_processor util deobfuscate ${TRACE} > deobfuscation_map
 ```
 
-### 将输出附加到 trace
+#### 将输出附加到 trace
 
 上面的 `symbols` 和 `deobfuscation_map` 都是序列化的 `TracePacket` proto，因此对于 **Perfetto protobuf trace**，你可以简单地将它们拼接：
 
@@ -144,7 +145,7 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 - 拼接技巧**仅适用于 Perfetto protobuf trace**。其他 trace 格式（Chrome JSON、systrace、Firefox profile 等）不能以这种方式追加 `TracePacket` 字节。对于这些格式，请使用[方式 1](#option-1-traceconv-bundle)并通过 `trace_processor_shell` 加载符号。
 - 你必须手动管理 `PERFETTO_BINARY_PATH` / `PERFETTO_PROGUARD_MAP`；方式 1 中的自动发现不适用。
 
-## 符号查找顺序
+### 符号查找顺序
 
 对于 trace 中的每个 native mapping，符号化器查找具有匹配 Build ID 的文件。对于每个搜索路径 `P`，它按以下顺序尝试：
 
@@ -164,7 +165,7 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 
 第一个具有匹配 Build ID 的文件胜出。如果磁盘上的 Build ID 与 trace 中记录的不同，则跳过该文件。
 
-## 从 C++ 库使用符号化/反混淆
+### 从 C++ 库使用符号化/反混淆
 
 目前**没有稳定的公共 C++ API** 用于在进程内执行符号化或反混淆。底层实现存在（`src/traceconv/trace_to_bundle.h` 中的 `TraceToBundle`，由 `src/trace_processor/util/trace_enrichment/trace_enrichment.h` 中的 `EnrichTrace` 支持），但它位于 `src/` 而非 `include/` 下，不属于公共 API 接口。
 
@@ -176,19 +177,26 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 
 常见消息及其含义：
 
-- **`N frames from M mappings: no usable symbols in the searched paths`**，后面跟着 mapping 名称：工具搜索了自动发现的路径（加上你给出的任何 `--symbol-paths`），但没有为这些 mapping 找到 Build ID 匹配的二进制文件，或只找到已剥离的版本。其下方的 `To fix this` 块取决于二进制文件的来源。如果你自己构建它们，请将 `--symbol-paths` 指向未剥离的构建产物。如果它们来自你的操作系统，请安装其调试符号：Debian/Ubuntu 上使用 `apt install <package>-dbgsym`（用 `dpkg -S <path>` 找到包名），Fedora 上使用 `dnf debuginfo-install <package>`（用 `rpm -qf <path>` 找到包名），两者都会安装到 `/usr/lib/debug` 并被自动发现；在 Android 上，则是匹配平台构建的 `symbols` 目录。使用 `--verbose` 重新运行可查看 Build ID 和尝试过的每个路径。
+- **`N frames from M mappings: no usable symbols in the searched paths`** ，后面跟着 mapping 名称：工具搜索了自动发现的路径（加上你给出的任何 `--symbol-paths`），但没有为这些 mapping 找到 Build ID 匹配的二进制文件，或只找到已剥离的版本。其下方的 `To fix this` 块取决于二进制文件的来源。如果你自己构建它们，请将 `--symbol-paths` 指向未剥离的构建产物。如果它们来自你的操作系统，请安装其调试符号：Debian/Ubuntu 上使用 `apt install <package>-dbgsym`（用 `dpkg -S <path>` 找到包名），Fedora 上使用 `dnf
+  debuginfo-install <package>`（用 `rpm -qf <path>` 找到包名），两者都会安装到
+  `/usr/lib/debug` 并被自动发现；在 Android 上，则是匹配平台构建的 `symbols` 目录。使用
+  `--verbose` 重新运行可查看 Build ID 和尝试过的每个路径。
 
-- **`N frames from M mappings: kernel frames, no vmlinux in the searched paths`**：安装内核调试包（Debian/Ubuntu 上是 `linux-image-$(uname -r)-dbg`，Fedora 上是 `dnf debuginfo-install kernel`），或将 `--symbol-paths` 指向你内核构建产物的 `vmlinux`。
+- **`N frames from M mappings: kernel frames, no vmlinux in the searched
+  paths`** ：安装内核调试包（Debian/Ubuntu 上是 `linux-image-$(uname -r)-dbg`，Fedora
+  上是 `dnf debuginfo-install kernel`），或将 `--symbol-paths` 指向你内核构建产物的 `vmlinux`。
 
-- **`N frames from M mappings: no build ID recorded, so symbols cannot be looked up`**：trace 的 mapping 没有 Build ID，因此即使有正确的二进制文件也无法匹配符号。使用带 Build ID 的二进制文件重新构建（链接器标志 `-Wl,--build-id`）并重新录制。
+- **`N frames from M mappings: no build ID recorded, so symbols cannot be
+  looked up`** ：trace 的 mapping 没有 Build ID，因此即使有正确的二进制文件也无法匹配符号。使用带 Build ID 的二进制文件重新构建（链接器标志 `-Wl,--build-id`）并重新录制。
 
-- **`N frames from M mappings: no backing file to read symbols from (JIT, anonymous or [vdso]-style mappings)`**：这些帧来自没有二进制文件支撑的内存。离线工具无法为它们命名。
+- **`N frames from M mappings: no backing file to read symbols from (JIT,
+  anonymous or [vdso]-style mappings)`** ：这些帧来自没有二进制文件支撑的内存。离线工具无法为它们命名。
 
-- **`Kernel function names: this trace contains function_graph events ...`**：trace 包含**未**启用 `symbolize_ksyms` 录制的来自 `function_graph`（或类似 ftrace 事件）的内核地址。这些无法离线符号化；请启用 `symbolize_ksyms: true` 重新录制。参见[内核 ftrace 事件](#ftrace)。
+- **`Kernel function names: this trace contains function_graph events ...`** ：trace 包含来自 `function_graph`（或类似 ftrace 事件）的内核地址，录制时**未**启用 `symbolize_ksyms`。这些无法离线符号化；请启用 `symbolize_ksyms: true` 重新录制。参见[内核 ftrace 事件](#ftrace)。
 
-- **`no symbol paths were searched`**：自动发现被禁用（`--no-auto-symbol-paths`）且没有给出显式路径。传入带待搜索目录的 `--symbol-paths`。
+- **`no symbol paths were searched`** ：自动发现被禁用（`--no-auto-symbol-paths`）且没有给出显式路径。传入带待搜索目录的 `--symbol-paths`。
 
-- **`cannot create output file ...`**：无法创建输出路径（例如父目录不存在或不可写）。检查该路径。
+- **`cannot create output file ...`** ：无法创建输出路径（例如父目录不存在或不可写）。检查该路径。
 
 #### 找不到库
 
@@ -225,10 +233,10 @@ echo 0 | sudo tee /proc/sys/kernel/kptr_restrict
 ## 内核 ftrace 事件：`symbolize_ksyms` {#ftrace}
 
 如果你正在进行**系统 Tracing** 并在预期出现内核函数名的地方看到原始十六进制地址 &mdash; 例如在
-[函数图 Tracing](/docs/data-sources/funcgraph.md) 中，在不可中断休眠
-[调度阻塞](/docs/case-studies/scheduling-blockages.md) 的 `blocked_function` 字段中，或在 kprobe 事件中 &mdash; 修复方法**不是**离线符号化。
+[函数图 Tracing](/docs/data-sources/funcgraph.md) 中，在 `blocked_function` 字段（来自不可中断休眠的
+[调度阻塞](/docs/case-studies/scheduling-blockages.md)）中，或在 kprobe 事件中 &mdash; 修复方法**不是**离线符号化。
 
-这些内核地址通过在 ftrace 配置中启用 `symbolize_ksyms` 在**录制时**解析：
+这些内核地址会在**录制时**通过在 ftrace 配置中启用 `symbolize_ksyms` 来解析：
 
 ```protobuf
 data_sources: {
@@ -251,7 +259,7 @@ WARNING: `trace_processor bundle` 和上述离线符号器**无法**恢复内核
 
 ## 用户空间事件名称：atrace 和 ART 方法追踪 {#userspace-event-names}
 
-某些数据源记录的是人类可读的**名称字符串**而非地址或栈帧。当这些字符串被混淆时（例如 R8 混淆的类名），**没有离线机制可以反混淆它们** &mdash; 名称必须在插桩时以可读形式发出。这与[调用栈部分](#callstacks)中的 Java/Kotlin **栈帧**反混淆不同，后者仅适用于堆转储和采样调用栈。
+某些数据源记录的是人类可读的**名称字符串**而非地址或栈帧。当这些字符串被混淆时（例如 R8 混淆的类名），**没有离线机制可以反混淆它们** &mdash; 名称必须在插桩时以可读形式发出。这与 Java/Kotlin **栈帧**反混淆（见[调用栈部分](#callstacks)）不同，后者仅适用于堆转储和采样调用栈。
 
 目前影响两种情况：
 

@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
 | --- | --- | --- | --- |
 | `PERFETTO_SDK_ENABLE_ZLIB` | `-lz` | `zlib.h` | 在进程内后端上启用 deflate (zlib) codec，遵循 `TraceConfig.compression { deflate {} }`（以及旧版 `compression_type = COMPRESSION_TYPE_DEFLATE`），使得通过 `TracingSession::Setup(cfg, fd)` 写入的 `.pftrace` 文件被压缩。没有该宏时，该字段会被静默忽略。 |
 | `PERFETTO_SDK_ENABLE_ZSTD` | `-lzstd` | `zstd.h` | 在进程内后端上启用 zstd codec，遵循 `TraceConfig.compression { zstd { level: N } }`。zstd 在相似速度下产生比 deflate 更小的 trace。没有该宏时，该字段会被静默忽略。 |
-| `PERFETTO_SDK_ENABLE_RE2` | `-lre2` | `re2/re2.h` | 将 `base::Regex` 使用的默认 `std::regex` 后端替换为 [RE2](https://github.com/google/re2)，后者在处理大规模输入时显著更快（例如用于 `TraceConfig` 的数据源/生产者名称过滤）。 |
+| `PERFETTO_SDK_ENABLE_RE2` | `-lre2` | `re2/re2.h` | 将默认的 `std::regex` 后端（由 `base::Regex` 使用，例如用于 `TraceConfig` 的数据源/生产者名称过滤）替换为 [RE2](https://github.com/google/re2)，后者在处理大规模输入时显著更快。 |
 
 参见 [压缩 trace](/docs/concepts/config.md#compression) 了解如何在 `TraceConfig` 中选择和调整 codec。
 
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
 ## 自定义数据源 vs Track 事件
 
-SDK 提供两个抽象层来注入tracing 数据，它们彼此构建，在代码复杂度和表现力之间进行权衡：[Track 事件](#track-events）和[自定义数据源](#custom-data-sources)。
+SDK 提供两个抽象层来注入 tracing 数据，它们彼此构建，在代码复杂度和表现力之间进行权衡：[Track 事件](#track-events)和[自定义数据源](#custom-data-sources)。
 
 ### Track 事件
 
@@ -168,7 +168,7 @@ data_sources {
 
 ### 自定义数据源
 
-对于大多数用途，Track 事件是为应用程序进行 tracing 插桩的最直接的方式。然而，在某些罕见情况下，它们不够灵活，例如，当数据不适合 Track 的概念，或者数据量足够大以至于需要强类型 Schema 来最小化每个事件的大小。在这种情况下，你可以为 Perfetto 实现 _自定义数据源_。
+对于大多数用途，Track 事件是为应用程序进行 tracing 插桩的最直接的方式。然而，在某些罕见情况下，它们不够灵活，例如，当数据不适合 Track 的概念，或者数据量足够大以至于需要强类型 Schema 来最小化每个事件的大小。在这种情况下，你可以为 Perfetto 实现 *自定义数据源*。
 
 与 Track 事件不同，使用自定义数据源时，你还需要在 [Trace Processor](/docs/analysis/trace-processor.md) 中进行相应的更改，以启用导入数据格式。
 
@@ -233,6 +233,15 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 });
 ```
 
+如果有必要，`Trace()` 方法可以访问自定义数据源状态（上面示例中的 `my_custom_state`）。这样做会获取互斥锁以确保在另一个线程上调用 `Trace()` 方法时不会销毁数据源（例如，因为停止了追踪）。例如：
+
+```C++
+CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
+ auto safe_handle = ctx.GetDataSourceLocked(); // 持有 RAII 锁。
+ DoSomethingWith(safe_handle->my_custom_state);
+});
+```
+
 #### 报告多个相似事物（例如每个 GPU 一个） {#reporting-many-similar-things}
 
 数据源的标识是其 C++ 类型，而不是传递给 `Register()` 的名称。对同一个类调用两次 `Register()`（即使使用不同名称）不会创建第二个数据源；额外的注册会被忽略（并记录日志）。
@@ -262,15 +271,6 @@ GpuDataSource::Register(MakeDescriptor("com.example.gpu1"));
 
    这些类型必须在编译时已知，并且每个都会占用进程中所有数据源共享的 `kMaxDataSources`（=32）槽位中的一个。
 
-如果有必要，`Trace()` 方法可以访问自定义数据源状态（上面示例中的 `my_custom_state`）。这样做会获取互斥锁以确保在另一个线程上调用 `Trace()` 方法时不会销毁数据源（例如，因为停止了追踪）。例如：
-
-```C++
-CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
- auto safe_handle = ctx.GetDataSourceLocked(); // 持有 RAII 锁。
- DoSomethingWith(safe_handle->my_custom_state);
-});
-```
-
 ## 进程内模式 vs 系统模式
 
 这两种模式不是互斥的。应用程序可以配置为在两种模式下工作，并响应进程内 tracing 请求和系统 tracing 请求。两种模式都生成相同的 trace 文件格式。
@@ -291,7 +291,7 @@ TIP: 当多个进程内 trace（例如来自分布式系统中不同机器的）
 
 ### 系统模式
 
-在此模式下，应用程序定义的数据源将使用 [IPC over UNIX socket][ipc] 连接到外部 `traced` 服务。
+在此模式下，应用程序定义的数据源将连接到外部 `traced` 服务，使用 [IPC over UNIX socket][ipc]。
 
 系统模式可以通过在初始化 SDK 时设置 `TracingInitArgs.backends = perfetto::kSystemBackend` 来启用，请参阅下面的示例。
 

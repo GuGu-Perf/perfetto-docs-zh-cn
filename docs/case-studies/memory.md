@@ -67,7 +67,7 @@ VMA 可以分为两种类型：文件支持的和匿名的。
 - **Swapped**： dirty 页面可以被写入磁盘上的交换文件（在大多数 Linux 桌面发行版上）或被压缩(在 Android 和 CrOS 上通过 [ZRAM](https://source.android.com/devices/tech/perf/low-ram#zram))。页面将保持交换状态，直到在其虚拟地址上发生新的 page fault，此时内核会将其带回主内存。
 - **Not present**： 页面上从未发生过 page fault，或者页面是 clean 的，后来被驱逐了。
 
-通常更重要的是减少 _dirty_ 内存的数量，因为它不能像 _clean_ 内存那样回收，并且在 Android 上，即使在 ZRAM 中交换，仍然会消耗部分系统内存预算。这就是为什么我们在 `dumpsys meminfo` 示例中查看 _Private Dirty_ 的原因。
+通常更重要的是减少 _dirty_ 内存的数量，因为它不能像 _clean_ 内存那样回收，并且在 Android 上，即使在 ZRAM 中交换，仍然会消耗部分系统内存预算。这就是为什么我们查看的是 *Private Dirty*（如上面的 `dumpsys meminfo` 示例所示）。
 
 _共享_ 内存可以映射到多个进程中。这意味着不同进程中的 VMA 引用相同的物理内存。这通常发生在常用库的文件支持内存（例如，libc.so、framework.dex）中，或者更罕见的是，当进程 `fork()` 时，子进程从其父进程继承 dirty 内存。
 
@@ -77,7 +77,7 @@ _共享_ 内存可以映射到多个进程中。这意味着不同进程中的 V
 
 - 动态分配的内存，无论是通过 C 的 `malloc()`、C++ 的 `operator new()` 还是 Java 的 `new X()` 分配的，总是以 _匿名_ 和 _dirty_ 开始，除非它从未被使用。
 - 如果此内存一段时间未被读/写，或者在内存压力的情况下，它会被交换到 ZRAM 中并变为 _swapped_ 。
-- 匿名内存，无论是 _驻留_（因此 _dirty_ ）还是 _swapped_ ，总是资源占用者，如果不必要应避免。
+- 匿名内存，无论是 *驻留*（因此 _dirty_ ）还是 _swapped_ ，总是资源占用者，如果不必要应避免。
 - 文件映射的内存来自代码（java 或 native）、库和资源，几乎总是 _clean_ 。Clean 内存也会侵蚀系统内存预算，但通常应用程序开发人员对其控制较少。
 
 ## 随时间变化的内存
@@ -225,7 +225,7 @@ NOTE: 有关 native heap profiler 和故障排除的详细说明，请参阅 [Da
 
 应用程序通常通过 `malloc` 或 C++ 的 `new` 而不是直接从内核获取内存。分配器确保你的内存得到更有效的处理（即没有太多间隙），并且从内核请求的开销保持较低。
 
-我们可以使用 _heapprofd_ 记录进程执行的 native 分配和释放。生成的 profile 可用于将内存使用归因于特定的函数调用栈，支持 native 和 Java 代码的混合。Profile _仅显示在运行时进行的分配_，之前进行的任何分配都不会显示。
+我们可以使用 _heapprofd_ 记录进程执行的 native 分配和释放。生成的 profile 可用于将内存使用归因于特定的函数调用栈，支持 native 和 Java 代码的混合。Profile *仅显示在运行时进行的分配*，之前进行的任何分配都不会显示。
 
 ### {#capture-profile-native} 捕获 profile
 
@@ -282,8 +282,8 @@ The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.pe
 你可以在单个 Perfetto 配置中组合两个数据源。
 
 **注意：**`mmap` 的 syscall ID 因架构而异。
-- **arm64**： `222`(以下示例中使用)
-- **x86_64**： `9`
+*   **arm64**： `222`(以下示例中使用)
+*   **x86_64**： `9`
 
 ```protobuf
 buffers: {

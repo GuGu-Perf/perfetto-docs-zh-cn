@@ -29,6 +29,7 @@ Perfetto 从设计之初就作为 Android 操作系统和 Chrome 浏览器的默
 Perfetto 的其他常见用例包括：
 
 - **收集、分析和可视化应用内 trace**，用于调试 Windows、macOS 和基于 Linux 的嵌入式系统上的 C/C++ 和 Rust 应用和库中的功能和性能问题。
+- **收集、分析和可视化 Linux 上的系统 trace**，用于通过 ftrace、调度延迟或进程间 IPC 调试内核问题。
 - **收集、分析和可视化 Linux 上的 heap profile**，用于调试 C/C++/Rust 应用和库的高内存使用问题。
 - **分析和可视化 Linux 上的 CPU profile（Linux perf profile）**，用于优化 C/C++/Rust 应用和库中的 CPU 使用。
 - **分析和可视化各种 profile 和 tracing 格式**。Perfetto 可以打开来自各种其他工具的 trace 和 profile 文件，允许你在许多数据源上使用 Perfetto UI 及其基于 SQL 的查询引擎，包括：
@@ -52,19 +53,20 @@ Perfetto 有几种类型的场景是不适合或明确不支持的。
 - **在 Windows 或 macOS 上采集系统 trace**
 
   - Perfetto 的采集工具**不**与 Windows 或 macOS 上的任何系统级数据源集成。
-  - 但是，Perfetto _可以_用于分析和可视化使用 Instruments 收集的 macOS trace，因为我们原生支持 Instruments XML 格式。
+  - 但是，Perfetto *可以*用于分析和可视化使用 Instruments 收集的 macOS trace，因为我们原生支持 Instruments XML 格式。
 
 - **在关键路径上消费 trace**
 
-  - Perfetto 的生产者代码针对低开销 trace 写入进行了优化，但消费者端_没有_针对低延迟读取进行优化。
-  - 这意味着_不_建议将 Perfetto 用于需要端到端低延迟 tracing 的场景。
+  - Perfetto 的生产者代码针对低开销 trace 写入进行了优化，但消费者端*没有*针对低延迟读取进行优化。
+  - 这意味着*不*建议将 Perfetto 用于需要端到端低延迟 tracing 的场景。
 
 - **以尽可能低的开销采集 trace**
 
   - Perfetto SDK 不声称是记录 trace 的最快方式：我们很清楚会有一些库和工具可以以更低的开销捕获 trace。你可以通过在 shmem 环形缓冲区中记录固定大小的事件并移动原子指针来击败我们的 tracing SDK。
   - 相反，Perfetto 的记录库和守护进程专注于在性能、灵活性和安全性之间取得良好的平衡。
-  - 例如，Perfetto 支持任意大小的事件（例如高分辨率截图）、协调多进程 tracing、具有不同配置的并发 tracing 会话、动态缓冲区多路复用、附加到 trace 事件的任意嵌套键值**参数**、动态字符串实习、用于将 trace 事件链接在一起的**流**，以及许多其他低开销 tracing 系统不支持的**动态 trace 事件名称**。
-  - 但是，如果这些 trace 可以转换为 Perfetto protobuf 格式或我们原生支持的其他格式（例如 _Chrome JSON_、_Fuchsia_ 等），Perfetto UI _可以_用于可视化使用非 Perfetto 工具采集的 trace。
+  - 例如，Perfetto 支持任意大小的事件（例如高分辨率截图）、协调多进程 tracing、具有不同配置的并发 tracing 会话、动态缓冲区多路复用、附加到 trace 事件的任意嵌套键值**参数**、动态字符串实习、用于将 trace 事件链接在一起的**流**，以及许多其他低开销 tracing 系统不支持的**动态 trace
+  事件名称**。
+  - 但是，如果这些 trace 可以转换为 Perfetto protobuf 格式或我们原生支持的其他格式（例如 *Chrome JSON*、*Fuchsia* 等），Perfetto UI *可以*用于可视化使用非 Perfetto 工具采集的 trace。
 
 - **为游戏采集、分析或可视化 GPU trace**
 
@@ -112,7 +114,7 @@ Google 还有许多其他团队以多种方式使用 Perfetto。这包括 tracin
 - **Googlers**： 使用 [YAQS](https://go/perfetto-yaqs) 或我们的
  [内部邮件列表](http://go/perfetto-dev)。
 
-影响 Perfetto 任何部分（Chrome tracing 除外）的错误：
+影响 Perfetto 任何部分（Chrome tracing **除外**）的错误：
 
 - [GitHub issues](https://github.com/google/perfetto/issues)。
 - **Googlers**： 使用内部错误跟踪器

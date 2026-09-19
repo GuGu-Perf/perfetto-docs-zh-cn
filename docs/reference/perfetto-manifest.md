@@ -137,9 +137,9 @@ manifest 会在任何 trace 文件被解析之前完整应用，因此条目可�
 `machine` 是一个对象而非裸字符串，以便将来在不更改格式的情况下添加按机器
 划分的属性。
 
-对本身包含来自多台机器数据的文件（即通过
+对本身包含来自多台机器数据的文件使用 `machine` 是一个错误（即通过
 [traced_relay](/docs/deployment/multi-machine-architecture.md) 录制的多机
-proto trace）使用 `machine` 是一个错误；此类文件应使用 `machines`。
+proto trace）；此类文件应使用 `machines`。
 
 ### {#machines} machines
 
@@ -206,10 +206,10 @@ proto trace）使用 `machine` 是一个错误；此类文件应使用 `machines
 
 省略 `clock` 的语义很重要：
 
-- **给出 `clock`**（RELATE）：该文件继续使用自己的时钟；此覆盖只是补充了
+- **给出 `clock`** （RELATE）：该文件继续使用自己的时钟；此覆盖只是补充了
   命名时钟与参照之间缺失的关联。内部自带时钟的 trace（Perfetto proto、
   systrace 等）使用这种方式。
-- **省略 `clock`**（PIN）：该文件被视为无时钟文件。其事件被放置在自身的
+- **省略 `clock`** （PIN）：该文件被视为无时钟文件。其事件被放置在自身的
   每文件私有时间线上，而此覆盖将该时间线固定到参照物上。没有绝对时钟的
   格式（Chrome JSON、Gecko、Instruments）使用这种方式。对一个随后被发现
   会发出自身 clock snapshot 的文件进行固定（pin）是一个错误。
@@ -273,7 +273,7 @@ manifest 会被预先验证；任何违规都会使整个导入失败，并报�
 | 条件 | 错误信息 |
 |------|----------|
 | 缺少 `version` | `missing required field: version` |
-| `version` 不是 `1` | `unsupported version: N. Only version 1 is supported` |
+| `version` 不是 1 | `unsupported version: N. Only version 1 is supported` |
 | 未知的时钟名称 | `unknown clock name: X. Use one of REALTIME, ...` |
 | 一个输入中有第二个 manifest | `multiple perfetto_manifest files in archive` |
 | 拼接流中 manifest 在 trace 文件之后 | `perfetto_manifest file must be the first trace file in the input` |

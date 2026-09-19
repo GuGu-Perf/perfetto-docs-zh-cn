@@ -41,15 +41,15 @@ message TracePacket {
 
 此（可选）字段确定数据包的时钟域。如果省略，它指的是 trace 的默认时钟域（对于 Linux/Android 为 `CLOCK_BOOTTIME`）。如果存在，此字段可以设置为：
 
-- [clock_snapshot.proto 中定义的内置时钟之一][builtin_clocks]（例如，`CLOCK_BOOTTIME`、`CLOCK_REALTIME`、`CLOCK_MONOTONIC`）。这些时钟的 ID <= 63。
-- 自定义序列作用域时钟，64 <= ID < 128
-- 自定义全局作用域时钟，128 <= ID < 2**32
+* [clock_snapshot.proto 中定义的内置时钟之一][builtin_clocks]（例如，`CLOCK_BOOTTIME`、`CLOCK_REALTIME`、`CLOCK_MONOTONIC`）。这些时钟的 ID <= 63。
+* 自定义序列作用域时钟，64 <= ID < 128
+* 自定义全局作用域时钟，128 <= ID < 2**32
 
 #### 内置时钟
 内置时钟覆盖了数据源使用 POSIX 时钟之一的最常见情况（参见 `man clock_gettime`）。这些时钟由 `traced` 服务定期快照。生产者除了设置 `timestamp_clock_id` 字段外，不需要做任何事情即可发出使用这些时钟的事件。
 
 #### 序列作用域时钟
-序列作用域时钟是应用程序定义的时钟域，仅在同一 `TraceWriter` 编写的 TracePacket 序列内有效（即具有相同 `trusted_packet_sequence_id` 字段的 TracePacket）。在大多数情况下，这实际上意味着 *"同一数据源在同一线程上发出的事件"*。
+序列作用域时钟是应用程序定义的时钟域，仅在同一 `TraceWriter` 编写的 TracePacket 序列内有效（即具有相同 `trusted_packet_sequence_id` 字段的 TracePacket）。在大多数情况下，这实际上意味着 "*同一数据源在同一线程上发出的事件*"。
 
 这涵盖了仅在数据源内使用且不跨不同数据源共享的时钟域的最常见用例。序列作用域时钟的主要优点是避免了 ID 歧义问题，对于最简单的情况可以正常工作（&trade;）。
 
@@ -79,7 +79,8 @@ message TracePacket {
 
 ### {#clock_snapshot} ClockSnapshot trace 数据包
 
-[`ClockSnapshot`][clock_snapshot] 数据包定义两个或多个时钟域之间的同步点。它传达了 *"在此时刻，时钟域 X,Y,Z 的时间戳为 1000、2000、3000"* 的概念。
+[`ClockSnapshot`][clock_snapshot] 数据包定义两个或多个时钟域之间的同步点。它传达了 *"在此时刻，时钟域 X,Y,Z 的时间戳为
+1000、2000、3000"* 的概念。
 
 trace 导入器([Trace Processor](/docs/analysis/trace-processor.md)) 使用此信息在这些时钟域之间建立映射。例如，意识到时钟域 X 上的 1042 == 时钟域 Z 上的 3042。
 
@@ -87,7 +88,7 @@ trace 导入器([Trace Processor](/docs/analysis/trace-processor.md)) 使用此�
 
 数据源应仅在使用自定义时钟域（无论是序列作用域还是全局作用域）时发出 `ClockSnapshot` 数据包。
 
-自定义时钟域的 `ClockSnapshot` *不必*包含 `CLOCK_BOOTTIME` 的快照（尽管如果可能，建议这样做）。Trace Processor 可以基于图遍历处理多路径时钟域解析（参见 [操作](#operation） 部分)。
+*并非*强制要求自定义时钟域的 `ClockSnapshot` 还包含 `CLOCK_BOOTTIME` 的快照（尽管如果可能，建议这样做）。Trace Processor 可以基于图遍历处理多路径时钟域解析（参见 [操作](#operation) 部分）。
 
 ## 操作
 

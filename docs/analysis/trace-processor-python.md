@@ -176,23 +176,7 @@ ts dur name
  ...
 ```
 
-可以使用 Pandas DataFrame 轻松地从 trace 数据创建可视化。
-
-```python
-from perfetto.trace_processor import TraceProcessor
-tp = TraceProcessor(trace='trace.perfetto-trace')
-
-qr_it = tp.query('SELECT ts, value FROM counter WHERE track_id=50')
-qr_df = qr_it.as_pandas_dataframe()
-qr_df = qr_df.replace(np.nan,0)
-qr_df = qr_df.set_index('ts')['value'].plot()
-```
-
-**输出**
-
-![从查询结果创建的图表](/docs/images/example_pd_graph.png)
-
-或者，可以使用 `as_polars_dataframe()` 将结果转换为 [Polars](https://pola.rs/) DataFrame。Polars 是一个可选依赖。
+或者，可以将结果转换为 [Polars](https://pola.rs/) DataFrame，只需使用 `as_polars_dataframe()`。Polars 是一个可选依赖。
 
 ```python
 # 需要 polars
@@ -218,6 +202,22 @@ shape: (5, 3)
 │  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
 └─────────────────────┴────────┴─────────────────────────────┘
 ```
+
+可以使用 Pandas DataFrame 轻松地从 trace 数据创建可视化。
+
+```python
+from perfetto.trace_processor import TraceProcessor
+tp = TraceProcessor(trace='trace.perfetto-trace')
+
+qr_it = tp.query('SELECT ts, value FROM counter WHERE track_id=50')
+qr_df = qr_it.as_pandas_dataframe()
+qr_df = qr_df.replace(np.nan,0)
+qr_df = qr_df.set_index('ts')['value'].plot()
+```
+
+**输出**
+
+![从查询结果创建的图表](/docs/images/example_pd_graph.png)
 
 ### Trace 汇总
 

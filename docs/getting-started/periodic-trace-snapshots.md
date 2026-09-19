@@ -44,7 +44,7 @@ chmod +x tracebox
 curl -LO https://get.perfetto.dev/trace_processor
 chmod +x ./trace_processor
 ```
-- 需要访问 `tracefs` 以使用基于 ftrace 的数据源。你**不需要**以 root 身份运行；相反，将 tracefs 目录的所有权更改为你的用户：
+- 需要访问 `tracefs` 以使用基于 ftrace 的数据源。你**不需要**以 root 身份运行；相反，使用 `chown` 将 tracefs 目录的所有者改为你的用户：
 
 ```bash
 sudo chown -R $USER /sys/kernel/tracing
@@ -411,5 +411,5 @@ killall tracebox
 - **环形缓冲区覆盖**：如果缓冲区相对于数据速率太小，较旧的数据会在你获取快照之前被覆盖。如果发现数据间隙，请增大 `size_kb`。
 - **Clone 可用性**：`--clone-by-name` 标志需要 Perfetto v49+。在 Android 上，这意味着 Android 14 (U) 或更高版本。在 Linux 上，请确保你使用的是较新的 `tracebox` 或 Perfetto 构建。
 - **非实时流式传输**：每个快照都是缓冲区在某个时间点的副本，而非实时流。在最后写入的事件和你运行 clone 命令之间总会有一些延迟。
-- **Linux ftrace 权限**：在 Linux 上，基于 ftrace 的数据源需要访问 `tracefs`。无需以 root 身份运行，将目录所有权更改为你的用户即可：`sudo chown -R $USER /sys/kernel/tracing`。
+- **Linux ftrace 权限**：在 Linux 上，基于 ftrace 的数据源需要访问 `tracefs`。无需以 root 身份运行，使用 `chown` 将目录所有者改为你的用户即可：`sudo chown -R $USER /sys/kernel/tracing`。
 - **Intel CPU 频率**：在大多数现代 Intel CPU 上，`power/cpu_frequency` ftrace 事件不会发出，因为频率调节由 CPU 内部管理。请使用 `linux.sys_stats` 轮询数据源并设置 `cpufreq_period_ms` 作为回退方案。
