@@ -800,13 +800,14 @@ PYEOF
             git add -A
             git commit -m "Deploy to GitHub Pages"
 
-            # 回退点：把旧 gh-pages 提交打成 pre-deploy-* 远端 tag（强推前执行）
-            OLD_GH_SHA=$(git ls-remote origin gh-pages 2>/dev/null | awk '{print $1}')
+            # 回退点：把旧 gh-pages 提交打成 pre-deploy-* tag（强推前执行）
+            # 注意：临时仓库无 origin remote，用主仓库本地路径做 ls-remote/fetch
+            OLD_GH_SHA=$(git ls-remote "$DOCS_ZH_DIR" gh-pages 2>/dev/null | awk '{print $1}')
             if [ -n "$OLD_GH_SHA" ]; then
                 DEPLOY_TAG="pre-deploy-$(date +%Y%m%d-%H%M%S)"
-                git fetch origin gh-pages >/dev/null 2>&1
+                git fetch "$DOCS_ZH_DIR" gh-pages >/dev/null 2>&1
                 if git tag "$DEPLOY_TAG" FETCH_HEAD 2>/dev/null; then
-                    git push origin "refs/tags/$DEPLOY_TAG" >/dev/null 2>&1 \
+                    git push "$DOCS_ZH_DIR" "refs/tags/$DEPLOY_TAG" >/dev/null 2>&1 \
                         && print_info "回退点: tag $DEPLOY_TAG → ${OLD_GH_SHA:0:7}（回退: bash .project/workwork.sh rollback-gh-pages）" \
                         || print_warning "回退 tag 推送失败（不影响本次部署）"
                 fi
@@ -815,6 +816,10 @@ PYEOF
             git push --force "$DOCS_ZH_DIR" main:gh-pages
             cd "$DOCS_ZH_DIR"
             git push origin gh-pages --force
+            # 把回退 tag 一并推到远端（若本轮已创建）
+            if [ -n "${DEPLOY_TAG:-}" ] && git rev-parse "$DEPLOY_TAG" >/dev/null 2>&1; then
+                git push origin "refs/tags/$DEPLOY_TAG" >/dev/null 2>&1 || true
+            fi
 
             rm -rf "$DEPLOY_TEMP"
 
