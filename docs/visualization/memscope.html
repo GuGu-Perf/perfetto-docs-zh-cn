@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memscope 与 Memory Overview - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="Memscope 与 Memory Overview - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/visualization/memscope">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/rust-sdk.html">Rust SDK</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">Cookbooks</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/local-android-trace-recording.html">本地录制 Android Trace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/command-line-analysis.html">从命令行分析 trace</a></li>
+<li class="tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/linux-cookbook.html">Linux 上的 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">采集周期性 Trace 快照</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/using-ai.html">在 Perfetto 中使用 AI</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/concepts/merging-traces.html">Trace 合并</a></li>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/multi-machine-tracing.html">多机器记录</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/funcgraph.html">内核函数图追踪</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/video-frames.html">屏幕录制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/merging-traces.html">在 UI 中合并 trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/data-explorer.html">Data Explorer</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-the-ui.html">嵌入 Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/visualization/memscope.html">Memscope 与 Memory Overview</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/merging-traces.html">从命令行合并 trace</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/reference/trace-processor-cli.html">trace_processor</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-manifest.html">Trace Manifest 格式</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-api-reference.html">嵌入 API</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/deployment/multi-machine-architecture.html">多机架构</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="md-content" data-md-file="/docs/visualization/memscope">
+    <h1>Memscope 与 Memory Overview</h1><p class="callout note">NOTE: Memscope 和 Memory Overview 目前正处于密集开发阶段，虽然它们现在已在所有分支上可用，但使用 <strong>canary</strong> 或 <strong>autopush</strong> 渠道可能会获得更好的结果。可以使用<a href="https://ui.perfetto.dev/#!/flags/releaseChannel">发布渠道标志</a>更改渠道。</p>
+<p>Perfetto 为内存分析提供了两个互补的功能：</p>
+<ul>
+<li><strong>Memscope</strong> - 一个实时内存监视器，展示运行中设备的系统级和逐进程统计信息，并提供快捷方式来开始对特定进程进行 trace。</li>
+<li><strong>Memory Overview</strong> - 在录制 trace 后出现，提供内存信息的高层次概览，融合了 smaps 快照、ART heap dump 和 native profiling，并提供链接以便使用 <a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a>和时间线上的现有内存 track 进一步深入分析。</li>
+</ul>
+<p>本指南介绍如何使用 Memscope 录制 trace，并在 Memory Overview 页面中进行分析。</p>
+<p class="callout note">NOTE: 录制 smaps 快照需要 Android build <code>ZP1A.260626.001</code> 或更高版本。</p>
+<h2><a name="memscope-" class="anchor" href="#memscope-"></a>Memscope：实时内存监控</h2><p>Memscope 可以连接到 Android 设备或 Linux 主机，实时查看系统和逐进程内存指标的变化。它适用于：</p>
+<ul>
+<li>检查系统的整体健康状况（内存压力 / 抖动 / LMK）。</li>
+<li>找出随时间不断增长的进程。</li>
+<li>在执行特定操作前后抽查内存使用情况。</li>
+<li>针对特定进程启动 trace。</li>
+</ul>
+<h3><a name="-memscope-" class="anchor" href="#-memscope-"></a>启动实时 Memscope 会话</h3><ol>
+<li><p>打开 <a href="https://ui.perfetto.dev">https://ui.perfetto.dev</a> 并点击侧边栏中的 <strong>Memscope</strong>。</p>
+<p><img src="../images/memscope-landing.png" alt="侧边栏中高亮显示 Memscope 入口的 Perfetto UI"></p>
+</li>
+<li><p>使用可用的传输方式之一连接到你的设备或主机。录制选项与 record 页面上的完全相同。如果不确定选哪个，对于通过 USB 连接的 Android 设备，WebUSB 是最简单的选择。</p>
+</li>
+<li><p>连接后，Memscope 会显示一个系统统计仪表盘，以及一个任务管理器风格的运行中进程列表及其内存统计信息。仪表盘每隔几秒更新一次。</p>
+<p><img src="../images/memscope-connected.png" alt="Memscope 连接后的视图，显示系统统计和进程列表"></p>
+<p><img src="../images/memscope-process-table.png" alt="Memscope 进程表格，包含 RSS、sparkline 趋势和内存统计"></p>
+<p>你可以点击页面顶部的各个标签页，查看各种系统级内存统计，例如 page cache 使用情况和内存压力。</p>
+</li>
+</ol>
+<h3><a name="-" class="anchor" href="#-"></a>进程监控</h3><p>使用进程表格可以：</p>
+<ul>
+<li><p><strong>按内存使用排序</strong> - 默认情况下，进程列表按 RSS Anon + Swap 用量降序排序。</p>
+</li>
+<li><p><strong>观察趋势</strong> - 每个进程旁边的 sparkline 显示近期 RSS 的走向 - 持续呈上升趋势的进程值得进一步深入调查。</p>
+</li>
+<li><p><strong>搜索进程</strong> - 使用过滤框按名称搜索特定的进程或包。</p>
+</li>
+<li><p><strong>对进程进行 profile</strong> - 将鼠标悬停在进程行上会显示 <strong>Profile</strong> 按钮 - 点击它即可为该进程启动 heap profile。</p>
+<p><img src="../images/memscope-mandelbrot-hover.png" alt="Memscope 过滤到 Mandelbrot 进程，箭头指向 Profile 按钮"></p>
+<p>在这个例子中，我们要测试一个有意泄漏 native 内存的示例应用。</p>
+</li>
+</ul>
+<h3><a name="-trace" class="anchor" href="#-trace"></a>录制并打开 trace</h3><p>点击 <strong>Profile</strong> 后，Memscope 会使用预配置的内存 trace 配置开始录制所选进程。</p>
+<p>这个预配置的 trace 配置包括：</p>
+<ul>
+<li>周期性的 <a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">Java (ART) heap dump</a>（每 10 秒）。</li>
+<li>周期性的 smaps dump（每 10 秒）。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Native heap profiling</a>（每 5 秒 dump 一次）。</li>
+</ul>
+<p>操作应用或以其他方式复现你想要调查的行为，然后点击 <strong>Stop &amp; Open Trace</strong>。你可以使用此页面上的堆叠面积图监控高层次内存使用情况。</p>
+<p><img src="../images/memscope-mandelbrot-profile-stop-open.png" alt="Memscope 正在录制 Mandelbrot 进程，箭头指向 Stop &amp; Open Trace"></p>
+<h2><a name="memory-overview-" class="anchor" href="#memory-overview-"></a>Memory Overview：事后内存排查</h2><p>对于任何包含 smaps 快照的 trace，Memory Overview 页面会默认打开；你也可以在侧边栏的 <strong>Memory Overview</strong> 下找到它。它提供了给定进程在 trace 时长范围内内存使用情况的全面视图。</p>
+<p class="callout note">NOTE: 对于 Googler，你可以通过
+<a href="https://apconsole.corp.google.com/dashboards/process_smaps">process_smaps 仪表盘</a>
+找到包含 smaps dump 的好 trace 示例。不过这些通常只包含单次 dump，因此此页面上的时间线视图会被隐藏。</p>
+<h3><a name="-" class="anchor" href="#-"></a>进程选择器和核心统计</h3><p>在页面顶部，进程选择器让你选择要检查的进程。默认情况下，选中拥有最多内存相关统计信息的进程。如果你是通过 Memscope 录制的 trace，该进程会被自动选中，因为它只录制单个进程。</p>
+<p><img src="../images/memscope-mandelbrot-trace-opened.png" alt="从 Memscope trace 打开的 Memory Overview，进程选择器中显示被 profile 的应用"></p>
+<h3><a name="-" class="anchor" href="#-"></a>组成图表</h3><p>组成随时间变化的图表基于 smaps 快照中的信息，展示内存如何按类别（anon、file、shmem 等）划分。它用于为页面的其余部分提供顶层的时间导航。你可以：</p>
+<ul>
+<li><strong>选择单个快照</strong> - 点击图表上的数据点来检查特定快照。后续各小节将仅展示该快照的细分情况。</li>
+<li><strong>跨范围拖动</strong> - 点击并拖动跨越多个快照，可以对比快照并查看内存使用随时间的变化。</li>
+</ul>
+<p><img src="../images/memscope-composition-over-time.png" alt="被 profile 应用的组成随时间变化图表"></p>
+<p>在这个例子中，我们可以看到 native 内存在 trace 接近结束时（在我们开始与应用交互之后）开始快速增长。</p>
+<h4>增长去了哪里</h4><p>这个条形图展示了所选范围内内存增长如何拆分到各个高层类别。如果选择的是单个快照，则显示相对于 trace 起点的增量。</p>
+<h3><a name="-" class="anchor" href="#-"></a>内存细分小节</h3><p>在图表下方，Memory Overview 提供了若干小节用于深入分析内存使用情况。</p>
+<h4>内存都去了哪里？</h4><p>这一小节基于所选快照的 smaps 数据展示常驻内存的细分情况（绝对值，而非增量）。可以用它来判断下面哪些小节占用了最多的内存。</p>
+<p><img src="../images/memscope-where-did-memory-go.png" alt="“内存都去了哪里”小节，展示常驻内存细分"></p>
+<p>在这个例子中，我们可以看到 native 内存占了很大比例。</p>
+<h4>Java 堆</h4><p>对于 ART 进程，Java 小节解释了堆的使用情况，并按类名分组列出按各种指标衡量最重的 retained 对象。点击任意类名即可在 Heap Dump 浏览器中查看相关的对象。</p>
+<p><img src="../images/memscope-java-memory.png" alt="被 profile 应用的 Java 堆内存细分"></p>
+<h4>Bitmap</h4><p>bitmap 小节按尺寸分组，汇总最大和最频繁出现的 bitmap。</p>
+<p><img src="../images/memscope-bitmaps.png" alt="Bitmap 小节汇总最重的 bitmap"></p>
+<h4>Native 分配</h4><p>native 分配小节展示未释放的内存分配调用点（即尚未观察到后续 free 的分配）中排在前面的那些。请注意，它无法涵盖所有 native 内存使用 - 只涵盖自开始录制 trace 以来的分配。在我们的示例中它覆盖了 87%，因此我们可以很好地了解内存的去向。</p>
+<p><img src="../images/memscope-native-memory.png" alt="被 profile 应用的 native 内存细分"></p>
+<p>我们可以看到 mandelbrot 引擎中的一个 native 函数分配了 182 MB 而没有释放。这个函数来自示例应用中的一个 native 图块渲染库，该库用于生成 mandelbrot bitmap 并将其送回 Java 运行时进行合成。它本不应保留多少内存（如果有的话）。这个有意制造的泄漏实际上是因为跳过了对已渲染图块的图像缓冲区的 free 调用，因此每次调用该 native 代码都会泄漏一个 512x512px 的缓冲区，并随时间不断累积。</p>
+<p>点击 &#39;Show in timeline&#39; 按钮可以更详细地深入查看 native 分配火焰图。</p>
+<h4>Smaps Detail</h4><p>滚动回到页面顶部，点击 Memory Overview 顶部的 <strong>Smaps Detail</strong> 标签页，查看原始的 <code>/proc/&lt;pid&gt;/smaps</code> 数据。表格使用与组成图表相同的类别对内存映射进行分组。</p>
+<p><img src="../images/memscope-smaps-detail.png" alt="Smaps Detail 标签页，展示按类别分组的原始 smaps 映射"></p>
+<h2><a name="-" class="anchor" href="#-"></a>串起整个流程：一个工作流</h2><p>总结一下，典型的内存调查工作流如下：</p>
+<ol>
+<li><strong>找到进程</strong> - 使用 Memscope 实时监控内存，识别哪个进程在增长，或找到你想要监控的进程。</li>
+<li><strong>开始对该进程进行 trace</strong> - 点击开始对问题进程进行 profiling，然后在 UI 中打开 trace。</li>
+<li><strong>在 Memory Overview 中排查</strong> - 打开 trace，使用组成图表和各细分小节了解内存的去向。</li>
+<li><strong>进一步深入</strong> - 如有需要，从 Memscope 启动 native heap profile，或录制一个启用了 heap profiling 的新 trace 以获取分配调用堆栈。</li>
+</ol>
+<h2><a name="-" class="anchor" href="#-"></a>另请参阅</h2><ul>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling 指南</a> - native heap profiling、ART heap dump 和分配 profiling 的概述。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a> - 来自内核的逐进程内存计数器和事件。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Native heap profiler</a> - 深入了解 heapprofd 分配 profiling。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a> - 逐对象分析 ART heap dump。</li>
+<li><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">内存使用案例研究</a> - 在 Android 上调试内存问题的端到端指南。</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

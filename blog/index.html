@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog - Perfetto</title>
+  <meta property="og:title" content="Blog - Perfetto">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/blog/">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <link rel="alternate" type="application/atom+xml" title="Perfetto blog" href="/blog/atom.xml">
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/blog/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-blog">Blog</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search the blog" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/">Docs</a>
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="blog blog-index">
+  <div class="blog-head">
+    <p>Release notes, performance investigations and deep dives from the people
+       who build Perfetto.</p>
+    <a class="blog-feed" href="/blog/atom.xml">
+      <i class="material-icons-round">rss_feed</i> Atom feed
+    </a>
+  </div>
+
+  
+  
+
+  <div class="blog-grid">
+    
+    <a class="blog-card" href="/blog/diagnosing-1gb-viewtreeobserver-leak">
+      <div class="blog-card-img">
+        <img src="/blog/media/thumbnails/diagnosing-1gb-viewtreeobserver-leak-path.png" alt="" width="320" height="180" loading="lazy">
+      </div>
+      <div class="blog-card-body">
+        <h2>Diagnosing a 1 GB ViewTreeObserver Memory Leak with Perfetto</h2>
+        <p>How a single background scrim view silently leaked nearly 1 GB of UI hierarchies in production, and how we diagnosed and fixed it using Perfetto.</p>
+      </div>
+      <div class="blog-card-meta">
+        <span class="blog-card-author">@goldenluk</span>
+        <span class="blog-card-dot">·</span>
+        <time datetime="2026-09-01">2026-09-01</time>
+      </div>
+    </a>
+    
+    <a class="blog-card" href="/blog/perfetto-v58">
+      <div class="blog-card-img">
+        <img src="/blog/media/perfetto-v58/trace-merging-dialog-crop.png" alt="" width="320" height="180" loading="lazy">
+      </div>
+      <div class="blog-card-body">
+        <h2>Perfetto v58</h2>
+        <p>We’re excited to share Perfetto v58.2! This release makes it possible to merge traces from different machines onto one timeline, introduces Memscope and Memory Overview for end-to-end memory investigations, lets you keep a parsed trace running and analyze it through lightweight remote clients, adds Zstd trace compression, and substantially improves Perfetto’s AI-assisted analysis workflows. It also introduces a common stack-sampling format, new export options, and a collection of UI and SDK improvements.</p>
+      </div>
+      <div class="blog-card-meta">
+        <span class="blog-card-author">@perfetto-team</span>
+        <span class="blog-card-dot">·</span>
+        <time datetime="2026-08-24">2026-08-24</time>
+      </div>
+    </a>
+    
+    <a class="blog-card" href="/blog/perfetto-v57">
+      <div class="blog-card-img">
+        <img src="/blog/media/thumbnails/perfetto-v57-overlapping-json-events-rendering-in-the-timeline.png" alt="" width="320" height="180" loading="lazy">
+      </div>
+      <div class="blog-card-body">
+        <h2>Perfetto v57</h2>
+        <p>We&#39;re excited to share Perfetto v57.1! This release introduces an installable AI skill that teaches coding agents how to use Perfetto, a long-awaited fix for overlapping events in JSON traces (commonly affecting the PyTorch profiler), state tracks, a brand-new track type alongside slices and counters, end-to-end support for systemd journald logs, a rework of the query results grid, and new SDK capabilities like nested tracks and correlation ids.</p>
+      </div>
+      <div class="blog-card-meta">
+        <span class="blog-card-author">@perfetto-team</span>
+        <span class="blog-card-dot">·</span>
+        <time datetime="2026-07-02">2026-07-02</time>
+      </div>
+    </a>
+    
+    <a class="blog-card" href="/blog/perfetto-v56">
+      <div class="blog-card-img">
+        <img src="/blog/media/thumbnails/perfetto-v56-heap-dump.png" alt="" width="320" height="180" loading="lazy">
+      </div>
+      <div class="blog-card-body">
+        <h2>Perfetto v56</h2>
+        <p>Perfetto v56.0 is out! This release adds more to the Heap Dump Explorer, a round of UI improvements, easier-to-read multi-machine traces, kernel-assisted stack sampling in traced_perf, and a few new SDK knobs.</p>
+      </div>
+      <div class="blog-card-meta">
+        <span class="blog-card-author">@perfetto-team</span>
+        <span class="blog-card-dot">·</span>
+        <time datetime="2026-06-03">2026-06-03</time>
+      </div>
+    </a>
+    
+    <a class="blog-card" href="/blog/perfetto-v55">
+      <div class="blog-card-img">
+        <img src="/blog/media/thumbnails/perfetto-v55-image.png" alt="" width="320" height="180" loading="lazy">
+      </div>
+      <div class="blog-card-body">
+        <h2>Perfetto v55</h2>
+        <p>We are excited to share Perfetto v55.1! Highlights include GPU-accelerated trace rendering, a new Heap Dump Explorer, native Linux heap profiling, a redesigned trace_processor shell, multi-GPU analysis, and a major docs refresh.</p>
+      </div>
+      <div class="blog-card-meta">
+        <span class="blog-card-author">@perfetto-team</span>
+        <span class="blog-card-dot">·</span>
+        <time datetime="2026-05-13">2026-05-13</time>
+      </div>
+    </a>
+    
+  </div>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

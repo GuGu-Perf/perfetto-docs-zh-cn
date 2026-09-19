@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfetto v55 - Perfetto Blog</title>
+  <meta property="og:title" content="Perfetto v55 - Perfetto Blog">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/blog/perfetto-v55">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+
+  <link rel="alternate" type="application/atom+xml" title="Perfetto blog" href="/blog/atom.xml">
+
+  <script type="text/javascript" src="/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/blog/">
+      <img src="/assets/brand.png">
+      <span class="brand-blog">Blog</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search the blog" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/">Home</a>
+  
+  
+  <a href="/docs/">Docs</a>
+  
+  
+  <a href="/docs/contributing/getting-started#community">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="blog blog-post">
+  <main class="md-content" data-md-file="/blog/perfetto-v55">
+    <a class="blog-back" href="/blog/">All posts</a>
+    <h1>Perfetto v55</h1>
+    <div class="blog-byline">
+      <div class="blog-avatars">
+        
+        <img src="/blog/media/authors/perfetto-team.png" alt="" width="40" height="40" loading="lazy">
+        
+      </div>
+      <div class="blog-byline-text">
+        <div class="blog-authors">
+          @perfetto-team
+        </div>
+        <time datetime="2026-05-13">2026-05-13</time>
+      </div>
+    </div>
+    <p>We&#39;re excited to share Perfetto v55.1! Highlights include GPU-accelerated trace rendering, a new Heap Dump Explorer, native Linux heap profiling, a redesigned <code>trace_processor</code> shell, multi-GPU analysis, and a major docs refresh.</p>
+<blockquote>
+<p><em>Note: v55.0 was never released due to a build failure on Windows and an issue with parsing of some important ftrace events. v55.1 includes fixes to these issues.</em></p>
+</blockquote>
+<h2><a name="-webgl-rendering-amp-virtual-track-scrolling" class="anchor" href="#-webgl-rendering-amp-virtual-track-scrolling"></a>⚡ WebGL rendering &amp; virtual track scrolling</h2><p>Opening big traces (hundreds of processes, thousands of tracks, millions of slices) should be significantly smoother in v55.  Two changes drive this:</p>
+<ul>
+<li><strong>WebGL rendering</strong> for slice and counter tracks moves the per-frame drawing work onto the GPU, lifting the budget for dense tracks by a wide margin.</li>
+<li><strong>Partial virtual track scrolling</strong> means that tracks off screen only render a &quot;skeleton&quot; of their layout to allow for browser Ctrl-F while not doing unnecessary work.</li>
+</ul>
+<blockquote>
+<p>Note: for the largest traces, there&#39;s more coming with <em>full</em> virtual track scrolling in the works!</p>
+</blockquote>
+<h2><a name="-heap-dump-explorer" class="anchor" href="#-heap-dump-explorer"></a>🧠 Heap Dump Explorer</h2><p>Investigating Android and Java memory issues gets a significant improvement in Perfetto UI through the new <strong>Heap Dump Explorer</strong> page. Instead of just showing the flamegraph for the heap dump, this is an interactive exploration tool on the classes, objects and references in the dump. Specifically:</p>
+<ul>
+<li>A high-level <strong>Overview</strong> with retained bytes per heap.</li>
+<li><strong>Classes</strong> ranked by retained / shallow size to help you find which type is hogging memory.</li>
+<li>An <strong>Objects</strong> browser for navigating individual instances and following references.</li>
+<li><strong>Dominators</strong> view to find which objects &quot;retain&quot; the largest memory chunks.</li>
+<li><strong>Bitmap gallery</strong>, <strong>Strings</strong>, and <strong>Arrays</strong> views (require an Java/ART <code>.hprof</code> heap dump).</li>
+</ul>
+<p>The Java HPROF importer also got a major upgrade: primitive fields, array contents, and Bitmap-specific metadata are now preserved when parsing the traces to power this functionality.</p>
+<p><img src="/blog/media/perfetto-v55/image.png" alt="image"></p>
+<p><a href="https://perfetto.dev/docs/visualization/heap-dump-explorer">Learn more in the Heap Dump Explorer guide</a></p>
+<h2><a name="-code-heap_profile-host-code-native-linux-heap-profiling" class="anchor" href="#-code-heap_profile-host-code-native-linux-heap-profiling"></a>🐧 <code>heap_profile host</code>: native Linux heap profiling</h2><p><code>heap_profile</code> is no longer Android-only. The new <code>host</code> subcommand lets you capture an allocation-attributed memory profile of a local Linux process and open the result in the same UI:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">tools/heap_profile host -- ./my_binary --some-flag</code></div><p>It auto-downloads the bits it needs, launches a bundled daemon, and produces a flamegraph that behaves exactly like the Android equivalent (drill in by stack frame, deobfuscate symbols, etc.). The existing Android workflow lives under <code>heap_profile android</code> and is unchanged.</p>
+<p><a href="https://perfetto.dev/docs/getting-started/memory-profiling">Get started with native heap profiling On Linux</a></p>
+<h2><a name="-subcommand-based-code-trace_processor_shell-code-" class="anchor" href="#-subcommand-based-code-trace_processor_shell-code-"></a>🐚 Subcommand-based <code>trace_processor_shell</code></h2><p><code>trace_processor_shell</code> has been rebuilt around purpose-built subcommands that read more like <code>git</code>, replacing the flat-CLI-with-flags model:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">trace_processor query        <span class="hljs-comment"># one-shot SQL</span>
+trace_processor interactive  <span class="hljs-comment"># REPL</span>
+trace_processor server       <span class="hljs-comment"># serve the UI over RPC</span>
+trace_processor metrics      <span class="hljs-comment"># run metrics</span>
+trace_processor summarize    <span class="hljs-comment"># high-level summaries</span>
+trace_processor <span class="hljs-built_in">export</span>       <span class="hljs-comment"># write to other formats</span>
+trace_processor convert      <span class="hljs-comment"># legacy conversions</span></code></div><p>The <code>query</code> subcommand also gained a <strong>structured query mode</strong> for programmatic callers. Existing scripts that use the classic flat CLI keep working just as it is today but all new functionality will be exposed through subcommands only.</p>
+<p><a href="https://perfetto.dev/docs/analysis/trace-processor">New trace_processor subcommand docs</a></p>
+<h2><a name="-multi-gpu-support" class="anchor" href="#-multi-gpu-support"></a>🎮 Multi-GPU support</h2><p>Trace Processor now models multiple GPUs as first-class citizens. The new <code>gpu</code> and <code>gpu_context</code> tables let you slice slice and memory tracks per-GPU and per-machine, so workloads spanning a discrete + integrated pair, a multi-GPU host, or a multi-machine setup attribute correctly all the way through analysis.</p>
+<p>On the recording side, the GPU data source gained <code>InstrumentedSamplingConfig</code> for fine-grained sampling control, custom counter groups in <code>GpuCounterConfig</code>, and CUDA / HIP added to the graphics-context APIs; useful for compute workloads beyond traditional rendering.</p>
+<p><a href="https://perfetto.dev/docs/data-sources/gpu">GPU data source documentation</a></p>
+<h2><a name="-python-polars-dataframe-support" class="anchor" href="#-python-polars-dataframe-support"></a>🐍 Python: polars DataFrame support</h2><p>The Python <code>TraceProcessor</code> API can now return query results as <strong>polars</strong> DataFrames as well as pandas.</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">df = tp.query(<span class="hljs-string">&quot;SELECT * FROM slice&quot;</span>).as_polars_dataframe()</code></div><h2><a name="-data-explorer-dashboards" class="anchor" href="#-data-explorer-dashboards"></a>📈 Data Explorer dashboards</h2><p>The Data Explorer (formerly &quot;Explore&quot;) now has a full <strong>dashboard environment</strong> with side-by-side <code>Graph</code> and <code>Dashboard</code> views, an in-sidebar chart editor, smarter graph with cycle detection, import/export of dashboards between sessions, and built-in tutorials &amp; solution recipes.</p>
+<p><img src="/blog/media/perfetto-v55/08-data-explorer.png" alt="08-data-explorer"></p>
+<h2><a name="-new-chart-types-and-ui-polish" class="anchor" href="#-new-chart-types-and-ui-polish"></a>📊 New chart types and UI polish</h2><p>A handful of new chart and aggregation types ship across the UI:</p>
+<ul>
+<li><strong>Sankey chart</strong> for flow visualisations (scheduling transitions, call relationships, anything with sources and destinations).</li>
+<li><strong>Stats widget</strong> for one-glance summaries (count, mean, min, max).</li>
+<li>New <strong>percentile</strong> and <strong>count-distinct</strong> aggregations in the SQL table viewer.</li>
+<li><strong>Line charts</strong> now support stacking, series hovering, and selection alongside brushing.</li>
+<li><strong>Counter detail panels</strong> now reflect counter mode and handle <strong>rate-delta counters</strong> correctly — particularly noticeable on Android GPU events.</li>
+</ul>
+<h2><a name="-tracing-service-and-probes" class="anchor" href="#-tracing-service-and-probes"></a>🚀 Tracing service and probes</h2><ul>
+<li><strong><code>android.aflags</code> data source</strong> captures Android aconfig flags in effect during the trace, surfaced through Trace Processor and the UI.</li>
+<li><strong><code>/proc/slabinfo</code></strong> polling added to <code>sys_stats</code> for tracking kernel slab allocations.</li>
+<li><strong><code>traced_perf</code></strong> gained a CPU filter for per-CPU sampling, and raw perf events can specify a <strong>dynamic PMU by name</strong>.</li>
+<li>Any trace can now carry <strong>generic trace-level metadata</strong> for your own annotations. See</li>
+<li>Multi-machine tracing setups can restrict data sources to specific remote producers (<code>trace_all_machines</code> in <code>TraceConfig</code>).</li>
+<li>Stack sampling can be <strong>filtered by source</strong> (user-space / kernel / hypervisor).</li>
+</ul>
+<h2><a name="-more-importers" class="anchor" href="#-more-importers"></a>🌐 More importers</h2><p>Perfetto can now ingest more formats end-to-end:</p>
+<ul>
+<li><strong>ART Method v2</strong> streaming traces from Android.</li>
+<li><strong>Firefox profiler markers</strong> are imported as slices so you can correlate profiling information with high level timeline markers</li>
+</ul>
+<h2><a name="-java-sdk" class="anchor" href="#-java-sdk"></a>☕ Java SDK</h2><p>The Java SDK now understands <code>@CompileTimeConstant</code> annotations and static track names — so instrumentation can be more efficient when the compiler can prove the strings are constant.</p>
+<h2><a name="-refreshed-documentation" class="anchor" href="#-refreshed-documentation"></a>📚 Refreshed documentation</h2><p>The documentation site received a signifcant facelift</p>
+<ul>
+<li>Reorganised top-level <strong>table of contents</strong>.</li>
+<li><strong>Filter chips</strong> for narrowing pages by topic (OS, role, cookbook, etc.).</li>
+<li>Refreshed typography, visuals, and navigation.</li>
+<li>Substantially rewritten or brand-new guides:<ul>
+<li><strong>PerfettoSQL</strong> getting started (rewritten)</li>
+<li><strong>GPU data source</strong> (full rewrite)</li>
+<li><strong>Symbolization &amp; deobfuscation</strong></li>
+<li><strong>Heap Dump Explorer</strong> user guide</li>
+<li><strong><code>heap_profile</code></strong> with both <code>host</code> and <code>android</code> subcommands</li>
+<li><strong><code>traceconv</code></strong> (rewritten from scratch)</li>
+<li><strong><code>trace_processor</code></strong> shell + C++ embedding</li>
+<li><strong>Multi-machine tracing</strong> with <code>traced_relay</code></li>
+<li><strong>Rust SDK</strong> getting started</li>
+<li><strong>Periodic trace snapshots</strong> cookbook</li>
+<li><strong><code>trace_processor</code> and <code>traceconv</code> on Windows</strong></li>
+</ul>
+</li>
+<li>Community-maintained <strong>Chinese docs</strong> are now linked from the site.</li>
+</ul>
+<h2><a name="-breaking-changes-from-previous-releases" class="anchor" href="#-breaking-changes-from-previous-releases"></a>⚠️ Breaking changes from previous releases</h2><ul>
+<li>The <code>TraceMetadata</code> proto was renamed to <strong><code>TraceAttributes</code></strong>.</li>
+<li>The <code>tid</code> field in <code>thread_descriptor.proto</code> is now <strong><code>int64</code></strong> (matters for Windows, which has large thread IDs).</li>
+<li>Legacy trace actions are now disabled by default; they live in the <code>dev.perfetto.Catapult</code> plugin if you need them.</li>
+<li>Trace Processor: an <code>arg_set_id</code> column was added to the <code>thread</code> table — queries joining <code>thread</code> with other tables that have <code>arg_set_id</code> (e.g. <code>slice</code>) may need to qualify the column name to avoid ambiguity.</li>
+</ul>
+<h2><a name="-v55-1-patch-fixes" class="anchor" href="#-v55-1-patch-fixes"></a>🛠️ v55.1 patch fixes</h2><ul>
+<li><strong>Infra:</strong> Fix build of prebuilts on Windows.</li>
+<li><strong>Trace Processor:</strong> Fix parsing of timestamps for Adreno ftrace events.</li>
+</ul>
+<hr>
+<p>A huge thanks to everyone — inside and outside Google — who contributed to making Perfetto v55 a success. ♥️</p>
+<p><em>For complete details, see the <a href="https://github.com/google/perfetto/blob/v55.1/CHANGELOG">changelog</a> or <a href="https://github.com/google/perfetto/compare/v54.0...v55.1">view all changes on GitHub</a>.</em></p>
+<p><em>Download Perfetto v55.1 from our <a href="https://github.com/google/perfetto/releases">releases page</a>, get started at <a href="https://perfetto.dev/docs/">docs.perfetto.dev</a>, or try the UI directly at <a href="https://ui.perfetto.dev/">ui.perfetto.dev</a>.</em></p>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfetto - System profiling, app tracing and trace analysis</title>
+  <meta property="og:title" content="Perfetto - System profiling, app tracing and trace analysis">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/">Docs</a>
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<main class="site-content">
+  <div class="section-wrapper">
+  <section class="banner">
+    <h1><span>System profiling,</span> <span>app tracing</span> <span>and trace analysis</span></h1>
+    <h2>Open-Source &centerdot; Portable &centerdot; Efficient</h2>
+    <div class="home-img"><img src="/perfetto-docs-zh-cn/assets/home.png" alt="Perfetto"></div>
+  </section>
+  </div>
+
+  <div class="section-wrapper">
+  <section class="home-highlights">
+    <a href="#profiling"><div class="icon"></div>System Profiling</a>
+    <a href="#tracing"><div class="icon"></div>In-App Tracing</a>
+    <a href="#viewer"><div class="icon"></div>Trace Viewer</a>
+    <a href="#analysis"><div class="icon"></div>Trace Analysis</a>
+  </section>
+  </div>
+
+  <div class="section-wrapper">
+  <section class="home-section" id="profiling">
+    <img src="/perfetto-docs-zh-cn/assets/sys_profiling.png" alt="Profiling illustration">
+    <div>
+      <h2>System-wide profiling for Linux and Android</h2>
+      <div class="home-item">
+        <i class="material-icons-round">sort</i>
+        <h3>Linux kernel tracing</h3>
+        <p>Capture high frequency ftrace data: scheduling activity, task switching latency, CPU frequency and much more</p>
+      </div>
+      <div class="home-item">
+        <i class="material-icons-round">nfc</i>
+        <h3>Userspace profilers and extra probes</h3>
+        <p>Native heap profiling, Java heap profiling, pollers for /proc stat files</p>
+        </div>
+      <div class="home-item">
+        <i class="material-icons-round">android</i>
+        <h3>Built into Android</h3>
+        <p>Part of the platform since Android 9 Pie, runs on Linux as well</p>
+        </div>
+      <a href="/perfetto-docs-zh-cn/docs/quickstart/android-tracing.html" class="button">Get Started</a>
+    </div>
+  </section>
+  </div>
+
+  <div class="section-wrapper">
+  <section class="home-section" id="tracing">
+    <img src="/perfetto-docs-zh-cn/assets/app_tracing.png" alt="Tracing illustration">
+    <div>
+     <h2>App Tracing</h2>
+      <div class="home-item">
+        <i class="material-icons-round">developer_mode</i>
+        <h3>Efficient trace point instrumentation</h3>
+        <p>Log your C++ app’s activity with high throughput, low overhead trace points</p>
+      </div>
+      <div class="home-item">
+        <i class="material-icons-round">ballot</i>
+        <h3>Structured and configurable events</h3>
+        <p>Define custom protobuf messages to represent strongly-typed app-specific information, trace only what you need</p>
+        </div>
+      <div class="home-item">
+        <i class="material-icons-round">view_compact</i>
+        <h3>Integrated with system-wide tracing</h3>
+        <p>Correlate your app’s state with system-wide profiling data on the same timeline</p>
+        </div>
+      <a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html" class="button">Get Started</a>
+    </div>
+  </section>
+  </div>
+
+  <div class="section-wrapper">
+  <section class="home-section" id="viewer">
+    <img src="/perfetto-docs-zh-cn/assets/ui.png" alt="Trace viewer illustration">
+    <div>
+      <h2>Trace Viewer</h2>
+      <div class="home-item">
+        <i class="material-icons-round">timeline</i>
+        <h3>Interactive trace exploration</h3>
+        <p>Record, view and process trace data with the Perfetto UI</p>
+      </div>
+      <div class="home-item">
+        <i class="material-icons-round">file_copy</i>
+        <h3>Supports popular trace format files</h3>
+        <p>TraceEvent JSON, Android systrace, ftrace text output</p>
+        </div>
+      <div class="home-item">
+        <i class="material-icons-round">offline_bolt</i>
+        <h3>Runs fully in your browser</h3>
+        <p>No server interaction involved, works even if you are offline</p>
+        </div>
+      <div>
+        <a href="//ui.perfetto.dev" class="button">Open the UI</a>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <section class="home-section" id="analysis">
+    <img src="/perfetto-docs-zh-cn/assets/analysis.png" alt="Trace analysis illustration">
+    <div>
+      <h2>Trace Analysis</h2>
+      <div class="home-item">
+        <i class="material-icons-round">storage</i>
+        <h3>SQL-based trace model</h3>
+        <p>Trace processor ingests traces and exposes a SQLite-based
+           interface to access the contents of the trace, both via shell and UI
+        </p>
+      </div>
+      <div class="home-item">
+        <i class="material-icons-round">speed</i>
+        <h3>Large trace analysis</h3>
+        <p>
+          Supports traces up to tens of GBs
+          </p>
+        </div>
+      <div class="home-item">
+        <i class="material-icons-round">compare_arrows</i>
+        <h3>Interoperable</h3>
+        <p>Can import and export popular trace formats: Chromium JSON trace format, Android Systrace, ftrace, CSV</p>
+        </div>
+      <div>
+        <a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html" class="button">Learn more</a>
+      </div>
+    </div>
+  </section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</main>
+
+</body>
+</html>
+
