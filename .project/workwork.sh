@@ -548,8 +548,43 @@ run_deploy() {
 
         print_success "首页配置已修改"
     else
-        # 新构建系统（build.mjs）：原生以 docs/README.md 作为首页，无需 patch
-        print_success "新构建系统（build.mjs）检测到，首页原生使用 README.md，无需修改"
+        # 新构建系统（build.mjs）：patch collectPages()，让 "/" 首页使用 docs/README.md
+        # （等效于旧系统对 BUILD.gn gen_index 的补丁）
+        BUILD_MJS="infra/perfetto.dev/src/build.mjs"
+        print_info "修改首页配置（build.mjs），使用 README.md 作为首页内容..."
+        if python3 - "$BUILD_MJS" <<'PYEOF'
+import sys, pathlib
+p = pathlib.Path(sys.argv[1])
+s = p.read_text()
+old = """  pages.push({
+    key: "index",
+    markdown: null,
+    mdFile: tmplIndex,
+    templatePath: tmplIndex,
+    sitePath: "index.html",
+  });"""
+new = """  pages.push({
+    key: "index",
+    markdown: fs.readFileSync(pjoin(DOCS_DIR, "README.md"), "utf8"),
+    mdFile: pjoin(DOCS_DIR, "README.md"),
+    templatePath: tmplMarkdown,
+    sitePath: "index.html",
+  });"""
+if old in s:
+    p.write_text(s.replace(old, new, 1))
+    print("patched")
+elif new in s:
+    print("already-patched")
+else:
+    print("PATTERN-NOT-FOUND")
+    sys.exit(1)
+PYEOF
+        then
+            print_success "首页配置已修改"
+        else
+            print_error "build.mjs 首页补丁失败（模板不匹配）"
+            exit 1
+        fi
     fi
 
     print_step "3" "验证文档"
