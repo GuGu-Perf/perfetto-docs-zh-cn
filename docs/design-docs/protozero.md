@@ -47,7 +47,7 @@ Protozero 在构建时对 libprotobuf 有依赖（插件依赖于 libprotobuf �
  ```
  这会生成 `/tmp/test_msg.pbzero.{cc,h}`。
  
- 注意:.cc 文件始终为空。Protozero 生成的代码仅是头文件。发出 .cc 文件仅因为某些构建系统的规则假设 protobuf 代码生成生成 .cc 和 .h 文件。
+   NOTE: .cc 文件始终为空。Protozero 生成的代码仅是头文件。发出 .cc 文件仅因为某些构建系统的规则假设 protobuf 代码生成生成 .cc 和 .h 文件。
 
 ## Proto 序列化
 

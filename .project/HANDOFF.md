@@ -17,7 +17,14 @@
   导致 URL 吞掉后续文本）、builtin.md 标题结构、perfetto-manifest.md 表格行
 
 ### 关键教训（下次会话必读）
-1. **上游英文原文必须用 `git -C ../perfetto show HEAD:<path>` 获取**——
+1. **callout 判定以 render.mjs 为准**（已核对源码 `renderParagraph`）：**段首大写**
+   `NOTE:` / `TIP:` / `WARNING:` / `TODO:` / `FIXME:` / `Summary:`（大小写敏感，列表内
+   缩进会被解析器剥离、同样生效）才渲染成提示框，必须保留英文；
+   **混合大小写 `Note:` 是纯文本，必须翻译成中文**（如「注意:」）。教训来源：
+   曾把纯文本 Note: 误"修复"为英文导致线上出现未翻译文本，且浏览器 review 只比
+   标题结构、没查散文，未能兜住——现已加 audit.sh A7（提示框数量 vs 上游）+
+   proofread W2/W3（段首中文标志词、英文引导词+中文）三层防护
+2. **上游英文原文必须用 `git -C ../perfetto show HEAD:<path>` 获取**——
    deploy-local 会把中文 docs/ 拷进上游仓库覆盖英文工作树，直接读工作树会拿到中文
 2. **上游站点构建已从 GN+ninja 迁移到 `build.mjs`**（入口 `./infra/perfetto.dev/build`，
    ~4 秒构建）。workwork.sh 已适配（自动探测新旧系统），首页靠 build.mjs 补丁渲染 README.md

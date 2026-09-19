@@ -177,7 +177,7 @@ clean:
 sudo insmod ticker.ko
 ```
 
-NOTE: 你可以随时使用以下命令卸载内核模块：
+ 注意:你可以随时使用以下命令卸载内核模块：
 ```bash
 sudo rmmod ticker.ko
 ```
@@ -252,7 +252,7 @@ duration_ms: 10000
 ./tracebox -c ticker.cfg --txt -o ticker.pftrace
 ```
 
-NOTE: tracebox 将负责启用 tracing 和 ticker 事件（如我们在前面的步骤中所做的）。
+ 注意:tracebox 将负责启用 tracing 和 ticker 事件（如我们在前面的步骤中所做的）。
 
 这将向 `ticker.pftrace` 写入一个 perfetto protobuf trace。
 

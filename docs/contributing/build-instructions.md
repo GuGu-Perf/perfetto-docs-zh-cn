@@ -239,7 +239,7 @@ TIP: `tools/setup_all_configs.py` 可用于为大多数支持的配置生成 out
 `target_cpu = "arm" | "arm64" | "x64"`
 
 默认为 `target_os` == `"android"` 时的 `"arm"`，以主机为目标时的 `"x64"`。不支持 32 位主机构建。
-NOTE: 这里的 x64 实际上意味着 x86_64。这是为了保持与 Chromium 的选择一致，而 Chromium 又遵循 Windows 命名约定。
+ 注意:这里的 x64 实际上意味着 x86_64。这是为了保持与 Chromium 的选择一致，而 Chromium 又遵循 Windows 命名约定。
 
 `is_debug = true | false`
 

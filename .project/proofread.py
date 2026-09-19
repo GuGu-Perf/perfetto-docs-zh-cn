@@ -10,10 +10,13 @@
 检查项:
   [E1] 术语违规: glossary.json 中 translate=false 术语的禁用中文译法
        出现在代码块/行内代码之外
-  [E2] 标志前缀违规: NOTE:/TIP:/WARNING: 等被汉化（注意：/提示：...），
-       或英文标志后跟全角冒号（NOTE：）
+  [E2] 标志前缀误用全角冒号（段首大写 NOTE:/TIP:/WARNING: 等后跟全角冒号，
+       破坏提示框渲染。判定依据上游 render.mjs：仅段首大写标志渲染为提示框）
   [E3] 标点违规: 中文语句使用半角句号结尾 / 中文之间使用半角逗号
   [W1] (警告) 中英文之间缺少空格
+  [W2] (警告) 段首中文标志词（注意：/提示：...）——上游为大写 callout 则违规，
+       上游为纯文本 Note: 则正确，需对照上游（audit.sh A7 做数量一致性兜底）
+  [W3] (警告) 混合大小写英文引导词+中文内容（非 callout，纯文本应翻译）
 
 退出码: 0=通过(无 E 类违规), 1=存在 E 类违规(--strict 时 W 类也计入)
 """
@@ -77,15 +80,27 @@ def check_file(path, forbidden_terms, zh_markers, fw_colon_markers):
                 errors.append(
                     (lineno, 'E1', f'术语 [{en}] 应保持英文，出现禁用译法「{zh}」'))
 
-        # E2 标志前缀违规
-        for m in zh_markers:
-            if line.lstrip().startswith(m):
-                errors.append(
-                    (lineno, 'E2', f'标志前缀被汉化: 「{m}」应保留英文 (NOTE:/TIP:/WARNING:...)'))
+        # E2 标志前缀违规（仅无歧义情形：段首大写 callout 标志 + 全角冒号，
+        #    会破坏提示框渲染。判定依据 render.mjs renderParagraph：
+        #    仅段首大写 NOTE:/TIP:/WARNING:/TODO:/FIXME:/Summary: 渲染为提示框）
         for m in fw_colon_markers:
             if line.lstrip().startswith(m):
                 errors.append(
                     (lineno, 'E2', f'标志前缀后误用全角冒号: 「{m}」应为半角「{m[0:-1]}:」'))
+
+        # W2 段首中文标志词（注意：/提示：...）——不一定是错误：
+        #    若上游对应段落是大写 callout（NOTE: 等）则违规；若上游是纯文本
+        #    （如缩进列表内混合大小写 Note:）则翻译正确。需对照上游确认。
+        for m in zh_markers:
+            if line.lstrip().startswith(m):
+                warnings.append(
+                    (lineno, 'W2', f'段首中文标志词「{m}」：请对照上游——大写 callout 需保留英文，纯文本 Note: 应翻译'))
+
+        # W3 混合大小写英文引导词 + 中文内容（如 "Note:你可以..."）——
+        #    混合大小写不构成 callout（渲染为纯文本），应当翻译
+        if re.match(r'^\s*(Note|note|Tip|tip|Caution|Warning)\s*:\s*[^\x00-\x7f]', line):
+            warnings.append(
+                (lineno, 'W3', '英文引导词+中文内容（混合大小写非 callout，纯文本应翻译）'))
 
         # E3 标点: 中文行以半角句号结尾
         if re.search(f'[{CJK}]\\s*\\.\\s*$', line):

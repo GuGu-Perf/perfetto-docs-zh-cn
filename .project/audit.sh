@@ -116,6 +116,17 @@ for u in sys.stdin:
     diff <(grep -oE '\]\([^)]+\)' "$TMP_UP"  | sed 's/^](//;s/)$//;s/ .*//' | grep -v '^#' | norm_urls | sort -u) \
          <(grep -oE '\]\([^)]+\)' "$TMP_LOC" | sed 's/^](//;s/)$//;s/ .*//' | grep -v '^#' | norm_urls | sort -u) \
          > /dev/null 2>&1 || report "A6 链接URL集合 docs/$f 与上游不一致"
+
+    # A7 提示框（callout）数量一致性：段首大写 NOTE:/TIP:/WARNING:/TODO:/FIXME:/Summary:
+    #    会被渲染成提示框（render.mjs renderParagraph，大小写敏感；列表内段落
+    #    缩进被解析器剥离，同样生效）。数量不对说明 callout 被译走或纯文本被误标。
+    callout_count() {
+        grep -cE '^[[:space:]]*(NOTE|TIP|WARNING|TODO|FIXME|Summary):' - 2>/dev/null | cat
+        return 0
+    }
+    uc=$(git -C "$PERFETTO_DIR" show "HEAD:docs/$f" | strip_fences | callout_count || true); uc=${uc:-0}
+    lc=$(strip_fences < "docs/$f" | callout_count || true); lc=${lc:-0}
+    [ "$uc" != "$lc" ] && report "A7 提示框数 docs/$f: 上游=${uc} 本地=${lc}"
 done < "$CHECK_LIST"
 
 # ---- A7 幽灵引用 ----

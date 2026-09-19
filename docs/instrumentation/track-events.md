@@ -272,7 +272,7 @@ TRACE_EVENT_BEGIN("rendering", name); // 错误。事件名称不是静态的。
 DANGER: `perfetto::DynamicString` 必须作为纯右值（临时对象）传递。
  这是为了确保底层字符串在记录事件之前保持有效。
 
-NOTE: 以下是使用动态事件名称的旧方法。不再推荐使用。
+ 注意:以下是使用动态事件名称的旧方法，不再推荐使用。
 
 ```C++
 TRACE_EVENT("category", nullptr, [&](perfetto::EventContext ctx) {

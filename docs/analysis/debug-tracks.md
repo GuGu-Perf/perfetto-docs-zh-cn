@@ -10,7 +10,7 @@ Debug Tracks 是一种将 PerfettoSQL 查询的表格结果显示为"debug" trac
 1. （对于 `counter` tracks）value 列
 1. （可选）要透视的列的名称
 
- Note:透视允许你为所选"pivot"列中的每个不同值创建一个 debug track。
+ 注意：透视允许你为所选"pivot"列中的每个不同值创建一个 debug track。
 
 ## 创建 Debug `slice` Tracks
 
@@ -20,7 +20,7 @@ Debug Tracks 是一种将 PerfettoSQL 查询的表格结果显示为"debug" trac
  ![Query for debug slice track](/docs/images/debug-tracks/slice-track-query.png)
 1. 导航到"Timeline"视图，然后点击"Add debug track"来设置新的 debug track。选择"Slice Track"作为 Track 类型。
 
- Note:结果表中的列名不一定必须是 `name`、`ts` 或 `dur`。可以从下拉选择器中选择语义匹配但名称不同的列。
+ 注意：结果表中的列名不一定必须是 `name`、`ts` 或 `dur`。可以从下拉选择器中选择语义匹配但名称不同的列。
 
  ![Create a new debug slice track](/docs/images/debug-tracks/slice-track-create.png)
 
@@ -29,7 +29,7 @@ Debug Tracks 是一种将 PerfettoSQL 查询的表格结果显示为"debug" trac
 
 1. （可选）通过在"Pivot on"下拉菜单中选择列来创建透视 `slice` tracks。
 
- Note:你可以通过输入 `:` 进入 SQL 模式，直接在搜索框中输入查询。
+ 注意：你可以通过输入 `:` 进入 SQL 模式，直接在搜索框中输入查询。
 
  ![Creating pivoted debug slice tracks](/docs/images/debug-tracks/pivot-slice-tracks-create.png)
 

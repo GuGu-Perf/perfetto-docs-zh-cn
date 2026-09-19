@@ -87,6 +87,7 @@
     { "en": "Trace Summarization", "zh": "Trace 汇总", "translate": true, "forbidden": [] }
   ],
   "markers": {
+    "_doc": "判定依据上游 render.mjs renderParagraph：仅段首【大写】标志渲染为提示框（大小写敏感；列表内缩进被解析器剥离、同样生效）。混合大小写 Note: 是纯文本、应翻译成中文。",
     "keep_english": ["NOTE:", "TIP:", "WARNING:", "Summary:", "TODO:", "FIXME:"],
     "forbidden_zh_markers": ["注意：", "提示：", "警告：", "总结：", "待办："],
     "forbidden_fullwidth_colon": ["NOTE：", "TIP：", "WARNING：", "Summary：", "TODO：", "FIXME："]
