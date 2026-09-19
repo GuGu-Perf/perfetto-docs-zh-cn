@@ -1,95 +1,528 @@
 {
   "_meta": {
-    "description": "Perfetto 文档翻译术语表（机器可读版）。来源：.project/TRANSLATION_GUIDE.md 第二章。translate=false 的术语必须保持英文；forbidden 列出该术语对应的禁用中文译法（高置信度精确匹配，用于 proofread.sh 校验）。",
-    "usage": "proofread.sh 读取本文件校验术语违规；翻译 prompt 应注入 translate 规则。修改术语规则时同步更新 TRANSLATION_GUIDE.md。",
+    "description": "Perfetto 文档翻译术语表（机器可读版，唯一事实来源）。translate=false 的术语必须保持英文；forbidden 列出禁用中文译法（高置信度精确匹配，用于 proofread 校验）。",
+    "usage": "workwork.py proofread 读取本文件校验术语违规；翻译 prompt 应注入 translate 规则。规范正文见 .project/workwork.md 第四节。",
     "note": "forbidden 采用保守精确匹配策略，只收录无歧义的禁用词，避免误报。新增禁用词时先全文检索确认无合法用例。"
   },
   "terms": [
-    { "en": "Perfetto", "zh": "Perfetto", "translate": false, "forbidden": [] },
-    { "en": "Trace", "zh": "追踪数据", "translate": false, "forbidden": ["追踪记录"] },
-    { "en": "Tracing", "zh": "追踪过程", "translate": false, "forbidden": [] },
-    { "en": "TracePoint", "zh": "追踪点", "translate": false, "forbidden": [] },
-    { "en": "Trace Buffer", "zh": "追踪缓冲区", "translate": false, "forbidden": ["追踪缓冲区"] },
-    { "en": "DataSource", "zh": "数据源", "translate": false, "forbidden": [] },
-    { "en": "Timeline", "zh": "时间线", "translate": false, "forbidden": [] },
-    { "en": "Session", "zh": "会话", "translate": false, "forbidden": [] },
-    { "en": "Packet", "zh": "数据包", "translate": false, "forbidden": [] },
-    { "en": "Slice", "zh": "时间片", "translate": false, "forbidden": ["时间片"] },
-    { "en": "Counter", "zh": "计数器", "translate": false, "forbidden": [] },
-    { "en": "Frame", "zh": "帧", "translate": false, "forbidden": [] },
-    { "en": "Profile", "zh": "性能分析数据", "translate": false, "forbidden": [] },
-    { "en": "Heap Profile", "zh": "堆内存分析", "translate": false, "forbidden": ["堆内存分析", "堆性能分析"] },
-    { "en": "Memory Profile", "zh": "内存分析", "translate": false, "forbidden": [] },
-    { "en": "CPU Profile", "zh": "CPU 分析", "translate": false, "forbidden": [] },
-    { "en": "Heap Snapshot", "zh": "堆快照", "translate": false, "forbidden": [] },
-    { "en": "Metric", "zh": "指标", "translate": false, "forbidden": [] },
-    { "en": "Log", "zh": "日志", "translate": false, "forbidden": [] },
-    { "en": "Logging", "zh": "日志记录", "translate": false, "forbidden": [] },
-    { "en": "Track", "zh": "轨道", "translate": false, "forbidden": ["轨道"] },
-    { "en": "Slice Group", "zh": "切片组", "translate": false, "forbidden": [] },
-    { "en": "UUID", "zh": "通用唯一标识符", "translate": false, "forbidden": [] },
-    { "en": "ProtoBuf", "zh": "协议缓冲区", "translate": false, "forbidden": [] },
-    { "en": "Fuchsia", "zh": "Fuchsia", "translate": false, "forbidden": [] },
-    { "en": "Android", "zh": "安卓", "translate": false, "forbidden": ["安卓"] },
-    { "en": "Chrome", "zh": "Chrome", "translate": false, "forbidden": [] },
-    { "en": "Linux", "zh": "Linux", "translate": false, "forbidden": [] },
-    { "en": "Windows", "zh": "Windows", "translate": false, "forbidden": [] },
-    { "en": "macOS", "zh": "macOS", "translate": false, "forbidden": [] },
-    { "en": "Hook", "zh": "钩子", "translate": false, "forbidden": [] },
-    { "en": "Cookbook", "zh": "实战指南", "translate": false, "forbidden": [] },
-    { "en": "Fork", "zh": "分叉", "translate": false, "forbidden": [] },
-    { "en": "fork", "zh": "派生", "translate": false, "forbidden": [] },
-    { "en": "Sideload", "zh": "侧载", "translate": false, "forbidden": [] },
-    { "en": "Plugin", "zh": "插件", "translate": false, "forbidden": [] },
-    { "en": "Performance", "zh": "性能", "translate": true, "forbidden": [] },
-    { "en": "Latency", "zh": "延迟", "translate": true, "forbidden": [] },
-    { "en": "Throughput", "zh": "吞吐量", "translate": true, "forbidden": [] },
-    { "en": "Overhead", "zh": "开销", "translate": true, "forbidden": [] },
-    { "en": "Benchmark", "zh": "基准测试", "translate": true, "forbidden": [] },
-    { "en": "Instrumentation", "zh": "插桩/埋点", "translate": true, "forbidden": [] },
-    { "en": "Sampling", "zh": "采样", "translate": true, "forbidden": [] },
-    { "en": "Allocation", "zh": "分配", "translate": true, "forbidden": [] },
-    { "en": "Deallocation", "zh": "释放", "translate": true, "forbidden": [] },
-    { "en": "Retention", "zh": "保留", "translate": true, "forbidden": [] },
-    { "en": "Leak", "zh": "泄漏", "translate": true, "forbidden": [] },
-    { "en": "Garbage Collection", "zh": "垃圾回收", "translate": true, "forbidden": [] },
-    { "en": "Compilation", "zh": "编译", "translate": true, "forbidden": [] },
-    { "en": "Optimization", "zh": "优化", "translate": true, "forbidden": [] },
-    { "en": "Scheduler", "zh": "调度器", "translate": true, "forbidden": [] },
-    { "en": "System Call", "zh": "系统调用", "translate": true, "forbidden": [] },
-    { "en": "Interrupt", "zh": "中断", "translate": true, "forbidden": [] },
-    { "en": "Context Switch", "zh": "上下文切换", "translate": true, "forbidden": [] },
-    { "en": "Stack Trace", "zh": "堆栈跟踪", "translate": true, "forbidden": [] },
-    { "en": "Call Tree", "zh": "调用树", "translate": true, "forbidden": [] },
-    { "en": "Flame Chart", "zh": "火焰图", "translate": true, "forbidden": [] },
-    { "en": "Waterfall", "zh": "瀑布图", "translate": true, "forbidden": [] },
-    { "en": "Dashboard", "zh": "仪表盘", "translate": true, "forbidden": [] },
-    { "en": "Visualizer", "zh": "可视化工具", "translate": true, "forbidden": [] },
-    { "en": "Query", "zh": "查询", "translate": true, "forbidden": [] },
-    { "en": "Filter", "zh": "过滤器", "translate": true, "forbidden": [] },
-    { "en": "Aggregation", "zh": "聚合", "translate": true, "forbidden": [] },
-    { "en": "Histogram", "zh": "直方图", "translate": true, "forbidden": [] },
-    { "en": "Percentile", "zh": "百分位", "translate": true, "forbidden": [] },
-    { "en": "Mean", "zh": "平均值", "translate": true, "forbidden": [] },
-    { "en": "Median", "zh": "中位数", "translate": true, "forbidden": [] },
-    { "en": "Standard Deviation", "zh": "标准差", "translate": true, "forbidden": [] },
-    { "en": "Variance", "zh": "方差", "translate": true, "forbidden": [] },
-    { "en": "Outlier", "zh": "异常值", "translate": true, "forbidden": [] },
-    { "en": "Distribution", "zh": "分布", "translate": true, "forbidden": [] },
-    { "en": "Correlation", "zh": "相关性", "translate": true, "forbidden": [] },
-    { "en": "Regression", "zh": "裂化", "translate": true, "forbidden": [] },
-    { "en": "Benchmarking", "zh": "基准测试", "translate": true, "forbidden": [] },
-    { "en": "Latency-sensitive", "zh": "延迟敏感", "translate": true, "forbidden": [] },
-    { "en": "Real-time", "zh": "实时", "translate": true, "forbidden": [] },
-    { "en": "Near real-time", "zh": "近实时", "translate": true, "forbidden": [] },
-    { "en": "Offline", "zh": "离线", "translate": true, "forbidden": [] },
-    { "en": "Post-processing", "zh": "后处理", "translate": true, "forbidden": [] },
-    { "en": "Trace Summarization", "zh": "Trace 汇总", "translate": true, "forbidden": [] }
+    {
+      "en": "Perfetto",
+      "zh": "Perfetto",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Trace",
+      "zh": "追踪数据",
+      "translate": false,
+      "forbidden": [
+        "追踪记录"
+      ]
+    },
+    {
+      "en": "Tracing",
+      "zh": "追踪过程",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "TracePoint",
+      "zh": "追踪点",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Trace Buffer",
+      "zh": "追踪缓冲区",
+      "translate": false,
+      "forbidden": [
+        "追踪缓冲区"
+      ]
+    },
+    {
+      "en": "DataSource",
+      "zh": "数据源",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Timeline",
+      "zh": "时间线",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Session",
+      "zh": "会话",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Packet",
+      "zh": "数据包",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Slice",
+      "zh": "时间片",
+      "translate": false,
+      "forbidden": [
+        "时间片"
+      ]
+    },
+    {
+      "en": "Counter",
+      "zh": "计数器",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Frame",
+      "zh": "帧",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Profile",
+      "zh": "性能分析数据",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Heap Profile",
+      "zh": "堆内存分析",
+      "translate": false,
+      "forbidden": [
+        "堆内存分析",
+        "堆性能分析"
+      ]
+    },
+    {
+      "en": "Memory Profile",
+      "zh": "内存分析",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "CPU Profile",
+      "zh": "CPU 分析",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Heap Snapshot",
+      "zh": "堆快照",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Metric",
+      "zh": "指标",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Log",
+      "zh": "日志",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Logging",
+      "zh": "日志记录",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Track",
+      "zh": "轨道",
+      "translate": false,
+      "forbidden": [
+        "轨道"
+      ]
+    },
+    {
+      "en": "Slice Group",
+      "zh": "切片组",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "UUID",
+      "zh": "通用唯一标识符",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "ProtoBuf",
+      "zh": "协议缓冲区",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Fuchsia",
+      "zh": "Fuchsia",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Android",
+      "zh": "安卓",
+      "translate": false,
+      "forbidden": [
+        "安卓"
+      ]
+    },
+    {
+      "en": "Chrome",
+      "zh": "Chrome",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Linux",
+      "zh": "Linux",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Windows",
+      "zh": "Windows",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "macOS",
+      "zh": "macOS",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Hook",
+      "zh": "钩子",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Cookbook",
+      "zh": "实战指南",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Fork",
+      "zh": "分叉",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "fork",
+      "zh": "派生",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Sideload",
+      "zh": "侧载",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Plugin",
+      "zh": "插件",
+      "translate": false,
+      "forbidden": []
+    },
+    {
+      "en": "Performance",
+      "zh": "性能",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Latency",
+      "zh": "延迟",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Throughput",
+      "zh": "吞吐量",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Overhead",
+      "zh": "开销",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Benchmark",
+      "zh": "基准测试",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Instrumentation",
+      "zh": "插桩/埋点",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Sampling",
+      "zh": "采样",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Allocation",
+      "zh": "分配",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Deallocation",
+      "zh": "释放",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Retention",
+      "zh": "保留",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Leak",
+      "zh": "泄漏",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Garbage Collection",
+      "zh": "垃圾回收",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Compilation",
+      "zh": "编译",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Optimization",
+      "zh": "优化",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Scheduler",
+      "zh": "调度器",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "System Call",
+      "zh": "系统调用",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Interrupt",
+      "zh": "中断",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Context Switch",
+      "zh": "上下文切换",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Stack Trace",
+      "zh": "堆栈跟踪",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Call Tree",
+      "zh": "调用树",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Flame Chart",
+      "zh": "火焰图",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Waterfall",
+      "zh": "瀑布图",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Dashboard",
+      "zh": "仪表盘",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Visualizer",
+      "zh": "可视化工具",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Query",
+      "zh": "查询",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Filter",
+      "zh": "过滤器",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Aggregation",
+      "zh": "聚合",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Histogram",
+      "zh": "直方图",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Percentile",
+      "zh": "百分位",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Mean",
+      "zh": "平均值",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Median",
+      "zh": "中位数",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Standard Deviation",
+      "zh": "标准差",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Variance",
+      "zh": "方差",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Outlier",
+      "zh": "异常值",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Distribution",
+      "zh": "分布",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Correlation",
+      "zh": "相关性",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Regression",
+      "zh": "裂化",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Benchmarking",
+      "zh": "基准测试",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Latency-sensitive",
+      "zh": "延迟敏感",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Real-time",
+      "zh": "实时",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Near real-time",
+      "zh": "近实时",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Offline",
+      "zh": "离线",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Post-processing",
+      "zh": "后处理",
+      "translate": true,
+      "forbidden": []
+    },
+    {
+      "en": "Trace Summarization",
+      "zh": "Trace 汇总",
+      "translate": true,
+      "forbidden": []
+    }
   ],
   "markers": {
     "_doc": "判定依据上游 render.mjs renderParagraph：仅段首【大写】标志渲染为提示框（大小写敏感；列表内缩进被解析器剥离、同样生效）。混合大小写 Note: 是纯文本、应翻译成中文。",
-    "keep_english": ["NOTE:", "TIP:", "WARNING:", "Summary:", "TODO:", "FIXME:"],
-    "forbidden_zh_markers": ["注意：", "提示：", "警告：", "总结：", "待办："],
-    "forbidden_fullwidth_colon": ["NOTE：", "TIP：", "WARNING：", "Summary：", "TODO：", "FIXME："]
+    "keep_english": [
+      "NOTE:",
+      "TIP:",
+      "WARNING:",
+      "Summary:",
+      "TODO:",
+      "FIXME:"
+    ],
+    "forbidden_zh_markers": [
+      "注意：",
+      "提示：",
+      "警告：",
+      "总结：",
+      "待办："
+    ],
+    "forbidden_fullwidth_colon": [
+      "NOTE：",
+      "TIP：",
+      "WARNING：",
+      "Summary：",
+      "TODO：",
+      "FIXME："
+    ]
   }
 }

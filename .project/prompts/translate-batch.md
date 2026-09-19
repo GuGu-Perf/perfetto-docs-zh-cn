@@ -22,7 +22,7 @@
 ## 步骤
 
 1. 先读以下规范（顺序固定）：
-   - `.project/TRANSLATION_GUIDE.md` — 完整翻译规范与术语表
+   - `.project/workwork.md` 第四节 — 完整翻译规范
    - `.project/glossary.json` — 机器可读术语表（translate=false 的术语必须保持英文）
    - `.project/phrases.json` — 短语与链接文本定型译法（优先级高于自行斟酌）
 2. 对每个文件：读本地中文文件，对照 diff 将改动翻译后用 Edit 应用——
@@ -35,8 +35,8 @@
    - **链接 URL 右括号必须是半角 `)`**，全角 `）` 会破坏 markdown 链接解析（历史高频 bug）
 4. 完成后自检并修复，直到通过：
    ```bash
-   bash .project/audit.sh --files {FILE_LIST}
-   bash .project/proofread.sh {FILE_LIST}
+   python3 .project/workwork.py audit --files {FILE_LIST}
+   python3 .project/workwork.py proofread {FILE_LIST}
    ```
    两者必须 0 错误（proofread 的 W1 空格警告可留存，不计失败）。
 

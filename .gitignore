@@ -1,2 +1,5 @@
 .codebuddy/
 .playwright-cli/
+.cache/
+.DS_Store
+.claude/

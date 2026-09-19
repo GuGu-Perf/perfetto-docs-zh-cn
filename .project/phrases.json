@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "短语级定型译法对照表（轻量翻译记忆）。收录跨文件反复出现、已定型的短语与链接文本译法，保证多轮翻译一致性。翻译子代理开工前应将本表注入 prompt；新增定型译法时同步更新。",
-    "usage": "优先级：本表 > 上下文灵活翻译。表中未收录的短语按 TRANSLATION_GUIDE.md 处理。"
+    "usage": "优先级：本表 > 上下文灵活翻译。表中未收录的短语按 .project/workwork.md 第四节翻译规范处理。"
   },
   "link_texts": {
     "Merging traces from the command line": "从命令行合并 trace",

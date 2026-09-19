@@ -22,7 +22,7 @@ git clone https://github.com/GuGu-Perf/perfetto-docs-zh-cn.git
 cd perfetto-docs-zh-cn
 
 # 本地预览（自动构建并启动服务器）http://localhost:8082/docs/
-bash .project/workwork.sh deploy-local
+python3 .project/workwork.py deploy-local
 ```
 
 
@@ -32,10 +32,9 @@ bash .project/workwork.sh deploy-local
 perfetto-docs-zh-cn/
 ├── docs/                    # 翻译后的中文文档
 ├── .project/                # 项目工具与配置
-│   ├── workwork.sh          # 统一工具入口（预览/发布/同步）
-│   ├── workwork.md          # 工具使用说明
+│   ├── workwork.py          # 唯一工具（部署/同步/审计/校验/比对）
+│   ├── workwork.md          # 唯一工程文档（约束/工作流/规范）
 │   ├── LAST_SYNC            # 上游同步记录
-│   ├── TRANSLATION_GUIDE.md # 翻译规范（术语表、格式要求）
 │   └── ...
 ├── CONTRIBUTING.md          # 贡献指南
 ├── LICENSE                  # Apache 2.0

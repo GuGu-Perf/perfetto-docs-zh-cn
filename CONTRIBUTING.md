@@ -9,12 +9,12 @@
 运行同步检查脚本获取官方文档更新：
 
 ```bash
-bash .project/workwork.sh sync-check
+python3 .project/workwork.py sync-check
 ```
 
 ### 2. 使用 AI 翻译
 
-借助 AI 工具按照[翻译规范](.project/TRANSLATION_GUIDE.md)进行初步翻译。
+借助 AI 工具按照[翻译规范](.project/workwork.md（第四节 翻译规范）)进行初步翻译。
 
 ### 3. 校对并修正文稿
 
@@ -25,7 +25,7 @@ bash .project/workwork.sh sync-check
 运行统一工具脚本查看效果：
 
 ```bash
-bash .project/workwork.sh deploy-local
+python3 .project/workwork.py deploy-local
 ```
 
 ### 5. 人工校对
@@ -37,7 +37,7 @@ bash .project/workwork.sh deploy-local
 翻译完成后更新同步点：
 
 ```bash
-bash .project/workwork.sh sync-update
+python3 .project/workwork.py sync-update
 ```
 
 ### 7. 提交审核
@@ -52,7 +52,7 @@ git push origin translate/your-branch-name
 
 ## 翻译规范
 
-详细的翻译规范请参考 **[翻译规范指南](.project/TRANSLATION_GUIDE.md)**。
+详细的翻译规范请参考 **[翻译规范指南](.project/workwork.md（第四节 翻译规范）)**。
 
 ## 提交规范
 
