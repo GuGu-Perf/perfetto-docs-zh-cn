@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfetto v58 - Perfetto Blog</title>
+  <meta property="og:title" content="Perfetto v58 - Perfetto Blog">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/blog/perfetto-v58">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+
+  <link rel="alternate" type="application/atom+xml" title="Perfetto blog" href="/blog/atom.xml">
+
+  <script type="text/javascript" src="/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/blog/">
+      <img src="/assets/brand.png">
+      <span class="brand-blog">Blog</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search the blog" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/">Home</a>
+  
+  
+  <a href="/docs/">Docs</a>
+  
+  
+  <a href="/docs/contributing/getting-started#community">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="blog blog-post">
+  <main class="md-content" data-md-file="/blog/perfetto-v58">
+    <a class="blog-back" href="/blog/">All posts</a>
+    <h1>Perfetto v58</h1>
+    <div class="blog-byline">
+      <div class="blog-avatars">
+        
+        <img src="/blog/media/authors/perfetto-team.png" alt="" width="40" height="40" loading="lazy">
+        
+      </div>
+      <div class="blog-byline-text">
+        <div class="blog-authors">
+          @perfetto-team
+        </div>
+        <time datetime="2026-08-24">2026-08-24</time>
+      </div>
+    </div>
+    <p>We’re excited to share Perfetto v58.2! This release makes it possible to <strong>merge traces from different machines onto one timeline</strong>, introduces <strong>Memscope and Memory Overview</strong> for end-to-end memory investigations, lets you <strong>keep a parsed trace running and analyze it through lightweight remote clients</strong>, adds <strong>Zstd trace compression</strong>, and substantially improves Perfetto’s <strong>AI-assisted analysis workflows</strong>. It also introduces a common stack-sampling format, new export options, and a collection of UI and SDK improvements.</p>
+<blockquote>
+<p>Note: v58.0 and v58.1 were never released due to compilation issues with Windows builds.</p>
+</blockquote>
+<h2><a name="merge-multiple-traces-onto-one-timeline" class="anchor" href="#merge-multiple-traces-onto-one-timeline"></a>Merge multiple traces onto one timeline</h2><p>Perfetto can now open several traces together and merge their contents onto a single timeline! This makes it much easier to investigate behavior spanning multiple VMs, machines, or separately recorded trace sources without manually converting them into one trace first.</p>
+<p>Here&#39;s a demo of merging traces in the Perfetto UI:</p>
+<p><video class="md-video" controls preload="metadata" aria-label="Merging traces in the Perfetto UI"><source src="/blog/media/perfetto-v58/trace-merging-demo.mp4"></video></p>
+<p>In the UI, select <strong>Open multiple trace files</strong>, select several files in the normal file picker, or drop multiple files onto the page. A new dialog lets you configure how the traces should be merged, shows whether any events would be dropped, and can export the result as a self-contained <code>.tar</code> archive.</p>
+<p><img src="/blog/media/perfetto-v58/trace-merging-dialog-crop.png" alt="trace-merging-dialog-crop"></p>
+<p>A powerful use of this feature is to visualize traces that span machines and VMs. For example, to visualize traces across a phone and a backend service the phone is communicating with:</p>
+<p><img src="/blog/media/perfetto-v58/multimachine-showcase-150.png" alt="multimachine-showcase-150"></p>
+<p>Use the new <code>util merge</code> command which helps avoid common mistakes when merging traces. The resulting trace can be opened in the UI or in the trace processor:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment"># Merge traces from the same machine recorded with consistent clocks. For multi-machine or multi-clock setups, use the JSON</span>
+<span class="hljs-comment"># manifest as described below.</span>
+trace_processor util merge \
+  -o merged.tar \
+   perf.data \
+   perfetto.pftrace
+
+<span class="hljs-comment"># Now you can opened merged.tar in the UI *or* load it in trace processor:</span>
+trace_processor merged.tar</code></div><p>For more complex setups, a <code>perfetto_manifest</code> JSON file can assign machine names, relate clock domains, and apply fixed clock offsets. The UI can generate both the archive and manifest interactively, providing a convenient starting point for scripted or repeatable workflows.</p>
+<p>See the <a href="https://perfetto.dev/docs/analysis/merging-traces">merging traces documentation</a> for much information examples of how to merge traces in common setups, details of the manifest format and details on how to generate pre-merged traces for loading in the UI, without using <code>trace_processor merge</code></p>
+<h2><a name="memscope-and-memory-overview-preview-" class="anchor" href="#memscope-and-memory-overview-preview-"></a>Memscope and Memory Overview (Preview)</h2><p>Perfetto v58 introduces a connected memory-analysis workflow spanning live monitoring, trace recording, initial triage, and detailed investigation.</p>
+<blockquote>
+<p><strong>Preview:</strong> Memscope and Memory Overview are still preview features.</p>
+</blockquote>
+<p><strong>Memscope</strong> is a live memory profiler for Android and Linux. It guides you through connecting to a device or host, displays system-wide and per-process memory statistics as they change, and provides shortcuts for recording a memory trace for a selected process. Instead of constructing a memory-focused recording configuration by hand, you can move directly from observing suspicious memory behavior to capturing the information needed to explain it.</p>
+<p><img src="/blog/media/perfetto-v58/memscope-connected.png" alt="memscope-connected"></p>
+<p>After recording, <strong>Memory Overview</strong> provides a high-level breakdown of where a process’s memory is being used. It combines information from smaps snapshots, ART heap dumps, and native heap profiling into one starting point, with links into more specialized tools such as Heap Dump Explorer.</p>
+<p><img src="/blog/media/perfetto-v58/memscope-where-did-memory-go.png" alt="memscope-where-did-memory-go"></p>
+<p>Memory Overview also opens automatically when a trace contains smaps snapshots, making memory traces immediately actionable rather than dropping users onto a generic timeline.</p>
+<p>Together, Memscope and Memory Overview provide a path from “this process appears to be using too much memory” to the appropriate native, managed, or system-level investigation.</p>
+<p>See the <a href="https://perfetto.dev/docs/visualization/memscope">Memscope and Memory Overview guide</a> for a complete recording and analysis walkthrough.</p>
+<h2><a name="load-once-analyze-through-lightweight-clients" class="anchor" href="#load-once-analyze-through-lightweight-clients"></a>Load once, analyze through lightweight clients</h2><p>Remote Trace Processor analysis is not new: <code>trace_processor server http</code> already allowed the Perfetto UI to use a native Trace Processor instance instead of the browser’s WebAssembly implementation.</p>
+<p>The command-line experience, however, had significant gaps. The Trace Processor CLI could not connect to an existing server, and running several server instances meant manually assigning port numbers, remembering which trace was attached to each port, and dealing with port clashes.</p>
+<p>Perfetto v58 turns this into a complete client-server workflow. A trace can be loaded once into a properly named background session, and any number of lightweight command-line clients can connect to it using <code>--remote</code>:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment"># Parse the trace once and keep it in a named session.</span>
+trace_processor server unix \
+  --name mysession \
+  --daemonize trace.pftrace
+
+<span class="hljs-comment"># Run queries against the existing session.</span>
+trace_processor query \
+  --remote mysession \
+  <span class="hljs-string">&quot;SELECT count(*) FROM slice&quot;</span></code></div><p>Named local sessions use Unix sockets, so there is no port to allocate or remember. The session name identifies both the running Trace Processor and the trace it contains. The new remote client can also connect to a <code>trace_processor server http</code> instance using <code>--remote host:port</code>, bringing the existing HTTP/WebSocket server workflow to the command-line interface.</p>
+<p>Session state persists across invocations: tables created by one query and modules included by one command remain available to the next, allowing expensive intermediate results to be materialized once and reused. The result is a much more usable workflow for large traces: parse once, give the session a meaningful name, and analyze it repeatedly without juggling ports or restarting Trace Processor.</p>
+<p>See the <a href="https://perfetto.dev/docs/getting-started/command-line-analysis">command-line analysis guide</a> for session management, remote addresses, and idle-timeout options.</p>
+<h2><a name="smaller-traces-with-zstd-compression" class="anchor" href="#smaller-traces-with-zstd-compression"></a>Smaller traces with Zstd compression</h2><p>Perfetto now supports <strong>Zstd</strong> as a trace compression option alongside deflate. Zstd generally produces smaller traces than deflate at a similar speed, reducing the storage and transfer costs of longer or more data-intensive recordings.</p>
+<p>Compression is selected through the new <code>TraceConfig.compression</code> field:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">compression {
+  zstd {}
+}</code></div><p>The compression level can also be controlled explicitly:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">compression {
+  zstd {
+    level: <span class="hljs-number">9</span>
+  }
+}</code></div><p>Level <code>0</code>, or leaving the level unset, uses Zstd’s default level of <code>3</code>, which provides a good balance for most traces. The older <code>compression_type</code> field remains honored for compatibility but is now deprecated in favor of <code>TraceConfig.compression</code>.</p>
+<p>See the <a href="https://perfetto.dev/docs/concepts/config#tuning-the-zstd-level">trace configuration documentation</a> for level selection, compatibility behavior, and SDK build requirements.</p>
+<h2><a name="faster-and-more-capable-ai-assisted-analysis" class="anchor" href="#faster-and-more-capable-ai-assisted-analysis"></a>Faster and more capable AI-assisted analysis</h2><p>Perfetto’s installable AI skill can now keep a trace loaded across an investigation. Instead of reparsing the same trace for every question, the skill opens a persistent Trace Processor session and reuses it for subsequent queries. This makes iterative analysis significantly faster and allows SQL state and materialized intermediate results to carry across steps.</p>
+<p>The skill also gains:</p>
+<ul>
+<li>A <code>TraceConfig</code> reference and exemplar configurations that an agent can adapt when a question requires a custom recording.</li>
+<li>A saved Markdown report at the end of every analysis, containing the original question, the findings, and the queries that produced useful results.</li>
+<li>A downloadable <code>perfetto-ai-skill.zip</code> asset in each GitHub release, allowing the skill to be installed on machines that cannot reach GitHub at installation time.</li>
+</ul>
+<p>See the <a href="https://perfetto.dev/docs/getting-started/using-ai">Using AI with Perfetto guide</a> for installation instructions and example investigations.</p>
+<h2><a name="a-common-format-for-stack-sampling-profilers" class="anchor" href="#a-common-format-for-stack-sampling-profilers"></a>A common format for stack-sampling profilers</h2><p>Perfetto now defines a common stack-sampling format that any profiler can emit.</p>
+<p>The new <code>TracePacket.stack_sample</code> packet attributes a callstack to a thread, process, or stackful asynchronous context such as a goroutine or fiber. Samples are measured against an explicit counter timebase—such as wall time, CPU cycles, or allocated bytes—and can carry additional follower counters.</p>
+<p>Callstacks can be fully inline or use Perfetto’s interning mechanism. Per-sequence <code>StackSampleDefaults</code> identify the profiler and declare common counters once for the whole sampling stream.</p>
+<p>Trace Processor exposes the results through a common set of tables:</p>
+<ul>
+<li><code>stack_sample</code></li>
+<li><code>stack_sample_session</code></li>
+<li><code>stack_sample_task_context</code></li>
+<li><code>stack_sample_execution_context</code></li>
+<li><code>stack_sample_async_context</code></li>
+<li><code>stack_sample_counter_track</code></li>
+<li><code>stack_sample_counter</code></li>
+</ul>
+<p>These tables provide one profiler-neutral model while continuing to share the existing <code>stack_profile_*</code> callstack tables. Linux perf’s specialized <code>perf_sample</code>, <code>perf_session</code>, and <code>perf_counter_track</code> tables remain available for perf-specific information, including counter-only samples.</p>
+<p>This gives profiler authors a standard route into Perfetto’s SQL and visualization capabilities without having to adopt another profiler’s transport format.</p>
+<h2><a name="export-parsed-traces-and-tables" class="anchor" href="#export-parsed-traces-and-tables"></a>Export parsed traces and tables</h2><p>Perfetto v58 adds two Trace Processor export formats for workflows that need to reuse or move already-parsed data.</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment"># Reloadable by the same Trace Processor version.</span>
+trace_processor <span class="hljs-built_in">export</span> perfetto \
+  -o parsed.tar \
+  trace.pftrace
+
+<span class="hljs-comment"># Standard Arrow files for external analysis tools.</span>
+trace_processor <span class="hljs-built_in">export</span> arrow_tar \
+  -o tables.tar \
+  trace.pftrace</code></div><p>The <strong><code>perfetto</code></strong> format stores parsed data in an archive that another Trace Processor instance of the same version can load. This avoids repeatedly parsing a large source trace when a persistent server session is not appropriate.</p>
+<p>The <strong><code>arrow_tar</code></strong> format writes the built-in tables as standard Apache Arrow files inside a TAR archive. The format is stable across Perfetto versions and can be consumed by tools such as pandas, Polars, and PyArrow. It is intended for interoperability and cannot be loaded back into Trace Processor.</p>
+<p>Together with client-server mode, these formats provide three distinct options: keep a live parsed session, save a reloadable parsed archive, or export tables into a standard analytics ecosystem.</p>
+<h2><a name="ui-improvements" class="anchor" href="#ui-improvements"></a>UI improvements</h2><h3><a name="better-flamegraphs" class="anchor" href="#better-flamegraphs"></a>Better flamegraphs</h3><p>Flamegraphs now have clearer direction and filter controls, frame highlighting, and case-insensitive regular-expression filtering.</p>
+<p>Callstack sample tracks and flamegraphs also share a common implementation over the new <code>stack_sample</code> table. Tracks and area-selection tabs remain separate for each profiler source, preserving source-specific workflows, while any source that records counters can now support counter-weighted flamegraphs.</p>
+<p><img src="/blog/media/perfetto-v58/flamegraph-improvements-crop.png" alt="flamegraph-improvements-crop"></p>
+<h3><a name="recently-opened-traces" class="anchor" href="#recently-opened-traces"></a>Recently opened traces</h3><p>The Perfetto homepage now lists recently opened traces, making it easier to return to an investigation without locating the file again.</p>
+<p><img src="/blog/media/perfetto-v58/recently-opened-traces-card.png" alt="recently-opened-traces-card"></p>
+<h3><a name="pivot-slice-aggregations-by-argument-values" class="anchor" href="#pivot-slice-aggregations-by-argument-values"></a>Pivot slice aggregations by argument values</h3><p>The slice aggregation table can now pivot on values stored in event arguments. This makes it possible to compare groups based on dimensions encoded in <code>args</code> without first reshaping the data through a custom SQL query.</p>
+<!-- MEDIA READY — Before/after screenshots: `/tmp/perfetto-v58-media/screenshots/arg-pivot-before-crop.png` and `/tmp/perfetto-v58-media/screenshots/arg-pivot-after-crop.png`. Rough interaction video: `/tmp/perfetto-v58-media/videos/arg-pivot-demo.mp4`. Trace generator: `/tmp/perfetto-v58-media/generate_arg_pivot_trace.py`; Playwright automation: `/tmp/perfetto-v58-media/capture_arg_pivot.cjs`. -->
+
+<p>Additional UI improvements include:</p>
+<ul>
+<li>We now publish the UI as a GitHub release artifact, making it easier than to embed the UI inside other tools.</li>
+<li>The ftrace plugin now supports area selections and multi-machine traces.</li>
+<li>The command-palette shortcut is remapped to <code>F1</code> on Firefox.</li>
+</ul>
+<h2><a name="recording-and-tracing-improvements" class="anchor" href="#recording-and-tracing-improvements"></a>Recording and tracing improvements</h2><h3><a name="see-other-tracing-sessions-in-your-trace" class="anchor" href="#see-other-tracing-sessions-in-your-trace"></a>See other tracing sessions in your trace</h3><p>More than one tracing session can be active on a device at the same time—for example, a developer recording manually while a system service or automated test is also tracing. Until now, the resulting trace did not show when those other sessions started or stopped, making interference between recordings difficult to explain.</p>
+<p>Perfetto can now record the lifecycle of every other session that overlaps with yours. Enable it in the recording config:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">builtin_data_sources {
+  enable_concurrent_session_events: <span class="hljs-literal">true</span>
+}</code></div><p>The trace records when each concurrent session is configured, started, begins shutting down, or becomes disabled. Trace Processor and the UI turn those events into one state track per session under <strong>Concurrent tracing sessions</strong>, so the overlap is visible alongside the activity being investigated.</p>
+<p><img src="/blog/media/perfetto-v58/concurrent-tracing-sessions-crop.png" alt="concurrent-tracing-sessions-crop"></p>
+<h3><a name="more-complete-process-metadata-from-procfs" class="anchor" href="#more-complete-process-metadata-from-procfs"></a>More complete process metadata from procfs</h3><p>The <code>process_stats</code> data source now writes an explicit <code>Thread</code> message for every process’s main thread instead of leaving it implied by the process entry. Traces recorded from procfs alone therefore retain main-thread names in Trace Processor and the UI.</p>
+<h3><a name="structured-context-for-recordings" class="anchor" href="#structured-context-for-recordings"></a>Structured context for recordings</h3><p>Trace-level notes have been generalized into attributes. <code>TraceConfig.trace_attributes</code> and <code>perfetto --add-attribute</code> replace <code>TraceConfig.notes</code> and <code>--add-note</code>, allowing a recording to carry structured context such as its build identifier, experiment name, test case, or collection environment. These attributes are available from Trace Processor without requiring a timestamped event or metadata track.</p>
+<h2><a name="sdk-improvements" class="anchor" href="#sdk-improvements"></a>SDK improvements</h2><p>The C SDK’s shared-library configuration has been simplified:</p>
+<ul>
+<li>Static linking—the default—no longer requires any export macros.</li>
+<li>Define <code>PERFETTO_SDK_SHLIB_IMPLEMENTATION</code> when building the SDK into a shared library.</li>
+<li>Define <code>PERFETTO_SDK_SHLIB</code> when consuming it as a shared library.</li>
+<li>The same model applies to the amalgamated SDK.</li>
+</ul>
+<p>The C data-source ABI also gains <code>PerfettoDsGetTimestamp()</code> and <code>PerfettoDsGetDefaultClockId()</code>. These APIs return timestamps using Perfetto’s preferred trace clock, removing the need for callers to select an operating-system-specific clock themselves. The Rust SDK provides the equivalent through <code>DataSourceTimestamp::now()</code>.</p>
+<p>On Apple platforms, <code>dev.perfetto.clock_sync</code> signpost events now fire on iOS as well as macOS, allowing Instruments traces captured on iOS to be synchronized with Perfetto traces.</p>
+<h2><a name="trace-processor-improvements" class="anchor" href="#trace-processor-improvements"></a>Trace Processor improvements</h2><p>The SQL <code>regexp()</code> function now accepts an optional third argument for matching flags: <code>i</code> selects case-insensitive matching and <code>c</code> explicitly selects case-sensitive matching.</p>
+<p>This release also fixes:</p>
+<ul>
+<li>Negative timestamps wrapping to large positive values and crashing the UI.</li>
+<li>A crash when importing an empty <code>CpuInfo</code> packet.</li>
+<li>A hang when skipping an oversized protobuf field.</li>
+<li>Lost callstacks when importing Apple Instruments traces produced by Xcode 27.</li>
+</ul>
+<h2><a name="migration-and-compatibility-notes" class="anchor" href="#migration-and-compatibility-notes"></a>Migration and compatibility notes</h2><p>Perfetto v58 includes several API and tooling changes worth checking when upgrading:</p>
+<ul>
+<li><strong>Inline callstacks:</strong> <code>TrackEvent.Callstack</code> has moved to the top-level <code>InlineCallstack</code> message in <code>trace/profiling/inline_callstack.proto</code>. The wire format is unchanged, but code referring to the generated <code>TrackEvent.Callstack</code> or <code>TrackEvent::Callstack</code> types must move to <code>InlineCallstack</code>.</li>
+<li><strong>Trace metadata:</strong> <code>TraceConfig.notes</code> and <code>perfetto --add-note</code> have been replaced by <code>TraceConfig.trace_attributes</code> and <code>--add-attribute</code>.</li>
+<li><strong>Compression:</strong> <code>TraceConfig.compression</code> supersedes the deflate-only <code>compression_type</code> field.</li>
+<li><strong>C SDK shared libraries:</strong> <code>PERFETTO_SHLIB_SDK_IMPLEMENTATION</code> has been renamed to <code>PERFETTO_SDK_SHLIB_IMPLEMENTATION</code>, and <code>PERFETTO_SDK_DISABLE_SHLIB_EXPORT</code> has been removed.</li>
+<li><strong><code>traceconv</code>:</strong> the standalone tool is deprecated in favor of equivalent <code>trace_processor</code> subcommands. The <code>traceconv</code> wrapper continues to fetch Trace Processor and run it under the old name, so existing invocations continue to work for now.</li>
+<li><strong>SQL file access:</strong> the embedder-provided filesystem interface is disabled by default. Trace Processor permits SQL file access only when started with <code>--allow-sql-file-access</code>.</li>
+<li><strong><code>EXPORT_JSON</code>:</strong> the integer file-descriptor form has been removed. SQL file writes no longer require <code>--dev</code>.</li>
+</ul>
+<p>Happy Tracing!</p>
+<hr>
+<p>A huge thanks to everyone who contributed to making Perfetto v58 possible. A specific thanks to our first time contributors:</p>
+<ul>
+<li>@jernej-google made their first contribution in <a href="https://github.com/google/perfetto/pull/6346">https://github.com/google/perfetto/pull/6346</a></li>
+<li>@TParaschiv made their first contribution in <a href="https://github.com/google/perfetto/pull/6259">https://github.com/google/perfetto/pull/6259</a></li>
+<li>@sergey-miryanov made their first contribution in <a href="https://github.com/google/perfetto/pull/6402">https://github.com/google/perfetto/pull/6402</a></li>
+<li>@tudormot made their first contribution in <a href="https://github.com/google/perfetto/pull/6455">https://github.com/google/perfetto/pull/6455</a></li>
+<li>@carlscabgro made their first contribution in <a href="https://github.com/google/perfetto/pull/6403">https://github.com/google/perfetto/pull/6403</a></li>
+<li>@annamayzner made their first contribution in <a href="https://github.com/google/perfetto/pull/6437">https://github.com/google/perfetto/pull/6437</a></li>
+<li>@lucigrigo made their first contribution in <a href="https://github.com/google/perfetto/pull/6479">https://github.com/google/perfetto/pull/6479</a></li>
+<li>@acst1223 made their first contribution in <a href="https://github.com/google/perfetto/pull/6586">https://github.com/google/perfetto/pull/6586</a></li>
+<li>@adilburaksen made their first contribution in <a href="https://github.com/google/perfetto/pull/6518">https://github.com/google/perfetto/pull/6518</a></li>
+<li>@Yong-yuan-X made their first contribution in <a href="https://github.com/google/perfetto/pull/6623">https://github.com/google/perfetto/pull/6623</a></li>
+<li>@Nublo made their first contribution in <a href="https://github.com/google/perfetto/pull/6685">https://github.com/google/perfetto/pull/6685</a></li>
+<li>@kongy made their first contribution in <a href="https://github.com/google/perfetto/pull/6733">https://github.com/google/perfetto/pull/6733</a></li>
+<li>@Leafum made their first contribution in <a href="https://github.com/google/perfetto/pull/6804">https://github.com/google/perfetto/pull/6804</a></li>
+<li>@junov-google made their first contribution in <a href="https://github.com/google/perfetto/pull/6886">https://github.com/google/perfetto/pull/6886</a></li>
+<li>@akahuang-goog made their first contribution in <a href="https://github.com/google/perfetto/pull/6847">https://github.com/google/perfetto/pull/6847</a></li>
+<li>@jingjiewang-twn made their first contribution in <a href="https://github.com/google/perfetto/pull/6655">https://github.com/google/perfetto/pull/6655</a></li>
+<li>@Socialpranker made their first contribution in <a href="https://github.com/google/perfetto/pull/6588">https://github.com/google/perfetto/pull/6588</a></li>
+<li>@rishuranjanofficial made their first contribution in <a href="https://github.com/google/perfetto/pull/6968">https://github.com/google/perfetto/pull/6968</a></li>
+</ul>
+<p><em>For complete details, see the <a href="https://github.com/google/perfetto/blob/v58.2/CHANGELOG">v58.2 changelog</a> or <a href="https://github.com/google/perfetto/compare/v57.2...v58.2">view all changes on GitHub</a>.</em></p>
+<p><em>Download Perfetto v58.2 from our <a href="https://github.com/google/perfetto/releases">releases page</a>, get started at <a href="https://perfetto.dev/docs/">perfetto.dev</a>, or try the UI directly at <a href="https://ui.perfetto.dev/">ui.perfetto.dev</a>.</em></p>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>

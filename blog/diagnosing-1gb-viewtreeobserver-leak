@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Diagnosing a 1 GB ViewTreeObserver Memory Leak with Perfetto - Perfetto Blog</title>
+  <meta property="og:title" content="Diagnosing a 1 GB ViewTreeObserver Memory Leak with Perfetto - Perfetto Blog">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/blog/diagnosing-1gb-viewtreeobserver-leak">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+
+  <link rel="alternate" type="application/atom+xml" title="Perfetto blog" href="/blog/atom.xml">
+
+  <script type="text/javascript" src="/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/blog/">
+      <img src="/assets/brand.png">
+      <span class="brand-blog">Blog</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search the blog" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/">Home</a>
+  
+  
+  <a href="/docs/">Docs</a>
+  
+  
+  <a href="/docs/contributing/getting-started#community">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="blog blog-post">
+  <main class="md-content" data-md-file="/blog/diagnosing-1gb-viewtreeobserver-leak">
+    <a class="blog-back" href="/blog/">All posts</a>
+    <h1>Diagnosing a 1 GB ViewTreeObserver Memory Leak with Perfetto</h1>
+    <div class="blog-byline">
+      <div class="blog-avatars">
+        
+        <img src="/blog/media/authors/goldenluk.jpg" alt="" width="40" height="40" loading="lazy">
+        
+      </div>
+      <div class="blog-byline-text">
+        <div class="blog-authors">
+          <a href="https://github.com/goldenluk">@goldenluk</a>
+        </div>
+        <time datetime="2026-09-01">2026-09-01</time>
+      </div>
+    </div>
+    <h2><a name="motivation" class="anchor" href="#motivation"></a>Motivation</h2><p>How does a single background scrim view (a semi-transparent overlay that dims background content to focus attention on a modal or drawer) end up retaining nearly a gigabyte of memory in a production application? Memory leaks in Android are common, but few are as destructive as those involving <a href="https://developer.android.com/reference/kotlin/android/view/ViewTreeObserver">ViewTreeObserver</a>.</p>
+<p>In this article, we will walk through a common but often misunderstood pattern: memory leaks caused by <code>ViewTreeObserver</code> listeners. We will look at how these leaks manifest, use Perfetto to identify them, and see how to implement safe engineering patterns to fix them.</p>
+<h2><a name="the-lifetime-mismatch-who-actually-owns-viewtreeobserver-" class="anchor" href="#the-lifetime-mismatch-who-actually-owns-viewtreeobserver-"></a>The Lifetime Mismatch: Who Actually Owns ViewTreeObserver?</h2><p>Before diving into heap dumps or traps, it&#39;s crucial to understand a fundamental architectural detail in Android:</p>
+<blockquote>
+<p>A ViewTreeObserver isn&#39;t owned by the individual View. Once attached, all views in the same ViewRoot share the hierarchy&#39;s ViewTreeObserver. Therefore, registering a listener from a short-lived object (such as a <a href="https://developer.android.com/reference/androidx/fragment/app/Fragment">Fragment</a>) effectively stores that callback in a potentially much longer-lived ViewRoot. If the listener captures the Fragment and isn&#39;t unregistered during teardown, the ViewRoot will retain the destroyed Fragment for as long as that window hierarchy remains alive.</p>
+</blockquote>
+<p><img src="/blog/media/diagnosing-1gb-viewtreeobserver-leak/path.png" alt="Figure 1: Retention path diagram">
+<em>Figure 1: Retention path showing how ViewTreeObserver at the ViewRootImpl window root retains a destroyed Fragment and its view hierarchy.</em></p>
+<h2><a name="gathering-data-the-warning-signs" class="anchor" href="#gathering-data-the-warning-signs"></a>Gathering Data: The Warning Signs</h2><p>Every investigation starts with a symptom or an alert. In our case, automated telemetry pipelines flagged creeping memory issues in large-scale applications.</p>
+<h3><a name="real-world-impact-stats-" class="anchor" href="#real-world-impact-stats-"></a>Real World Impact Stats:</h3><ul>
+<li>A single leaking observer retained ~900 MB of memory across 58 dead view trees and native graphics buffers.  </li>
+<li>Orphaned observers retained 61.1 MB per trace, stranding custom audio player UI components.  </li>
+<li>Leaks retained up to 12.8 MB per trace, holding high-resolution image thumbnails in memory.</li>
+</ul>
+<h2><a name="forensic-investigation-heap-dumps-in-perfetto" class="anchor" href="#forensic-investigation-heap-dumps-in-perfetto"></a>Forensic Investigation: Heap Dumps in Perfetto</h2><p>Knowing that observers can hold dead UI hierarchies is one thing; pinpointing the exact line of code holding the reference in a production trace is another.<br>When telemetry alerts flag high memory retention, diagnosing the root cause requires inspecting the app&#39;s <strong>Java Heap Graph</strong>.</p>
+<blockquote>
+<p><strong>Try it on your app:</strong> If you haven&#39;t analyzed a heap dump in Perfetto yet, try capturing one after going through a complex flow in your app. It’s one of the fastest ways to uncover hidden retention chains. Check out the official <a href="https://perfetto.dev/docs/data-sources/java-heap-profiler">Perfetto Guide</a> to get started.</p>
+</blockquote>
+<h3><a name="step-1-spotting-the-anomaly-in-the-heap-profile-flamegraph" class="anchor" href="#step-1-spotting-the-anomaly-in-the-heap-profile-flamegraph"></a>Step 1: Spotting the Anomaly in the Heap Profile Flamegraph</h3><p>Navigating to the <strong>Heapdump Explorer</strong> in the left sidebar and opening the <strong>Flamegraph</strong> tab (set to <strong>Top Down</strong> view) immediately revealed the smoking gun. </p>
+<p><img src="/blog/media/diagnosing-1gb-viewtreeobserver-leak/flamegraph.png" alt="Figure 2: Perfetto Heap Profile Flamegraph">
+<em>Figure 2: Perfetto Heap Profile Flamegraph (Top Down view) showing ViewTreeObserver leading into ScrimView$$ExternalSyntheticLambda0 taking up ~95% of the heap.</em></p>
+<p>Instead of memory being distributed across various features, nearly <strong>100% of the <em>~1 GB</em> retained footprint</strong> formed a solid, uninterrupted column flowing straight down through the window hierarchy: <code>View$AttachInfo</code> ➡️ <code>ViewTreeObserver</code> ➡️ <code>ViewTreeObserver$CopyOnWriteArray</code> ➡️ <code>…</code> ➡️ <strong><code>ScrimView$$ExternalSyntheticLambda0 [58 instances]</code></strong> ➡️ <strong><code>ScrimView [58 instances]</code></strong>. When a single leak site accumulates dozens of dead View hierarchies spanning the entire width of your application&#39;s flamegraph, you know you&#39;ve found the culprit.</p>
+<h3><a name="step-2-the-root-cause-in-code" class="anchor" href="#step-2-the-root-cause-in-code"></a>Step 2: The Root Cause in Code</h3><p>To understand why <code>ScrimView$$ExternalSyntheticLambda0</code> was registered and never removed, we inspect <code>ScrimView.kt</code>:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// ⚠️ Problematic Code in ScrimView.kt</span>
+<span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">updateListener</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">if</span> (isAttachedToWindow &amp;&amp; overrideOpacity == <span class="hljs-literal">null</span>) {
+        <span class="hljs-keyword">if</span> (!isRecomputeScrimListenerAttached) {
+            viewTreeObserver.addOnPreDrawListener(recomputeScrimListener)
+            isRecomputeScrimListenerAttached = <span class="hljs-literal">true</span>
+        }
+    } <span class="hljs-keyword">else</span> {
+        viewTreeObserver.removeOnPreDrawListener(recomputeScrimListener)
+        isRecomputeScrimListenerAttached = <span class="hljs-literal">false</span>
+    }
+}
+
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onAttachedToWindow</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">super</span>.onAttachedToWindow()
+    updateListener()
+}
+
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDetachedFromWindow</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">super</span>.onDetachedFromWindow()
+    updateListener() <span class="hljs-comment">// 🚨 THE BUG!</span>
+}</code></div><h4>Bug explanation</h4><p>Developers often assume <code>isAttachedToWindow</code> returns <code>false</code> inside <code>onDetachedFromWindow()</code>. However, AOSP&#39;s <code>View.dispatchDetachedFromWindow()</code> invokes <code>onDetachedFromWindow()</code> before setting <code>mAttachInfo = null</code>.</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">dispatchDetachedFromWindow()
+  ├── <span class="hljs-number">1.</span> onDetachedFromWindow()           &lt;-- isAttachedToWindow <span class="hljs-keyword">is</span> STILL <span class="hljs-literal">TRUE</span>!
+  ├── <span class="hljs-number">2.</span> onViewDetachedFromWindow()       &lt;-- isAttachedToWindow <span class="hljs-keyword">is</span> STILL <span class="hljs-literal">TRUE</span>!
+  └── <span class="hljs-number">3.</span> mAttachInfo = <span class="hljs-literal">null</span>;              &lt;-- Flag reset happens HERE at the <span class="hljs-keyword">end</span></code></div><p>When <code>ScrimView.onDetachedFromWindow()</code> executed:</p>
+<ol>
+<li><code>isAttachedToWindow</code> returned <code>true</code>.  </li>
+<li>Because <code>overrideOpacity</code> was <code>null</code>, <code>if (isAttachedToWindow &amp;&amp; overrideOpacity == null)</code> evaluated to <code>true</code>.  </li>
+<li><code>updateListener()</code> entered the registration block instead of the teardown <code>else</code> block.  </li>
+<li>Because <code>isRecomputeScrimListenerAttached</code> was already <code>true</code>, execution silently did nothing.</li>
+</ol>
+<p>The listener was never unregistered and remained attached to the window&#39;s <code>ViewTreeObserver</code> indefinitely.</p>
+<h3><a name="step-3-uncovering-the-retention-path-the-chain-of-blame-" class="anchor" href="#step-3-uncovering-the-retention-path-the-chain-of-blame-"></a>Step 3: Uncovering the Retention Path (The Chain of Blame)</h3><p>How does this listener leak end up holding nearly a gigabyte of memory?</p>
+<p>By tracing the reference path downward from the flamegraph, we can see the cascade of references.</p>
+<ol>
+<li><strong>Listener Attachment:</strong> When <code>ScrimView</code> is attached to a window, <a href="https://developer.android.com/reference/android/view/View#onAttachedToWindow()"><code>onAttachedToWindow()</code></a> calls <code>updateListener()</code>, registering <code>recomputeScrimListener</code> (<code>ScrimView$$ExternalSyntheticLambda0</code>) on <code>ViewTreeObserver</code>.  </li>
+<li><strong>Implicit Reference:</strong> In Kotlin, lambdas and method references (like <code>this::recomputeScrim</code>) implicitly capture an outer &#39;this&#39; reference. The compiler generates a synthetic class (<code>ScrimView$$ExternalSyntheticLambda0</code>) that holds a strong reference to the <code>ScrimView</code> instance, making the registered callback a persistent anchor for the entire view.  </li>
+<li><strong>Detachment Lifecycle Flaw:</strong> When <code>ScrimView</code> is being detached, <code>dispatchDetachedFromWindow()</code> invokes <a href="https://developer.android.com/reference/android/view/View#onDetachedFromWindow()"><code>onDetachedFromWindow()</code></a>. Because <code>mAttachInfo</code> remains non-null during execution of <code>onDetachedFromWindow()</code>, <a href="https://developer.android.com/reference/android/view/View#isAttachedToWindow()"><code>isAttachedToWindow</code></a> returns <code>true</code>.  </li>
+<li><strong>Bypassed Unregistration:</strong> In <code>updateListener()</code>, <code>if (isAttachedToWindow &amp;&amp; overrideOpacity == null)</code> evaluates to <code>true</code>. Thus, execution enters the <code>if</code> block instead of the <code>else</code> block containing <code>viewTreeObserver.removeOnPreDrawListener(recomputeScrimListener)</code>.  </li>
+<li><strong>Memory Accumulation:</strong> With each open/dismiss cycle of the transient UI overlay, <a href="https://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener"><code>ViewTreeObserver.mOnPreDrawListeners</code></a> retained another dead <code>recomputeScrimListener</code>. Because <code>ScrimView.mParent</code> chains all the way up through the view hierarchy to <code>FragmentManager</code>, leaking <code>ScrimView</code> retained the entire destroyed <code>Fragment</code> instance, its <code>ViewModel</code> references, and all associated child views. Over <strong>58</strong> user interactions, this accumulated <strong>58 dead UI trees</strong>, stranding 50 uncollected high-resolution <a href="https://developer.android.com/reference/android/graphics/Bitmap"><code>Bitmap</code></a> graphic buffers totaling <strong>~898.5 MB</strong> of native graphics memory (in a process with only 83 MB of Java heap).</li>
+</ol>
+<h4>Verifying Programmatically with PerfettoSQL</h4><p>While the flamegraph provides an intuitive visual overview of memory bloat, Perfetto also models the entire heap graph as a relational database. You can run custom queries directly in the browser by navigating to <strong>Query (SQL)</strong> in the left sidebar.<br>To verify that the synthetic lambda instances were holding references back to <code>ScrimView</code>, we can query the <code>heap_graph_reference</code> table:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">SELECT</span>
+  <span class="hljs-built_in">COALESCE</span>(src_cls.deobfuscated_name, src_cls.name) <span class="hljs-keyword">AS</span> owner_class,
+  <span class="hljs-built_in">COALESCE</span>(dst_cls.deobfuscated_name, dst_cls.name) <span class="hljs-keyword">AS</span> referenced_class,
+  <span class="hljs-built_in">COUNT</span>(<span class="hljs-number">1</span>) <span class="hljs-keyword">AS</span> instance_count
+<span class="hljs-keyword">FROM</span> heap_graph_reference r
+<span class="hljs-keyword">JOIN</span> heap_graph_object src <span class="hljs-keyword">ON</span> r.owner_id <span class="hljs-operator">=</span> src.id
+<span class="hljs-keyword">JOIN</span> heap_graph_class src_cls <span class="hljs-keyword">ON</span> src.type_id <span class="hljs-operator">=</span> src_cls.id
+<span class="hljs-keyword">JOIN</span> heap_graph_object dst <span class="hljs-keyword">ON</span> r.owned_id <span class="hljs-operator">=</span> dst.id
+<span class="hljs-keyword">JOIN</span> heap_graph_class dst_cls <span class="hljs-keyword">ON</span> dst.type_id <span class="hljs-operator">=</span> dst_cls.id
+<span class="hljs-keyword">WHERE</span> <span class="hljs-built_in">COALESCE</span>(src_cls.deobfuscated_name, src_cls.name) <span class="hljs-keyword">LIKE</span> <span class="hljs-string">&#x27;%ScrimView%ExternalSyntheticLambda%&#x27;</span> 
+  <span class="hljs-keyword">AND</span> <span class="hljs-built_in">COALESCE</span>(dst_cls.deobfuscated_name, dst_cls.name) <span class="hljs-keyword">LIKE</span> <span class="hljs-string">&#x27;%ScrimView%&#x27;</span>
+<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> <span class="hljs-number">1</span>, <span class="hljs-number">2</span>;</code></div><p><img src="/blog/media/diagnosing-1gb-viewtreeobserver-leak/perfettosql.png" alt="Figure 3: Perfetto SQL Query">
+<em>Figure 3: Running a custom query on heap_graph_reference in the Perfetto SQL editor verifies that all 58 synthetic lambda instances hold references back to ScrimView.</em></p>
+<h3><a name="step-4-the-immediate-fix" class="anchor" href="#step-4-the-immediate-fix"></a>Step 4: The Immediate Fix</h3><p>The fix was straightforward: <strong>unconditionally unregister</strong> the listener during window detachment, without relying on attach-state checks:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// ✅ FIX: 100% unconditional unregistration on window detachment</span>
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDetachedFromWindow</span><span class="hljs-params">()</span></span> {
+   <span class="hljs-keyword">super</span>.onDetachedFromWindow()
+   viewTreeObserver.removeOnPreDrawListener(recomputeScrimListener)
+   isRecomputeScrimListenerAttached = <span class="hljs-literal">false</span>
+}</code></div><p>Never route lifecycle teardown through dynamic business-state checks (like overrideOpacity == null). While property setters can manage listener attachment dynamically while the view is attached, cleanup in onDetachedFromWindow() must be unconditional, ensuring the listener is always removed when the view leaves the window.</p>
+<h2><a name="beyond-scrimview-3-other-silent-traps" class="anchor" href="#beyond-scrimview-3-other-silent-traps"></a>Beyond ScrimView: 3 Other Silent Traps</h2><p>While <code>ScrimView</code> was an attach-state lifecycle trap, our investigation across other applications revealed three more recurring patterns.</p>
+<h3><a name="trap-1-the-floating-observer-ghost" class="anchor" href="#trap-1-the-floating-observer-ghost"></a>Trap 1: The Floating Observer Ghost</h3><p>A common anti-pattern in Android development is attempting to clean up listeners during Fragment view destruction:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// ⚠️ Flawed unregistration in Fragment onDestroyView()</span>
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDestroyView</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-keyword">super</span>.onDestroyView()
+    <span class="hljs-comment">// 🚨 Silent Failure: Operates on a detached floating observer!</span>
+    binding?.root?.viewTreeObserver?.removeOnGlobalLayoutListener(myListener)
+}</code></div><h4>The Pathology: The <code>mFloatingTreeObserver</code> Trap</h4><p>By the time a Fragment executes <a href="https://developer.android.com/reference/androidx/fragment/app/Fragment#onDestroyView()"><code>onDestroyView()</code></a>, its view hierarchy has already been completely detached from the window (<code>mAttachInfo == null</code>).<br>Under the hood in AOSP, when <code>mAttachInfo</code> is <code>null</code>, calling <code>view.viewTreeObserver</code> does <strong>not</strong> return the active Window observer. Instead, it instantiates a brand-new, empty <strong>floating observer</strong> (<code>mFloatingTreeObserver</code>).<br>The <code>removeOnGlobalLayoutListener(...)</code> call executes against this ghost observer and silently does nothing. Meanwhile, the <strong>live Window-scoped <code>ViewTreeObserver</code> still holds onto your listener</strong>, permanently leaking the Fragment and its view hierarchy.</p>
+<p><strong>The Critical Timing Contrast:</strong></p>
+<blockquote>
+<ul>
+<li><strong>Inside <code>onDetachedFromWindow()</code>:</strong> <code>mAttachInfo</code> is still non-null, so <code>viewTreeObserver</code> successfully resolves to the active Window observer.  </li>
+<li><strong>Inside Fragment <code>onDestroyView()</code>:</strong> Detachment is already complete (<code>mAttachInfo == null</code>), silently redirecting all <code>viewTreeObserver</code> calls to an unattached <code>mFloatingTreeObserver</code>.</li>
+</ul>
+</blockquote>
+<h3><a name="trap-2-the-kotlin-sam-amp-method-reference-trap" class="anchor" href="#trap-2-the-kotlin-sam-amp-method-reference-trap"></a>Trap 2: The Kotlin SAM &amp; Method Reference Trap</h3><p>In modern Kotlin, developers frequently pass method references or inline lambdas, assuming they act as stable function pointers:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// 1. Registration (Kotlin creates SAM instance #1):</span>
+view.viewTreeObserver.addOnGlobalLayoutListener(<span class="hljs-keyword">this</span>::onGlobalLayout)
+
+<span class="hljs-comment">// 2. Teardown (🚨 Silent Failure: Kotlin creates a BRAND-NEW SAM instance #2!):</span>
+view.viewTreeObserver.removeOnGlobalLayoutListener(<span class="hljs-keyword">this</span>::onGlobalLayout)</code></div><h4>The Pathology: Reference Equality (<code>===</code>) in <code>CopyOnWriteArray</code></h4><p>Under the hood in AOSP, <code>ViewTreeObserver</code> stores listeners in an internal array (<code>CopyOnWriteArray&lt;T&gt;</code>) and removes them using <strong>strict reference equality (<code>===</code>)</strong>.<br>In Kotlin, passing a method reference (<code>this::onGlobalLayout</code>) triggers <strong>SAM (Single Abstract Method) conversion</strong>. Every time you evaluate <code>this::onGlobalLayout</code>, the Kotlin compiler instantiates a <strong>new wrapper object</strong>:<br>Because of that, the removal call silently fails to find a match and does nothing. The initial listener remains registered on the window hierarchy indefinitely.  </p>
+<blockquote>
+<p><strong>Rule of Thumb:</strong> If you register a <code>ViewTreeObserver</code> listener, store it in an explicit property (e.g. <code>private val layoutListener = ViewTreeObserver.OnGlobalLayoutListener { ... }</code>) and pass that <strong>exact same instance</strong> to both <code>addOn...Listener</code> and <code>removeOn...Listener</code>.</p>
+</blockquote>
+<h3><a name="trap-3-the-one-way-unregistration-ticket" class="anchor" href="#trap-3-the-one-way-unregistration-ticket"></a>Trap 3: The One-Way Unregistration Ticket</h3><p>Another fragile pattern is attempting to self-unregister directly inside a one-shot callback:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// ⚠️ Fragile self-unregistration attempt in Kotlin</span>
+<span class="hljs-keyword">val</span> drawListener = <span class="hljs-keyword">object</span> : ViewTreeObserver.OnDrawListener {
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onDraw</span><span class="hljs-params">()</span></span> {
+        <span class="hljs-comment">// 🚨 CRASH: Throws IllegalStateException in AOSP!</span>
+        view.viewTreeObserver.removeOnDrawListener(<span class="hljs-keyword">this</span>)
+        performAction()
+    }
+}
+view.viewTreeObserver.addOnDrawListener(drawListener)</code></div><h4>The Pathology: <code>mInDispatchOnDraw</code> and Detachment Races</h4><p>This pattern introduces two severe failure modes:</p>
+<ol>
+<li><strong>Immediate Crash via <code>IllegalStateException</code>:</strong><br>Unlike <code>removeOnPreDrawListener</code> (which is safely permitted during pre-draw dispatch), <code>removeOnDrawListener</code> is explicitly prohibited while drawing is in flight. Under the hood, <code>ViewTreeObserver</code> sets <code>mInDispatchOnDraw = true</code> during traversal:</li>
+</ol>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// Inside android.view.ViewTreeObserver (AOSP):</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">removeOnDrawListener</span><span class="hljs-params">(OnDrawListener victim)</span> </span>{
+        checkIsAlive();
+        <span class="hljs-keyword">if</span> (mOnDrawListeners == <span class="hljs-keyword">null</span>) {
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-keyword">if</span> (mInDispatchOnDraw) {
+            IllegalStateException ex = <span class="hljs-keyword">new</span> IllegalStateException(
+                    <span class="hljs-string">&quot;Cannot call removeOnDrawListener inside of onDraw&quot;</span>);
+            <span class="hljs-keyword">if</span> (sIllegalOnDrawModificationIsFatal) {
+                <span class="hljs-keyword">throw</span> ex;
+            } <span class="hljs-keyword">else</span> {
+                Log.e(<span class="hljs-string">&quot;ViewTreeObserver&quot;</span>, ex.getMessage(), ex);
+            }
+        }
+        mOnDrawListeners.remove(victim);
+    }</code></div><ol start="2">
+<li><strong>The Detachment Trap (Stranded Observers):</strong><br>Even when using <code>OnPreDrawListener</code> (where self-removal is permitted without throwing), self-unregistration assumes the callback is guaranteed to run. If the view is removed from the hierarchy, marked <code>View.GONE</code>, or detached <em>before</em> the next traversal pass occurs, <strong><code>onDraw()</code> / <code>onPreDraw()</code> will never execute</strong>. The listener remains stranded on the window&#39;s <code>ViewTreeObserver</code> indefinitely.</li>
+</ol>
+<h2><a name="the-fix-safe-engineering-patterns" class="anchor" href="#the-fix-safe-engineering-patterns"></a>The Fix: Safe Engineering Patterns</h2><h3><a name="pattern-1-prefer-view-scoped-layout-listeners" class="anchor" href="#pattern-1-prefer-view-scoped-layout-listeners"></a>Pattern 1: Prefer View-Scoped Layout Listeners</h3><p>If observing layout changes on a single View, <strong>avoid <code>ViewTreeObserver</code> entirely</strong>. Use <code>View.OnLayoutChangeListener</code>:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// ✅ Scoped to the View instance; does not touch Window ViewTreeObserver</span>
+<span class="hljs-keyword">val</span> layoutListener = View.OnLayoutChangeListener { v, left, top, right, bottom, oldL, oldT, oldR, oldB -&gt;
+    updateToolbarWidth(right - left)
+}
+toolbar.addOnLayoutChangeListener(layoutListener)
+
+<span class="hljs-comment">// Teardown:</span>
+toolbar.removeOnLayoutChangeListener(layoutListener)</code></div><p>Unlike <code>ViewTreeObserver</code> (which attaches callbacks to the window-level <code>ViewRootImpl</code>), <code>View.OnLayoutChangeListener</code> callbacks are stored directly inside the view itself at <code>View.mListenerInfo.mOnLayoutChangeListeners</code>.<br>Because the callback never escapes to the window root, it shares the exact same lifecycle as the host view. If you forget to unregister it, the listener is still <strong>naturally garbage-collected alongside the View</strong> without holding the entire window tree hostage.</p>
+<hr>
+<h3><a name="pattern-2-when-window-wide-observation-is-truly-necessary" class="anchor" href="#pattern-2-when-window-wide-observation-is-truly-necessary"></a>Pattern 2: When Window-Wide Observation is Truly Necessary</h3><p>While single views should use <code>View.OnLayoutChangeListener</code>, there are valid scenarios where you genuinely need a Window-scoped <code>ViewTreeObserver</code>, such as detecting soft-keyboard (IME) insets, observing scroll offsets across arbitrary sibling views, or coordinating multi-view screen layouts.</p>
+<p>When registering a <code>ViewTreeObserver</code> listener (especially when wrapping it with tracing or analytical proxies), use a lifecycle-bound wrapper that manages attachment and guarantees safe unregistration:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">/**
+ * Safely manages a Window-scoped ViewTreeObserver listener by binding it
+ * to a host View&#x27;s window attachment lifecycle.
+ */</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SafeGlobalLayoutObserver</span></span>(
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> hostView: View,
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> callback: () -&gt; <span class="hljs-built_in">Unit</span>
+) : View.OnAttachStateChangeListener {
+
+    <span class="hljs-comment">// 1. Hold an explicit reference so removal reference equality (===) succeeds</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">var</span> activeWrapper: ViewTreeObserver.OnGlobalLayoutListener? = <span class="hljs-literal">null</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">attach</span><span class="hljs-params">()</span></span> {
+        hostView.addOnAttachStateChangeListener(<span class="hljs-keyword">this</span>)
+        <span class="hljs-keyword">if</span> (hostView.isAttachedToWindow) {
+            registerOnWindow()
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">detach</span><span class="hljs-params">()</span></span> {
+        hostView.removeOnAttachStateChangeListener(<span class="hljs-keyword">this</span>)
+        unregisterFromWindow()
+    }
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onViewAttachedToWindow</span><span class="hljs-params">(v: <span class="hljs-type">View</span>)</span></span> {
+        registerOnWindow()
+    }
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onViewDetachedFromWindow</span><span class="hljs-params">(v: <span class="hljs-type">View</span>)</span></span> {
+        unregisterFromWindow()
+    }
+
+    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">registerOnWindow</span><span class="hljs-params">()</span></span> {
+        <span class="hljs-keyword">if</span> (activeWrapper != <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>
+        <span class="hljs-keyword">val</span> wrapper = ViewTreeObserver.OnGlobalLayoutListener {
+            Trace.beginSection(<span class="hljs-string">&quot;global_layout_pass&quot;</span>)
+            <span class="hljs-keyword">try</span> {
+                callback()
+            } <span class="hljs-keyword">finally</span> {
+                Trace.endSection()
+            }
+        }
+        hostView.viewTreeObserver.addOnGlobalLayoutListener(wrapper)
+        activeWrapper = wrapper
+    }
+
+    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">unregisterFromWindow</span><span class="hljs-params">()</span></span> {
+        <span class="hljs-keyword">val</span> wrapper = activeWrapper ?: <span class="hljs-keyword">return</span>
+        <span class="hljs-keyword">val</span> vto = hostView.viewTreeObserver
+        <span class="hljs-comment">// 2. Guard against window teardown where ViewTreeObserver is no longer alive</span>
+        <span class="hljs-keyword">if</span> (vto.isAlive) {
+            vto.removeOnGlobalLayoutListener(wrapper)
+        }
+        activeWrapper = <span class="hljs-literal">null</span>
+    }
+}</code></div><hr>
+<h3><a name="pattern-3-androidx-a-doonpredraw-a-and-a-doonlayout-a-utilities" class="anchor" href="#pattern-3-androidx-a-doonpredraw-a-and-a-doonlayout-a-utilities"></a>Pattern 3: AndroidX `<a href="https://developer.android.com/reference/kotlin/androidx/core/view/package-summary#(android.view.View).doOnPreDraw(kotlin.Function1)">doOnPreDraw</a>` and `<a href="https://developer.android.com/reference/kotlin/androidx/core/view/package-summary#(android.view.View).doOnLayout(kotlin.Function1)">doOnLayout</a>` Utilities</h3><p>For one-shot measurement, layout, or animation callbacks, avoid manually registering <code>ViewTreeObserver</code> listeners. Instead, use the Kotlin extension functions provided by <code>androidx.core:core-ktx</code>:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">import</span> androidx.core.view.doOnPreDraw
+<span class="hljs-keyword">import</span> androidx.core.view.doOnLayout
+
+<span class="hljs-comment">// ✅ Safe, one-shot pre-draw callback</span>
+view.doOnPreDraw { v -&gt;
+    updateUI(v.width)
+}
+
+<span class="hljs-comment">// ✅ Safe, one-shot layout callback</span>
+view.doOnLayout { v -&gt;
+    alignFloatingButton(v.top)
+}</code></div><h4>Why it&#39;s immune to detachment races</h4><p>Under the hood, <code>doOnPreDraw</code> relies on AndroidX&#39;s <a href="https://developer.android.com/reference/androidx/core/view/OneShotPreDrawListener"><code>OneShotPreDrawListener</code></a>, which simultaneously implements <strong>both</strong> <code>ViewTreeObserver.OnPreDrawListener</code> and <code>View.OnAttachStateChangeListener</code>.</p>
+<ol>
+<li><strong>If the draw pass happens:</strong> It removes the listener from <code>ViewTreeObserver</code> and executes your lambda.  </li>
+<li><strong>If the view is detached before drawing:</strong> <code>onViewDetachedFromWindow()</code> triggers automatically, unregistering the listener before it can ever be stranded on the window hierarchy.</li>
+</ol>
+<p>Similarly, <code>doOnLayout</code> uses a self-removing <code>View.OnLayoutChangeListener</code>, which is safely scoped to the View instance.</p>
+<h2><a name="over-to-you" class="anchor" href="#over-to-you"></a>Over to You</h2><p>Memory leaks like this often remain completely invisible until telemetry flags a spike in production crashes or OutOfMemory errors.</p>
+<ul>
+<li>Have you encountered unexpected memory retention from window-scoped listeners in your own apps?  </li>
+<li>How often do you capture and analyze Java heap dumps in Perfetto?  </li>
+<li>What is the sneakiest or largest memory leak you have ever tracked down? Let us know your thoughts, questions, and experiences in the comments below!</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
