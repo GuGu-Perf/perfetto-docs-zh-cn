@@ -159,7 +159,7 @@ _答案_：将测试添加到 `stdlib/dynamic_tables`。
 
 **场景**：正在修改 Trace Processor 的内部实现，测试旨在确保 Trace Processor 正确过滤/排序重要的内置表。
 
-_答案_：将测试添加到 `parser/core_tables`。
+_答案_：将测试添加到 `tables`。
 
 ## UI 像素差异测试
 

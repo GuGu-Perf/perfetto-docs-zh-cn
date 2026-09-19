@@ -63,7 +63,7 @@
   {
     "id": "dev.perfetto.AddDebugSliceTrack",
     "args": [
-      "SELECT ts, dur FROM android_screen_state WHERE simple_screen_state = 'on'",
+      "SELECT ts, dur, simple_screen_state AS name FROM android_screen_state WHERE simple_screen_state = 'on'",
       "Screen On Events"
     ]
   }
@@ -73,7 +73,7 @@
 Debug tracks 将 SQL 查询结果可视化在 Timeline 上。查询必须返回：
 
 - `ts` (timestamp)
-- 对于 slice tracks：`dur` (duration)
+- 对于 slice tracks：`dur` (duration) 和 `name` (slice 标签)
 - 对于 counter tracks：`value` (metric 值)
 - 可选的 pivot 列 —— 结果按唯一值分组，每个值在其自己的 track 中。
 
@@ -162,7 +162,7 @@ Debug tracks 将 SQL 查询结果可视化在 Timeline 上。查询必须返回�
       {
         "id": "dev.perfetto.AddDebugCounterTrackWithPivot",
         "args": [
-          "SELECT ts, process.name as process, value FROM counter JOIN process_counter_track ON counter.track_id = process_counter_track.id JOIN process USING (upid) WHERE counter.name = 'mem.rss' AND value > 50000000",
+          "SELECT ts, process.name as process, value FROM counter JOIN process_counter_track ON counter.track_id = process_counter_track.id JOIN process USING (upid) WHERE process_counter_track.name = 'mem.rss' AND value > 50000000",
           "process",
           "High Memory Processes (>50MB)"
         ]
@@ -214,7 +214,7 @@ Debug tracks 将 SQL 查询结果可视化在 Timeline 上。查询必须返回�
   --app com.example.app \
   --ui-startup-commands '[
     {"id":"dev.perfetto.PinTracksByRegex","args":[".*CPU.*"]},
-    {"id":"dev.perfetto.AddDebugSliceTrackWithPivot","args":["SELECT ts, thread.name, dur FROM thread_state JOIN thread USING(utid) WHERE state = \"R\"","thread","Runnable Time"]}
+    {"id":"dev.perfetto.AddDebugSliceTrackWithPivot","args":["SELECT ts, thread.name, dur FROM thread_state JOIN thread USING(utid) WHERE state = \"R\"","name","Runnable Time"]}
   ]'
 ```
 
@@ -233,7 +233,7 @@ Debug tracks 将 SQL 查询结果可视化在 Timeline 上。查询必须返回�
     - 匹配任何数字：`\\d+`
     - 匹配开头/结尾：`^` 和 `$`
 
-6. **Debug tracks 需要好的查询。** 确保 SQL 返回 `ts` 和 `dur`（对于 slices）或 `value`（对于 counters）。对于 Android 用例，请参阅 [Android Trace Analysis Cookbook](/docs/getting-started/android-trace-analysis.md)。
+6. **Debug tracks 需要好的查询。** 确保 SQL 返回 `ts` 以及 `dur` 和 `name`（对于 slices）或 `value`（对于 counters）。对于 Android 用例，请参阅 [Android Trace Analysis Cookbook](/docs/getting-started/android-trace-analysis.md)。
 
 ## 与团队共享
 

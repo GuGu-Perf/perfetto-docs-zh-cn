@@ -105,7 +105,7 @@ NOTE: 下面标记为 _requires HPROF_ 的部分在使用 heap graph 格式采�
 
    ![Perfetto UI 加载了 heap dump；侧边栏在"Current Trace"下显示"Heapdump Explorer"。](/docs/images/heap_docs/01-sidebar.png)
 
-2. **从 Heap Graph 火焰图。** 在 _"Heap Profile"_ Track 上点击菱形图标打开 heap graph 火焰图，点击节点选中它，然后点击节点详情弹出窗口中的菜单图标，选择 _"Open in Heapdump Explorer"_。这在[从火焰图跳转](#jumping-from-a-flamegraph)中详细介绍。
+2. **从 Heap Graph 火焰图。** 在 _"ART heap dump"_ Track 上点击菱形图标打开 heap graph 火焰图，点击节点选中它，然后打开节点详情弹出窗口中的 _Drill down_ 菜单，选择 _"Open in Heapdump Explorer"_。这在[从火焰图跳转](#jumping-from-a-flamegraph)中详细介绍。
 
    ![Heap graph 火焰图，`java.lang.String` 节点被选中；详情弹出窗口列出其 Cumulative size、Root Type 和 Self Count，溢出菜单已打开并显示"Open in Heapdump Explorer"。](/docs/images/heap_docs/02-flamegraph-menu.png)
 
@@ -121,8 +121,8 @@ NOTE: 重复部分 _requires HPROF_。
 
 Overview 是默认着陆页，汇总 dump 信息：
 
-- **常规信息。** 可达实例数和 dump 中的堆列表（通常是 `app`、`zygote`、`image`）。
-- **按堆保留的字节数。** 每个堆的 Java、native 和总大小，顶部有总计行。使用此信息查看问题是在 Java 堆上、native 内存中还是两者都有。
+- **常规信息。** 进程、类数量以及可达和不可达实例数。
+- **按堆保留的字节数。** 每个堆（通常是 `app`、`zygote`、`image`）的 Java、native 和总大小，顶部有总计行。使用此信息查看问题是在 Java 堆上、native 内存中还是两者都有。
 - **Out of Memory Error**（仅限 OOM dump）。对于由 `OutOfMemoryError` 触发的 dump，会细分失败的分配 — 分配大小、距离堆增长限制的空闲余量，以及原始错误消息。分配 stack 本身位于 [Callstack](#callstack) 标签页。
 - **重复的 Bitmap / 字符串 / 原始数组。** 按内容哈希分组的重复内容。每行显示副本数量和浪费的字节数；点击 _Copies_ 打开相关标签页并按该组过滤。
 
@@ -136,7 +136,7 @@ Overview 是默认着陆页，汇总 dump 信息：
 
 Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 和 Objects 回答"类 X 拥有多少内存"，那么火焰图还会显示这些内存在引用图中的_位置_：从 GC root 开始的哪些引用链指向它。它通常是发现堆中某个子树异常庞大的最快方式。
 
-同样的火焰图也会出现在 Timeline 中，当你点击 _"Heap Profile"_ Track 上的 heap dump 菱形图标时——以下所有功能在那里完全相同。仅在 Timeline 变体中才有的几个额外功能在[Timeline 火焰图](#the-timeline-flamegraph)末尾说明。
+同样的火焰图也会出现在 Timeline 中，当你点击 _"ART heap dump"_ Track 上的 heap dump 菱形图标时——以下所有功能在那里完全相同。仅在 Timeline 变体中才有的几个额外功能在[Timeline 火焰图](#the-timeline-flamegraph)末尾说明。
 
 ![顶部 Timeline，点击进程 Track 上的 heap dump 菱形后底部面板中的 heap graph 火焰图。](/docs/images/heap_docs/14-flamegraph-bottom-panel.png)
 
@@ -147,7 +147,7 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 - 从 GC root 开始，每个可达对象被放置在其从 root 出发的**最短引用路径**上（广度优先搜索；平局以确定性方式解决）。每个对象在树中恰好出现一次。
 - 同一路径上的对象然后**按类合并**：每个类每个路径一个节点。名为 `ArrayList` 且位于 `Class<ProfileActivity>` 之下的节点表示"所有最短路径从 root 出发经过 `ProfileActivity` 类对象的 `ArrayList` 实例"。
 
-自上而下阅读：顶部的合成 `root` 行横跨整个 dump；其下方每一行距离 GC root 多一跳引用。节点的宽度与选定指标（字节数或对象数）在该节点整个子树中的值成比例。没有已知类名的对象显示为 `[Unknown]`。
+自上而下阅读：顶部的合成 `root` 行横跨整个 dump；其下方每一行距离 GC root 多一跳引用。节点的宽度与选定指标（字节数或对象数）在该节点整个子树中的值成比例。没有已知类名的对象显示为 `unknown`。
 
 一个容易误导人的注意事项：在这棵最短路径树中，节点的子树**不等于**它的保留大小。从两个地方引用的对象仅在其最短路径下绘制，但即使另一个引用被丢弃它也会存活。当你需要"实际会释放什么"时，切换到下面的[支配者指标](#choosing-a-metric)。
 
@@ -197,26 +197,26 @@ Flamegraph 标签页一次性展示整个堆，按类聚合。如果说 Classes 
 
 过滤器栏重塑树结构。直接输入，或按 `+` 按钮使用引导式表单。活跃的过滤器显示为芯片；双击芯片编辑它，点击其 `x` 删除它，或使用垃圾桶按钮清除全部。
 
-模式是对类名进行区分大小写的正则表达式匹配；裸文本为子串匹配（`String` 匹配 `java.lang.String`），`^`/`$` 将其锚定为精确匹配。模式也会匹配节点的 Root Type 和 Heap Type 值，因此 `SS: ROOT_JNI_GLOBAL` 或 `SS: zygote` 也同样有效。
+模式是对类名的匹配；裸文本为字面量、不区分大小写的子串匹配（`String` 匹配 `java.lang.String`），而 `/.../` 是区分大小写的正则表达式（`^`/`$` 将其锚定为精确匹配），`/.../i` 则为不区分大小写的正则表达式。模式也会匹配节点的 Root Type 和 Heap Type 值，因此 `SS: ROOT_JNI_GLOBAL` 或 `SS: zygote` 也同样有效。
 
-有四种过滤器类型加上 [Pivot](#pivot)。在过滤器栏中，在模式前加上短名称或全名作为前缀；没有前缀的文本成为 _Show Stack_ 过滤器。多个过滤器可以一次性输入，用空格分隔：`SS: main HF: alloc.*`。
+有四种过滤器类型加上 [Pivot](#pivot)。在过滤器栏中，在模式前加上短名称或全名作为前缀；没有前缀的文本成为 _Show Stack_ 过滤器。多个过滤器可以一次性输入，用空格分隔：`SS: main HF: /alloc.*/`。
 
 - **Show Stack**（`SS:`）——仅保留包含匹配节点的路径；其他所有内容被移除。`root` 行显示 dump 的剩余比例，例如 `root: 1.2 MiB (4.92%)`。多个 Show Stack 过滤器 AND 组合：路径必须匹配所有。
 - **Hide Stack**（`HS:`）——反向操作：移除包含匹配节点的每条路径。在某些其他 profiler 中称为"Drop function"。
 - **Show From Frame**（`SFF:`）——仅保留匹配节点及其子树，丢弃其上方的祖先节点。用于单独研究一个类的子树，而不重新根图。在其他地方称为"Focus on subtree"。
-- **Hide Frame**（`HF:`）——删除匹配节点本身，并将其子节点拼接到其父节点上。这是折叠噪声行的工具：`HF: java.lang.Object\\[\\]` 将数组合并掉，使容器内容直接附加到拥有该容器的任何内容上。在其他地方称为"Merge function"。
+- **Hide Frame**（`HF:`）——删除匹配节点本身，并将其子节点拼接到其父节点上。这是折叠噪声行的工具：`HF: java.lang.Object[]` 将数组合并掉，使容器内容直接附加到拥有该容器的任何内容上。在其他地方称为"Merge function"。
 
 过滤器在切换指标或 Top Down/Bottom Up 时保持不变，栏旁边的复制按钮将活跃过滤器集复制为文本，以便分享或粘贴回来。
 
 ### Pivot
 
-Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on matching frames_）将火焰图在匹配模式的每个节点处重新根图：
+Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on this frame_）将火焰图在匹配模式的每个节点处重新根图：
 
 - 匹配的类成为中心行。
 - 它引用的所有内容向**下**生长，与往常一样。
 - 引用它的所有内容向**上**生长，方向反转。
 
-这是"在一个画面中显示关于这个类的所有信息"的视图：它的总占用空间、由什么组成以及谁在持有它，无需逐个遍历对象。Pivot 显示为 `Pivot: ...` 芯片；一次只能有一个活跃（设置新的会替换旧的），Pivot 时 Top Down / Bottom Up 开关被禁用，移除芯片返回 Top Down。
+这是"在一个画面中显示关于这个类的所有信息"的视图：它的总占用空间、由什么组成以及谁在持有它，无需逐个遍历对象。Pivot 显示为 `Pivot: ...` 芯片；一次只能有一个活跃（设置新的会替换旧的），Pivot 时 Top Down 和 Bottom Up 均不处于选中状态（选择其中一个会清除 Pivot），移除芯片返回 Top Down。
 
 对象标签页与 Pivot 直接集成：_Shortest Path from GC Root_ 和 _Dominator Tree Path_ 部分各有一个 _View in Flamegraph_ 按钮，打开此标签页并 Pivot 到该特定实例的路径（芯片显示 `ClassName (this instance)`），分别使用 _Object Size_ 或 _Dominated Object Size_ 指标。
 
@@ -224,7 +224,7 @@ Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on match
 
 点击节点打开其详情弹出窗口，包含四个菜单，汇集了从节点可做的所有操作：
 
-- **Focus**——在不移除数据的情况下重新构图：_Zoom in_、_Focus on matching subtrees_（Show From Frame）和 _Pivot on matching frames_。
+- **Focus**——在不移除数据的情况下重新构图：_Zoom in_、_Show from this frame_（Show From Frame）和 _Pivot on this frame_。
 - **Filter**——重塑树结构：_Keep stacks matching name_（Show Stack）、_Hide stacks matching name_（Hide Stack）和 _Merge matching frames into caller_（Hide Frame）。
 - **Drill down**——_Show objects from this class_ 打开一个可关闭的 [Flamegraph objects](#jumping-from-a-flamegraph) 标签页，列出节点背后的各个实例，从那里只需一次点击即可打开任何对象的[对象标签页](#inspecting-a-single-object)。（在 Timeline 火焰图中，此操作称为 _Open in Heapdump Explorer_。）
 - **Copy**——_Copy stack_ 将类名链从 root 到此节点复制为纯文本；_Copy stack with details_ 将其复制为 markdown 表格，每行包含 Root Type、Heap Type、Cumulative、Self 和 Self Count——便于 bug 报告和代码审查评论。
@@ -233,11 +233,12 @@ Pivot（`P:` 在过滤器栏中，或从节点弹出窗口使用 _Pivot on match
 
 ### Timeline 火焰图
 
-Timeline 的 _"Heap Profile"_ 详情面板中的火焰图有三个额外功能：
+Timeline 的 _"ART heap dump"_ 详情面板中的火焰图有两个额外功能：
 
 - 每个节点的 _Drill down_ 菜单中有 _Open in Heapdump Explorer_，它会跳转到 Explorer 并打开该节点的 _Flamegraph objects_ 标签页——参见[从火焰图跳转](#jumping-from-a-flamegraph)。
 - `root` 节点的菜单中有 _Reference paths by class_，打开一个聚合每条不同引用路径的表格：每个类和路径一行，包含路径数量、对象计数、总大小和总 Native 大小。它是火焰图的表格孪生体——相同的数据，但可排序和导出。
-- 如果 trace 中的 heap graph 不完整（dump 被截断），警告弹窗会提供显示导入错误的选项；火焰图仍用已到达的数据渲染。
+
+在两个火焰图中，如果 trace 中的 heap graph 不完整（dump 被截断），警告弹窗会提供显示导入错误的选项；火焰图仍用已到达的数据渲染。
 
 ## Classes
 
@@ -270,7 +271,7 @@ Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应
 
 对象标签页包含关于该实例的所有已知信息：
 
-- **标题**带有对象 id，以及当对象本身是 `Class` 时的 _Open in Classes_ 快捷方式。
+- **标题**带有对象 id。
 - **Bitmap 预览**（对于 Bitmap 实例），带有下载按钮。
 - **Shortest Path from GC Root**——从 GC root 到此对象的最短引用链。
 - **Dominator Tree Path**——保持此对象存活的支配者链，每行一步，显示持有者和字段名。
@@ -307,7 +308,7 @@ Bitmaps 标签页是 dump 中每个 `android.graphics.Bitmap` 的画廊。使用
 
 每张卡片显示渲染的像素、尺寸（px 和 dp）、DPI、保留内存和打开对象标签页的 _Details_ 按钮。像素缓冲区可能是 RGBA、PNG、JPEG 或 WebP，取决于它们的存储方式。
 
-画廊上方的路径下拉菜单选择要在每张卡片上覆盖的引用路径：_Shortest path_（从 GC root 的最少边数）、_Dominator path_（支配者链）或 _No path_。显示路径是发现持有泄漏 Bitmap 的 `Activity`、`Fragment` 或 `Handler` 的最快方式。
+画廊上方的路径下拉菜单选择要在每张卡片上覆盖的引用路径：_Shortest path_（从 GC root 的最少边数）、_Dominator path_（支配者链）或 _None_。显示路径是发现持有泄漏 Bitmap 的 `Activity`、`Fragment` 或 `Handler` 的最快方式。
 
 ![启用了"Show Paths"的 Bitmaps 画廊；每张卡片下方的引用链为 `Class<FeedAdapter>.cache → ArrayList → Bitmap`，显示唯一的静态持有者。](/docs/images/heap_docs/09-bitmaps-show-paths.png)
 
@@ -351,11 +352,11 @@ stack 告诉你失败点*分配了什么*；其他标签页告诉你*已经保�
 
 Timeline heap graph 火焰图（完整功能参考参见上方的 [Flamegraph](#flamegraph) 部分）有一个 _Open in Heapdump Explorer_ 操作，可以在匹配选定引用路径的对象列表上打开 Explorer。使用它逐对象检查火焰图节点：
 
-1. 在 _"Heap Profile"_ Track 上点击菱形图标打开火焰图。
+1. 在 _"ART heap dump"_ Track 上点击菱形图标打开火焰图。
 
    ![顶部 Timeline，点击进程 Track 上的 heap dump 菱形后底部面板中的 heap graph 火焰图。](/docs/images/heap_docs/14-flamegraph-bottom-panel.png)
 
-2. 点击节点选中它，然后点击节点详情弹出窗口中的菜单图标。选择 _"Open in Heapdump Explorer"_。
+2. 点击节点选中它，然后打开节点详情弹出窗口中的 _Drill down_ 菜单。选择 _"Open in Heapdump Explorer"_。
 
    ![火焰图，`java.lang.String` 被选中。其详情弹出窗口列出 Cumulative size（2.48 MiB, 10.48%）、Root Type（`ROOT_INTERNED_STRING`）、Heap Type 和 Self Count（53,546）。弹出窗口的溢出菜单已打开，"Open in Heapdump Explorer"在"Copy Stack"和"Copy Stack With Details"下方可见。](/docs/images/heap_docs/02-flamegraph-menu.png)
 
@@ -414,7 +415,7 @@ Wrote profile to /tmp/profile.pftrace
 
 ![Objects 标签页过滤到 com.heapleak.ProfileActivity：五个实例，每个保留约 116.6 KiB 和 1,566 个可达对象。](/docs/images/heap_docs/12a-objects-profile-activity.png)
 
-**阅读引用路径。** 点击顶部行打开其对象标签页。_Sample Path from GC Root_ 是保持此实例存活的字段引用链：
+**阅读引用路径。** 点击顶部行打开其对象标签页。_Shortest Path from GC Root_ 是保持此实例存活的字段引用链：
 
 ![泄漏 ProfileActivity 的对象标签页。Sample Path from GC Root：Class<ProfileActivity> → com.heapleak.ProfileActivity.history → ArrayList.elementData → Object[0] → ProfileActivity。保留 117.6 KiB，约 1,600 个可达对象。](/docs/images/heap_docs/12-object-tab-top.png)
 

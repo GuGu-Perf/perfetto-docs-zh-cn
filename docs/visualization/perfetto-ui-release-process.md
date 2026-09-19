@@ -31,7 +31,7 @@ UI 当前使用的渠道显示在左上角。如果 logo 后面的标签显示 `
 
 ![perfetto-ui-channel-toggle.png](/docs/images/perfetto-ui-channel-toggle.png)
 
-要更改为 `autopush` 渠道，请打开侧边栏 `Support` 部分中的 `Flags` 屏幕，并在 `Release channel` 中选择 `Autopush`。
+要更改为 `autopush` 渠道，请打开侧边栏 `Settings` 部分中的 `Flags` 屏幕，并在 `Release channel` 中选择 `Autopush`。
 
 ![perfetto-ui-channel-autopush-toggle.png](/docs/images/perfetto-ui-channel-autopush-toggle.png)
 
@@ -41,7 +41,7 @@ UI 当前使用的渠道显示在左上角。如果 logo 后面的标签显示 `
 
 ![perfetto-ui-version.png](/docs/images/perfetto-ui-version.png)
 
-点击版本号将带你到 GitHub，在那里你可以看到哪些提交是该版本的一部分。版本号格式为 `v<maj>.<min>`，其中 `<maj>.<min>` 从 [CHANGELOG](/CHANGELOG) 的顶部条目中提取。
+点击版本号将带你到 GitHub，在那里你可以看到哪些提交是该版本的一部分。版本号格式为 `v<maj>.<min>-<Commit SHA1 前缀>`，其中 `<maj>.<min>` 从 [CHANGELOG](/CHANGELOG) 的顶部条目中提取。
 
 ## Cherry-picking 更改
 

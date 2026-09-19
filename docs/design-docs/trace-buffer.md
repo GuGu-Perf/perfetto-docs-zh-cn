@@ -294,11 +294,11 @@ TBChunk 与 SMB chunk 非常相似，但有以下注意事项：
 "list" 实际上是一个 offsets 的 CircularQueue，具有 O(1)
 `push_back()` 和 `pop_front()` 操作。
 
-- TraceBuffer 持有 `ProducerAndWriterId` -> `SequenceState` 的 hashmap。
+- TraceBuffer 持有 `ProducerAndWriterID` -> `SequenceState` 的 hashmap。
 - buffer 中每个活动的 {Producer,Writer} 都有一个 `SequenceState`。
 - `SequenceState` 持有：
   - producer 的身份（uid、pid、...）
-  - `last_chunk_id_consumed`，用于检测 ChunkID 序列中的间隙（数据丢失）
+  - `last_chunk_consumed`，用于检测 ChunkID 序列中的间隙（数据丢失）
   - chunks 的有序列表（`CircularQueue<size_t>`），存储它们在 buffer 中的 offset。
 - `chunks` 队列在将 chunks 追加和从 buffer 中消耗（删除）时保持排序和更新。
 
@@ -309,7 +309,7 @@ TBChunk 与 SMB chunk 非常相似，但有以下注意事项：
 - 另一方面，过于积极地删除序列有一个缺点：我们无法在 long-trace 模式下检测数据丢失
   （请参阅 [Issue #114](https://github.com/google/perfetto/issues/114) 和
   [b/268257546](http://b/268257546)）。[Long trace mode][lt] 定期消耗 buffer，因此如果我们要积极处理，所有序列都可以被销毁。
-- 这里的问题在于 `SequenceState` 持有 `last_chunk_id_consumed`，用于检测 chunk ids 中的间隙。
+- 这里的问题在于 `SequenceState` 持有 `last_chunk_consumed`，用于检测 chunk ids 中的间隙。
 
 TraceBufferV2 使用惰性清理方法平衡这一点：它允许最近删除的 `SequenceState`s 保持活动状态，最多
 `kKeepLastEmptySeq = 1024`。请参阅 `DeleteStaleEmptySequences()`。
@@ -357,7 +357,7 @@ Chunks 可以通过两种不同的方式访问：
 
 chunk 的 offset 也追加到 `SequenceState.chunks` 列表中。
 
-在第一次环绕之后，写入 chunk 涉及删除一个或多个现有的 chunks。删除操作 `RemoveNextChunksFor()` 与读回一样复杂，因为它会重建被删除的 packets，以将它们传递给 ProtoVM。
+在第一次环绕之后，写入 chunk 涉及删除一个或多个现有的 chunks。删除操作 `DeleteNextChunksFor()` 与读回一样复杂，因为它会重建被删除的 packets，以将它们传递给 ProtoVM。
 
 因此，写入本身是简单的，但现有 chunks 的删除（覆盖）是大部分复杂性所在。这在下一节中描述。
 
@@ -525,7 +525,7 @@ flowchart TD
   - 它按序列顺序进行，直到到达目标 chunk（B3）。
 - 外层继续按 buffer 顺序进行，故事重复。
 
-在代码中，外层 walk 由 `TraceBufferV2::ReadNextTracePacket()` 实现，而内层 walk 由 `class ChunkSeqReader::ReadNextPacket()` 实现。
+在代码中，外层 walk 由 `TraceBufferV2::ReadNextTracePacket()` 实现，而内层 walk 由 `class ChunkSeqReader::ReadNextPacketInSeqOrder()` 实现。
 
 ## 基准测试
 
@@ -549,4 +549,4 @@ BM_TraceBuffer_WR_MultipleWriters<TraceBufferV1>   bytes_per_second=3.19148G/s
 BM_TraceBuffer_WR_MultipleWriters<TraceBufferV2>   bytes_per_second=3.47354G/s
 BM_TraceBuffer_RD_MixedPackets<TraceBufferV1>      bytes_per_second=1.26698G/s
 BM_TraceBuffer_RD_MixedPackets<TraceBufferV2>      bytes_per_second=1.35394G/s
-``
+```

@@ -72,7 +72,7 @@ data_sources: {
 }
 ```
 
-在 UI 中展开"Perf Counters"track 组后，应该看起来类似于以下内容。counter tracks 默认将值显示为计数率。
+在 UI 中展开"Perf counters"track 组后，应该看起来类似于以下内容。counter tracks 默认将值显示为计数率。
 
 ![Perf counter trace in the UI](/docs/images/perf-counter-ui.png)
 

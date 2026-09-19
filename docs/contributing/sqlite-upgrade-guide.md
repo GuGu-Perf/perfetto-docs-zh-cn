@@ -20,18 +20,16 @@ Perfetto 依赖于 SQLite 内部：
    - `bazel/deps.bzl` - 更新 SQLite 版本/哈希
 
 2. **重新生成 PerfettoSQL 解析器：**
-
-```bash
-python3 tools/gen_syntaqlite_parser
-```
+   ```bash
+   python3 tools/gen_syntaqlite_parser
+   ```
 
 3. **构建和测试：**
-
-```bash
-tools/ninja -C out/linux_clang_release trace_processor_shell perfetto_unittests
-out/linux_clang_release/perfetto_unittests --gtest_filter="*Sql*"
-tools/diff_test_trace_processor.py out/linux_clang_release/trace_processor_shell --quiet
-```
+   ```bash
+   tools/ninja -C out/linux_clang_release trace_processor_shell perfetto_unittests
+   out/linux_clang_release/perfetto_unittests --gtest_filter="*Sql*"
+   tools/diff_test_trace_processor.py out/linux_clang_release/trace_processor_shell --quiet
+   ```
 
 ## 常见问题
 
@@ -51,13 +49,13 @@ tools/diff_test_trace_processor.py out/linux_clang_release/trace_processor_shell
 
 ### 生成文件（不要编辑）
 
-- `src/trace_processor/perfetto_sql/syntaqlite/syntaqlite_perfetto.c`
-- `src/trace_processor/perfetto_sql/syntaqlite/syntaqlite_perfetto.h`
+- `src/perfetto_sql/syntaqlite/syntaqlite_perfetto.c`
+- `src/perfetto_sql/syntaqlite/syntaqlite_perfetto.h`
 
 ### 语法源文件（可编辑）
 
-- `src/trace_processor/perfetto_sql/syntaqlite/perfetto.y` - Perfetto 方言语法
-- `src/trace_processor/perfetto_sql/syntaqlite/perfetto.synq` - AST 节点定义
+- `src/perfetto_sql/syntaqlite/perfetto.y` - Perfetto 方言语法
+- `src/perfetto_sql/syntaqlite/perfetto.synq` - AST 节点定义
 
 ## 回滚
 

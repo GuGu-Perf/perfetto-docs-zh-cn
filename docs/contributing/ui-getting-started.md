@@ -104,8 +104,7 @@ Perfetto UI 使用 [Mithril](https://mithril.js.org/) 库来渲染接口。
 ### 组件状态
 
 组件的本地状态可以驻留在类成员中，并通过访问 `this` 直接在方法中访问。
-在不同组件之间共享的状态存储在 `State` 类定义中，应该通过在 `src/common/actions.ts` 中实现新操作来修改。
-添加到 `State` 的新字段应该在 `src/common/empty_state.ts` 中初始化。
+需要持久化（例如保存到 permalink 中）的状态保存在通过 `trace.mountStore()` 挂载的 `Store` 中，参见
+[UI 插件](ui-plugins#state)。
 
-对于全局状态中可以使用的内容有限制：普通 JS 对象是可以的，但类实例不行（此限制是由于状态序列化：状态应该是有效的 JSON 对象）。
-如果存储类实例（如 `Map` 和 `Set` 数据结构）是必要的，这些可以存储在状态的 `NonSerializableState` 部分中，该部分在保存到 JSON 对象时被省略。
+对于 store 中可以使用的内容有限制：普通 JS 对象是可以的，但类实例不行（此限制是由于状态序列化：状态应该是有效的 JSON 对象）。

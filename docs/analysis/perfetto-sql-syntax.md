@@ -49,7 +49,7 @@ PerfettoSQL 支持以下类型，这些类型可用于表和视图架构、函�
 |------|-------------|
 | `LONG` | 64 位有符号整数 |
 | `DOUBLE` | 双精度浮点数 |
-| `BOOLEAN` | 布尔值（true/false） |
+| `BOOL` | 布尔值（true/false） |
 | `STRING` | 文本字符串 |
 | `BYTES` | 二进制数据 |
 | `TIMESTAMP` | 纳秒绝对时间戳 |

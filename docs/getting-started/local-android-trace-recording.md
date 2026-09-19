@@ -204,7 +204,7 @@ adb pull /data/misc/perfetto-traces/oome.pftrace
 ### 分析 heap dump
 
 在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `oome.pftrace`，
-点击 _"Heap Profile"_ track 中的菱形标记，即可获取保留内存的火焰图。
+点击 _"ART heap dump"_ track 中的 V 形标记，即可获取保留内存的火焰图。
 关于引导式调查，请参见：
 
 - [Heap Dump Explorer](/docs/visualization/heap-dump-explorer.md)，

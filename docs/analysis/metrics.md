@@ -239,7 +239,7 @@ message TopProcesses {
 }
 ```
 
-最后，为所有 metrics 的根 proto 定义一个扩展（[TraceMetrics](https://github.com/google/perfetto/blob/main/protos/perfetto/metrics/metrics.proto#L39） proto)。
+最后，为所有 metrics 的根 proto 定义一个扩展（[TraceMetrics](https://github.com/google/perfetto/blob/main/protos/perfetto/metrics/metrics.proto#L143） proto)。
 
 ```protobuf
 extend TraceMetrics {
@@ -251,7 +251,7 @@ extend TraceMetrics {
 
 _注意:_
 
-- 字段 id 450-500 保留用于本地开发，因此可以将其中任何一个用作扩展字段的字段 id。
+- 字段 id 450-499 保留用于本地开发，因此可以将其中任何一个用作扩展字段的字段 id。
 - 此处字段名称的选择很重要，因为 SQL 文件和 SQL 中生成的最终表将基于此名称。
 
 将所有内容放在一起，以及一些样板前导文件，给出：

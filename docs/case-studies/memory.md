@@ -249,18 +249,18 @@ The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.pe
 
 ![Profile Diamond](/docs/images/profile-diamond.png)
 
-可用的选项卡包括：
+**Measure** 选择器中可用的度量包括：
 
 - **Unreleased malloc size**： 在创建 dump 时，在此调用栈中分配但未释放的字节数。
 - **Total malloc size**： 在此调用栈中分配的字节数（包括在 dump 时刻释放的字节）。
 - **Unreleased malloc count**： 在此调用栈中进行的没有匹配释放的分配数。
 - **Total malloc count**： 在此调用栈中进行的分配数（包括具有匹配释放的分配）。
 
-默认视图将显示在 profile 运行时进行但未释放的所有分配（**space** 选项卡）。
+默认视图将显示在 profile 运行时进行但未释放的所有分配（**Unreleased malloc size**）。
 
 ![Native Flamegraph](/docs/images/native-heap-prof.png)
 
-我们可以看到，通过 `AssetManager.applyStyle` 的路径分配了大量内存。要获取以这种方式分配的总内存，我们可以在 Focus 文本框中输入 "applyStyle"。这将仅显示某些帧匹配 "applyStyle" 的调用栈。
+我们可以看到，通过 `AssetManager.applyStyle` 的路径分配了大量内存。要获取以这种方式分配的总内存，我们可以在 Filters 框中输入 "applyStyle"。这将仅显示某些帧匹配 "applyStyle" 的调用栈。
 
 ![Native Flamegraph with Focus](/docs/images/native-heap-prof-focus.png)
 
@@ -371,14 +371,14 @@ This can be viewed using https://ui.perfetto.dev.
 
 ![Java Flamegraph: Size](/docs/images/java-heap-graph.png)
 
-这些视图显示归因于到垃圾回收根的最短路径的内存。通常，对象可以通过许多路径到达，我们只显示最短的，因为这减少了显示数据的复杂性，并且通常是最有信号量的。最右边的 `[merged]` 堆栈是所有太小而无法显示的对象的总和。
+这些视图显示归因于到垃圾回收根的最短路径的内存。通常，对象可以通过许多路径到达，我们只显示最短的，因为这减少了显示数据的复杂性，并且通常是最有信号量的。最右边的 `(merged)` 堆栈是所有太小而无法显示的对象的总和。
 
 - **Size**： 通过此路径保留到 GC 根的字节数。
 - **Objects**： 通过此路径保留到 GC 根的对象数。
 
-如果我们只想看到包含某些字符串的帧的调用栈，我们可以使用 Focus 功能。如果我们想知道与通知有关的所有分配，我们可以在 Focus 框中放入 "notification"。
+如果我们只想看到包含某些字符串的帧的调用栈，我们可以使用 Filters 框。如果我们想知道与通知有关的所有分配，我们可以在 Filters 框中放入 "notification"。
 
-与 native heap profile 一样，如果我们想专注于图的某些特定方面，我们可以按类名进行过滤。如果我们想查看可能由通知引起的所有内容，我们可以在 Focus 框中放入 "notification"。
+与 native heap profile 一样，如果我们想专注于图的某些特定方面，我们可以按类名进行过滤。如果我们想查看可能由通知引起的所有内容，我们可以在 Filters 框中放入 "notification"。
 
 ![Java Flamegraph with Focus](/docs/images/java-heap-graph-focus.png)
 
@@ -388,7 +388,7 @@ This can be viewed using https://ui.perfetto.dev.
 
 ![Java Flamegraph: Dominated Size](/docs/images/java-heap-graph-dominated-size.png)
 
-将堆图呈现为火焰图（树）的另一种方法是显示其 [支配树](/docs/analysis/stdlib-docs.autogen#memory-heap_graph_dominator_tree)。在堆图中，如果 `b` 只能通过通过 `a` 的路径从根到达，则对象 `a` 支配对象 `b`。对象的支配者形成从根到对象的链，并且对象被此链上的所有对象独占地保留。对于图中所有可到达的对象，这些链形成一棵树，即支配树。
+将堆图呈现为火焰图（树）的另一种方法是显示其 [支配树](/docs/analysis/stdlib-docs.autogen#android-memory-heap_graph-dominator_tree)。在堆图中，如果 `b` 只能通过通过 `a` 的路径从根到达，则对象 `a` 支配对象 `b`。对象的支配者形成从根到对象的链，并且对象被此链上的所有对象独占地保留。对于图中所有可到达的对象，这些链形成一棵树，即支配树。
 
 我们按类名聚合树路径，并且每个元素（树节点）代表一组在支配树中具有相同类名和位置的对象。
 

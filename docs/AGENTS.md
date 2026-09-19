@@ -74,7 +74,7 @@ GN 支持不同的配置，每个 out/* 文件夹一个。你可以通过查看 
 tools/ninja -C out/linux_clang_release -k 10000 trace_processor_shell perfetto_unittests
 ```
 
-所有 C++ 项目共享相同的"base"目标（include/perfetto/base、include/ext/perfetto/base），并且可以共享一些其他目标（参见 GN）。
+所有 C++ 项目共享相同的"base"目标（include/perfetto/base、include/perfetto/ext/base），并且可以共享一些其他目标（参见 GN）。
 
 ### C++ 代码风格
 
@@ -187,14 +187,6 @@ tools/diff_test_trace_processor.py out/linux_clang_release/trace_processor_shell
  
 - **为差异测试删除 `test_` 前缀。** 对差异测试使用 `--name-filter` 标志时，不要在过滤器中包含 `test_`。测试运行程序会自动删除此前缀。例如，要运行 `test_my_cool_test`，请使用过滤器 `MyTestSuite.my_cool_test`。
 
-## 获取差异
-
-当被要求"获取差异"或"读取当前差异"时，运行以下命令：
-
-```sh
-git diff $(git config branch.$(git rev-parse --abbrev-ref HEAD).parent)
-```
-
 ## 修复 GN 依赖项
 
 当被要求修复 GN 依赖项时，运行以下命令并修复报告的任何错误：
@@ -239,6 +231,7 @@ out/linux_asan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName
 ```sh
 MSAN_SYMBOLIZER_PATH="$(pwd)/buildtools/linux64/clang/bin/llvm-symbolizer" \
 out/linux_msan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName.*>"
+```
 
 ## 创建拉取请求
 

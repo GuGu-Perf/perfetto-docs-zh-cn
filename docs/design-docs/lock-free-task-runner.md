@@ -231,7 +231,7 @@ std::function<void()> PopTaskRecursive(Slab* slab, Slab* next_slab) {
 
 在实践中，我们将延迟 Slab 删除的概率除以了 32 倍。
 
-这是支持 `LockFreeTaskRunner.refcounts_` 原子整数数组和写入者使用的 `ScopedRefCount` 类的逻辑。
+这是支持 `LockFreeTaskRunner.refcounts_` 原子整数数组和写入者使用的 `ScopedRefcount` 类的逻辑。
 
 
 ### 延迟任务处理

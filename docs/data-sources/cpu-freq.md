@@ -7,7 +7,7 @@
 有两种方法获取 CPU 频率数据：
 
 1. 启用 `power/cpu_frequency` ftrace 事件。（参见下面的 [TraceConfig](#traceconfig)）。这将在内核 cpufreq 缩放驱动程序更改频率时记录一个事件。请注意，并非所有平台都支持此功能。根据我们的经验，它在基于 ARM 的 SoC 上可靠工作，但在大多数现代基于 Intel 的平台上不产生数据。这是因为最近的 Intel CPU 使用由 CPU 直接控制的内部 DVFS，并且不向内核公开频率更改事件。另请注意，即使在基于 ARM 的平台上，也仅在 CPU 频率更改时才发出事件。在许多情况下，CPU 频率在几秒钟内不会更改，这将在 trace 的开头显示为空块。我们建议始终将此与轮询（见下文）结合使用，以获得初始频率的可靠快照。
-2. 通过启用 `linux.sys_stats` 数据源并将 `cpufreq_period_ms` 设置为 > 0 的值来轮询 sysfs。这将定期轮询 `/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq` 并将当前值记录在 trace 缓冲区中。在基于 Intel 和 ARM 的平台上都可以工作。
+2. 通过启用 `linux.sys_stats` 数据源并将 `cpufreq_period_ms` 设置为 > 0 的值来轮询 sysfs。这将定期轮询 `/sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq` 并将当前值记录在 trace 缓冲区中。在基于 Intel 和 ARM 的平台上都可以工作。
 
 在大多数 Android 设备上，频率调节是基于集群的（大/小核心组），因此看到四组 CPU 同时更改频率并不罕见。
 
@@ -32,8 +32,6 @@
 已知问题：
 
 - 仅在频率更改时才发出事件。这可能长时间不会发生。在短 trace 中，某些 CPU 可能不会报告任何事件，显示 trace 左侧的间隙，或者根本没有。Perfetto 目前在启动 trace 时不记录初始 cpu 频率。
-
-- 当前，如果不捕获空闲状态（见下文），UI 不会呈现 cpufreq track。这是一个仅 UI 的错误，即使未显示，数据也已采集并可通过 Trace Processor 查询。
 
 ### UI
 

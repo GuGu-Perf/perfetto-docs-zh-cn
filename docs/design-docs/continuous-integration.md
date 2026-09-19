@@ -41,7 +41,7 @@ sandbox 使用受限的服务账户 `gce-ci-sandbox@perfetto-ci.iam.gserviceacco
 这是在 worker 实例上从引导到测试运行依次发生的事情。
 
 ```bash
-make -C /infra/ci worker-start
+make -C /infra/ci start-workers
 ┗━ gcloud start ...
 
 [GCE] # From /infra/ci/worker/gce-startup-script.sh
@@ -83,7 +83,7 @@ docker run worker ...
 
 ## 安全考虑
 
-- gs://perfetto-artifacts GCS bucket 可被 GAE 和 GCE 服务账户读取和写入。
+- gs://perfetto-ci-artifacts GCS bucket 可被 GAE 和 GCE 服务账户读取和写入。
 
 - 总体而言，此项目中的任何账户都没有任何有趣的权限：
   - worker 和 sandbox 服务账户在 CI 项目本身之外没有任何特殊功能。即使被破坏，它们也不允许执行任何无法通过旋转自己的 Google Cloud 项目来完成的操作。

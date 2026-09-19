@@ -2,7 +2,7 @@
 
 在 Linux 和 Android（仅限 userdebug 构建上）上，Perfetto 可以 trace 系统调用。
 
-目前，只有系统调用号记录在 trace 中，参数不存储以限制 trace 大小开销。
+系统调用号及其原始参数值在入口时记录，返回值在出口时记录。
 
 在导入时，Trace Processor 使用内部系统调用映射表，目前支持 x86、x86_64、ArmEabi、aarch32 和 aarch64。这些表通过 [`extract_linux_syscall_tables`](/tools/extract_linux_syscall_tables) 脚本生成。
 

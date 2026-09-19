@@ -96,11 +96,11 @@ slice，其持续时间为在该函数内部（包括被调用者）花费的时
 slice 一样查询。例如，找出累计时间最多的内核函数：
 
 ```sql
-SELECT name, COUNT(*) AS calls, SUM(dur) AS total_dur
+SELECT slice.name, COUNT(*) AS calls, SUM(dur) AS total_dur
 FROM slice
 JOIN track ON slice.track_id = track.id
 WHERE track.name = 'Funcgraph'
-GROUP BY name
+GROUP BY slice.name
 ORDER BY total_dur DESC
 LIMIT 20;
 ```

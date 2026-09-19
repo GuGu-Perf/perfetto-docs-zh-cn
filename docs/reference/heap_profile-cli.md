@@ -35,7 +35,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
                             [--no-block-client] [--idle-allocations]
                             [--dump-at-max] [--disable-fork-teardown]
                             [--simpleperf]
-                            [--trace-processor-binary TRACE_PROCESSOR_BINARY]
+                            [--traceconv-binary TRACECONV_BINARY]
                             [--no-annotations] [--print-config] [-o DIRECTORY]
 ```
 
@@ -47,7 +47,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
                          [--block-client-timeout BLOCK_CLIENT_TIMEOUT]
                          [--no-block-client] [--idle-allocations]
                          [--dump-at-max] [--disable-fork-teardown]
-                         [--trace-processor-binary TRACE_PROCESSOR_BINARY]
+                         [--traceconv-binary TRACECONV_BINARY]
                          [--no-annotations] [--print-config] [-o DIRECTORY]
                          [--preload-library PRELOAD_LIBRARY]
                          [--tracebox-binary TRACEBOX_BINARY]
@@ -61,11 +61,14 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 `-n`, `--name` _NAMES_
 ::    要 profile 的进程名称的逗号分隔列表。在 `host` 上，如果省略，则使用 `--` 后命令的基本名称。
 
+`-p`, `--pid` _PIDS_
+::    要 profile 的 PID 的逗号分隔列表。
+
 `-i`, `--interval`
 ::    采样间隔。默认 4096 (4KiB)。
 
 `-o`, `--output` _DIRECTORY_
-::    输出目录。如果已存在则必须为空。
+::    输出目录。必须已存在且为空。
 
 `--all-heaps`
 ::    从目标注册的所有堆中收集分配。
@@ -115,7 +118,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 `--shmem-size`
 ::    客户端和 heapprofd 之间的缓冲区大小。默认 8MiB。必须是 4096 的 2 的幂的倍数，至少 8192。
 
-`--trace-processor-binary`
+`--traceconv-binary`
 ::    本地 trace_processor 的路径。用于调试。
 
 `-h`, `--help`
@@ -124,9 +127,6 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 ## ANDROID-ONLY OPTIONS
 
 这些标志在脚本中以 `args.subcommand == 'android'` 进行限制，传递给 `host` 时无效。
-
-`-p`, `--pid` _PIDS_
-::    要 Profile 的 PID 的逗号分隔列表。
 
 `--disable-selinux`
 ::    在 Profile 持续时间内禁用 SELinux 强制执行。

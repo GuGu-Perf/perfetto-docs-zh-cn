@@ -19,18 +19,18 @@ Perfetto 可以直接从桌面上的 Chrome 浏览器捕获 traces。它捕获�
  > NOTE: "Long trace"模式尚不适用于 Chrome 桌面版。
  > TIP:
  >
- > - 要保存当前配置设置并稍后应用，请转到"保存的配置"菜单。
- > - 要共享你的配置设置，请转到"记录命令"菜单。
+ > - 要保存当前配置设置并稍后应用，请使用"Overview"页面的"User configs"部分。
+ > - 要共享你的配置设置，请转到"Cmdline instructions"菜单。
 
 4. 在 [**Chrome 浏览器**](https://ui.perfetto.dev/#!/record/chrome）探针部分中选择你想要的类别（或顶级标签）。
 
- > NOTE: 顶部的标签启用相关类别的组，但目前没有直接的方法在针对 Chrome 时看到它们。但是，你可以将目标切换到"Android"，然后在"记录命令"部分生成的配置中查看类别，如果你好奇的话。
+ > NOTE: 顶部的标签启用相关类别的组，但目前没有直接的方法在针对 Chrome 时看到它们。但是，你可以将目标切换到"Android"，然后在"Cmdline instructions"部分生成的配置中查看类别，如果你好奇的话。
 
  底部的列表可用于选择其他类别。
 
  ![Chrome 的跟踪类别](/docs/images/tracing-categories-chrome.png)
 
-5. 现在你可以开始 trace 采集了。准备好时按 **"开始采集"**按钮。
+5. 现在你可以开始 trace 采集了。准备好时按 **"Start tracing"**按钮。
 6. 继续使用浏览器捕获你要跟踪的操作，并等待 trace 完成。你也可以通过按"停止"按钮手动停止 trace。
 
  **不要关闭 perfetto UI 选项卡！**否则，跟踪将停止并且 trace 数据将丢失。

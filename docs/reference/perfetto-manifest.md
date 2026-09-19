@@ -60,7 +60,7 @@ Trace manifest（`perfetto_manifest`）是一个放置在 trace 归档
 
 ## {#detection} 检测与放置
 
-Trace Processor 按内容而非文件名检测 manifest：任何内容（忽略前导空白后）以
+Trace Processor 按内容而非文件名检测 manifest：任何内容（忽略空白后）以
 `{"perfetto_manifest"` 开头的文件都会被视为 manifest。按照惯例，该文件命名为
 `perfetto_manifest.json`，这也是 Perfetto UI 生成 manifest 时使用的名称，
 但任何名称都可以。
@@ -156,6 +156,19 @@ proto trace）使用 `machine` 是一个错误；此类文件应使用 `machines
 时间线上。当自动规则（共享时钟域、`REALTIME` 会合）无法放置该文件时，或者
 需要应用已知的固定偏移量时，使用此字段。
 
+关联一个内部自带时钟的 trace（例如 Perfetto proto）：
+```json
+{
+  "path": "device2.pftrace",
+  "clocks": {
+    "clock": "BOOTTIME",
+    "sync_to": {"file": "device1.pftrace", "clock": "BOOTTIME"},
+    "offset_ns": 250000000
+  }
+}
+```
+
+固定（pin）一个无时钟的 trace（例如 Chrome JSON、文本日志）：
 ```json
 {
   "path": "app_log.json",
@@ -276,7 +289,7 @@ Trace Processor 在导入时验证 manifest 并为其错误发出文本描述：
 | 此文件是多机的但缺少 `clocks.machine` | `file 'X' is a multi-machine trace; name which machine the clock is on` |
 | `offset_ns` 不是整数 / 超出 INT64_MIN | `offset_ns must be an integer` / `offset_ns is out of range` |
 | 对本身为归档或 manifest 的文件使用覆盖 | 被拒绝 |
-| 对发出 clock snapshot 的文件使用固定覆盖 | `clock overrides require the trace to use a single clock` |
+| 对发出 clock snapshot 的文件使用固定覆盖 | `a clocks override without a source clock pins a clockless file...` |
 
 该格式的权威定义位于读取器
 [perfetto_manifest_reader.cc](/src/trace_processor/plugins/perfetto_manifest/perfetto_manifest_reader.cc)

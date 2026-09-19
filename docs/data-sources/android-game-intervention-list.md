@@ -16,16 +16,16 @@ _此数据源仅在 Android userdebug 构建上受支持。_
 
 在 SQL 级别，游戏干预数据写入以下表：
 
-- [`android_game_intervention_list`](docs/analysis/sql-tables.autogen#android_game_intervention_list)
+- [`android_game_intervention_list`](/docs/analysis/sql-tables.autogen#android_game_intervention_list)
 
 以下是查询支持的模式（带有干预）和每个游戏的当前游戏模式的示例。
 
 ```sql
-select package_name, current_mode, standard_mode_supported, performance_mode_supported, battery_mode_supported
+select package_name, current_mode, standard_mode_supported, perf_mode_supported, battery_mode_supported
 from android_game_intervention_list
 order by package_name
 ```
-package_name | current_mode | standard_mode_supported | performance_mode_supported | battery_mode_supported
+package_name | current_mode | standard_mode_supported | perf_mode_supported | battery_mode_supported
 -------------|--------------|-------------------------|---------------------------|-----------------------
 com.supercell.clashofclans | 1 | 1 | 0 | 1
 com.mobile.legends | 3 | 1 | 0 | 1

@@ -15,36 +15,36 @@ TraceSorter → TraceStorage → SQL 查询引擎
 
 ## 格式检测和委托
 
-**ForwardingTraceParser** (`src/trace_processor/forwarding_trace_parser.cc:95-134`)
-- 使用来自第一个字节的 `GuessTraceType()` 检测 trace 格式
+**ForwardingTraceParser** (`src/trace_processor/forwarding_trace_parser.cc:85-254`)
+- 使用来自第一个字节的 `TraceImporterRegistry::Guess()` 检测 trace 格式
 - 通过 **TraceReaderRegistry**（`src/trace_processor/trace_reader_registry.h`）创建适当的阅读器
 - 所有阅读器实现 **ChunkedTraceReader** 接口(`src/trace_processor/importers/common/chunked_trace_reader.h`)
 
-**格式注册** (`src/trace_processor/trace_processor_impl.cc:475-519`)
+**格式注册** (`src/trace_processor/trace_processor_impl.cc:462-485`)
 ```cpp
-context()->reader_registry->RegisterTraceReader<JsonTraceTokenizer>(kJsonTraceType);
-context()->reader_registry->RegisterTraceReader<ProtoTraceReader>(kProtoTraceType);
-context()->reader_registry->RegisterTraceReader<SystraceTraceParser>(kSystraceTraceType);
+context()->reader_registry->Register(CreateJsonImporter());
+context()->reader_registry->Register(CreateProtoImporter());
+context()->reader_registry->Register(CreateSystraceImporter());
 ```
 
 ## 格式特定的阅读器(不同的方法)
 
 ### 1. JSON Traces
-**JsonTraceTokenizer** (`src/trace_processor/importers/json/json_trace_tokenizer.h:73`)
+**JsonTraceTokenizer** (`src/trace_processor/importers/json/json_trace_tokenizer.h:74`)
 - **数据流：** 原始 JSON → Tokenizer → JsonEvent 对象 → TraceSorter::Stream<JsonEvent>
 - **解析器：** JsonTraceParser 处理排序的事件 → TraceStorage
 - **架构：** 带有 JSON 特定状态机的 Tokenizer/Parser 分割
 
 ### 2. Proto Traces(复杂的模块化系统)
-**ProtoTraceReader** (`src/trace_processor/importers/proto/proto_trace_reader.h:58`)
+**ProtoTraceReader** (`src/trace_processor/importers/proto/proto_trace_reader.h:61`)
 - **数据流：** Proto 字节 → ProtoTraceTokenizer → ProtoImporterModules → TraceSorter::Stream<TracePacketData>
-- **模块：** 为特定的数据包字段 ID 注册(`src/trace_processor/importers/proto/proto_importer_module.h:110`)
+- **模块：** 为特定的数据包字段 ID 注册(`src/trace_processor/importers/proto/proto_importer_module.h:131`)
   - 标记化阶段：排序之前的早期处理
   - 解析阶段：排序后的详细处理
 - **示例：** FtraceModule、TrackEventModule、AndroidModule(`src/trace_processor/importers/proto/` 中的许多文件)
 
 ### 3. Systrace(基于行的处理)
-**SystraceTraceParser** (`src/trace_processor/importers/systrace/systrace_trace_parser.h:34`)
+**SystraceTraceParser** (`src/trace_processor/importers/systrace/systrace_trace_parser.h:35`)
 - **数据流：** 文本行 → SystraceLineTokenizer → SystraceLine 对象 → TraceSorter::Stream<SystraceLine>
 - **架构：** 用于 HTML + trace 数据部分的状态机
 
@@ -55,7 +55,7 @@ context()->reader_registry->RegisterTraceReader<SystraceTraceParser>(kSystraceTr
 
 ## 事件排序和处理
 
-**TraceSorter** (`src/trace_processor/sorter/trace_sorter.h:43`)
+**TraceSorter** (`src/trace_processor/sorter/trace_sorter.h:44`)
 - **目的：** 多流基于时间戳的合并排序
 - **架构：** ftrace 的每 CPU 队列，用于流式传输的窗口排序
 - **流：** 每种格式创建类型化流(JsonEvent、TracePacketData、SystraceLine 等)
@@ -113,4 +113,4 @@ context()->reader_registry->RegisterTraceReader<SystraceTraceParser>(kSystraceTr
 - `src/trace_processor/importers/systrace/systrace_trace_parser.h` - Systrace 处理
 
 **注册：**
-- `src/trace_processor/trace_processor_impl.cc:475-519` - 所有阅读器注册的地方
+- `src/trace_processor/trace_processor_impl.cc:462-485` - 所有阅读器注册的地方

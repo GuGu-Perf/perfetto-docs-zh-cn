@@ -151,7 +151,7 @@ https://ui.perfetto.dev/#!/?visStart=261191575272856&visEnd=261191675272856
 
 ### 加载时选择一个 slice
 
-传递 `ts`、`dur`、`pid` 和/或 `tid` 参数。UI 将查询 slice 表并找到与参数匹配的 slice。如果找到，则突出显示该 slice。你不必提供所有参数；通常 `ts` 和 `dur` 就足以唯一标识一个 slice。
+传递 `ts` 以及可选的 `dur` 参数。UI 将查询 slice 表并找到与参数匹配的 slice。如果找到，则突出显示该 slice。通常 `ts` 和 `dur` 就足以唯一标识一个 slice。
 
 NOTE: 我们有意不支持通过 slice ID 链接，因为 slice ID 在 Perfetto 版本之间不稳定。相反，通过传递精确的开始时间戳和持续时间（`ts` 和 `dur`）来链接，如通过发出类似 `SELECT ts, dur FROM slices WHERE id=...` 的查询所见。
 
@@ -182,7 +182,7 @@ const commands = [
  {
  id: 'dev.perfetto.AddDebugSliceTrack',
  args: [
- "SELECT ts, dur as value FROM slice WHERE name LIKE '%render%'",
+ "SELECT ts, dur, name FROM slice WHERE name LIKE '%render%'",
  'Render Operations',
  ],
  },

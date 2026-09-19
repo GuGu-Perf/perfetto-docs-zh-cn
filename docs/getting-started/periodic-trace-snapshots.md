@@ -169,7 +169,8 @@ data_sources {
 
 ```bash
 # tracebox 会自动启动 traced 和 traced_probes。
-./tracebox -c snapshot_config.pbtxt --txt \
+# --system-sockets 让后续的 clone 命令可以连接到此会话。
+./tracebox --system-sockets -c snapshot_config.pbtxt --txt \
   --background -o /tmp/snapshot_bg
 ```
 
@@ -212,7 +213,7 @@ TAB: Linux
 perfetto --clone-by-name my_snapshot \
   -o /tmp/snapshot_1.pftrace
 # 或使用 tracebox：
-./tracebox --clone-by-name my_snapshot \
+./tracebox perfetto --clone-by-name my_snapshot \
   -o /tmp/snapshot_1.pftrace
 ```
 
@@ -251,7 +252,7 @@ TAB: Linux
 使用 `query` 子命令直接从命令行运行一次性查询：
 
 ```bash
-trace_processor_shell query /tmp/snapshot_1.pftrace "
+./trace_processor query /tmp/snapshot_1.pftrace "
   INCLUDE PERFETTO MODULE linux.cpu.frequency;
   SELECT * FROM cpu_frequency_counters LIMIT 100;
 "
@@ -260,7 +261,7 @@ trace_processor_shell query /tmp/snapshot_1.pftrace "
 或打开交互式 SQL shell 探索数据：
 
 ```bash
-trace_processor_shell /tmp/snapshot_1.pftrace
+./trace_processor /tmp/snapshot_1.pftrace
 ```
 
 以下是一些有用的查询：
@@ -300,7 +301,7 @@ WHERE t.name GLOB 'batt.*';
 SELECT ts, t.name, value
 FROM counter AS c
 LEFT JOIN counter_track AS t ON c.track_id = t.id
-WHERE t.name GLOB '*thermal*';
+WHERE t.type = 'thermal_temperature';
 ```
 
 ### 使用 Python API 查询
@@ -355,7 +356,7 @@ for i in $(seq 1 10); do
   adb shell perfetto --clone-by-name my_snapshot -o "$SNAP"
   adb pull "$SNAP" /tmp/
   echo "=== Snapshot $i ==="
-  trace_processor_shell query /tmp/"snap_${i}.pftrace" "
+  ./trace_processor query /tmp/"snap_${i}.pftrace" "
     INCLUDE PERFETTO MODULE linux.cpu.frequency;
     SELECT cpu, avg(freq) AS avg_freq_khz
     FROM cpu_frequency_counters
@@ -372,7 +373,7 @@ for i in $(seq 1 10); do
   SNAP="/tmp/snap_${i}.pftrace"
   perfetto --clone-by-name my_snapshot -o "$SNAP"
   echo "=== Snapshot $i ==="
-  trace_processor_shell query "$SNAP" "
+  ./trace_processor query "$SNAP" "
     INCLUDE PERFETTO MODULE linux.cpu.frequency;
     SELECT cpu, avg(freq) AS avg_freq_khz
     FROM cpu_frequency_counters

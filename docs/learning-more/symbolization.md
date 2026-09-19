@@ -7,6 +7,20 @@
 - **符号化（Symbolization）**：使用被 profile 进程中加载的未剥离 ELF 二进制文件（或等效的 Breakpad 符号文件），将 native 指令地址映射回函数名、源文件和行号。
 - **反混淆（Deobfuscation）**：使用构建时生成的 `mapping.txt`，将 R8/ProGuard 发出的混淆 Java/Kotlin 名称（例如 `fsd.a`）映射回原始标识符。
 
+## 使用 debuginfod 获取调试文件
+
+如果你有一个带 native build ID 的 trace 并且可以访问 debuginfod 服务器，就可以在不提供本地二进制文件的情况下创建符号化的 bundle。安装 `curl` 和 `llvm-symbolizer`，然后运行：
+
+```sh
+trace_processor bundle --debuginfod \
+  --debuginfod-urls "https://your-debuginfod-server.example" \
+  input.pftrace output.tar
+```
+
+如果已经配置了 `DEBUGINFOD_URLS`，则只需要 `--debuginfod`。在 UI 中打开生成的 bundle。检查报告中未解析帧的数量；使用 `--verbose` 调查未成功的查找。下载会被缓存以供后续运行使用。使用 `--debuginfod-cache-path PATH` 选择不同的缓存。
+
+有关优先级、超时、缓存布局和输出控制，请参阅 [CLI 参考](/docs/reference/trace-processor-cli.md#debuginfod)。
+
 ## 你需要哪种工作流？ {#which-workflow}
 
 根据你的 trace 匹配以下类别之一并点击链接。选择错误的工作流是符号"不起作用"的最常见原因。关键经验法则：**用户空间**符号在主机上离线解析（`trace_processor
@@ -67,13 +81,11 @@ trace_processor bundle \
   input.perfetto-trace enriched-trace
 ```
 
-`bundle` 标志的属性：
+将 `--symbol-paths` 指向包含匹配的未剥离二进制文件或 native 调试文件的目录，例如你构建产物的 symbols 目录。bundle 会递归搜索并按 Build ID 匹配，因此无需重建设备的目录布局。Java/Kotlin 的 `mapping.txt` 文件请使用 `--proguard-map` 单独传递。
 
-- `--symbol-paths PATH1,PATH2,...`：搜索 native 符号的额外目录（除了自动发现的路径）。
-- `--no-auto-symbol-paths`：禁用 native 符号路径的自动发现。仅搜索通过 `--symbol-paths` 给出的路径。
-- `--proguard-map [pkg=]PATH`：用于 Java/Kotlin 反混淆的额外 ProGuard/R8 `mapping.txt`。对多个 mapping 重复此标志。可选的 `pkg=` 前缀将 mapping 限定到特定的 Java 包。
-- `--no-auto-proguard-maps`：禁用 ProGuard/R8 mapping 文件的自动发现（例如标准 Android Gradle 布局）。仅应用通过 `--proguard-map` 给出的 mapping。
-- `--verbose`：打印尝试的每个路径和查找的每个库——在调试"could not find"错误时很有用。
+使用 `--verbose` 诊断缺失的符号。要禁用自动发现，请添加 `--no-auto-symbol-paths` 和 `--no-auto-proguard-maps`。来自 `PERFETTO_BINARY_PATH` 的 native 路径仍然生效；取消设置该变量可将查找范围限制为 `--symbol-paths`。
+
+有关选项语义、颜色控制、输出替换和退出状态，请参阅 [bundle 命令参考](/docs/reference/trace-processor-cli.md#subcommand-bundle)。
 
 ## {#option-2-legacy-traceconv-symbolize-deobfuscate} 方式 2：传统 `trace_processor util symbolize` / `util deobfuscate`
 
@@ -164,23 +176,34 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 
 常见消息及其含义：
 
-- **`N frames could not be symbolized and will appear as "unknown"`**，附带一行 `hint: use --symbol-paths ...`：工具搜索了自动发现的路径（加上你给出的任何 `--symbol-paths`），但没有找到 Build ID 匹配的二进制文件。按照提示操作，或使用 `--verbose` 重新运行以查看尝试过的每个路径。
+- **`N frames from M mappings: no usable symbols in the searched paths`**，后面跟着 mapping 名称：工具搜索了自动发现的路径（加上你给出的任何 `--symbol-paths`），但没有为这些 mapping 找到 Build ID 匹配的二进制文件，或只找到已剥离的版本。其下方的 `To fix this` 块取决于二进制文件的来源。如果你自己构建它们，请将 `--symbol-paths` 指向未剥离的构建产物。如果它们来自你的操作系统，请安装其调试符号：Debian/Ubuntu 上使用 `apt install <package>-dbgsym`（用 `dpkg -S <path>` 找到包名），Fedora 上使用 `dnf debuginfo-install <package>`（用 `rpm -qf <path>` 找到包名），两者都会安装到 `/usr/lib/debug` 并被自动发现；在 Android 上，则是匹配平台构建的 `symbols` 目录。使用 `--verbose` 重新运行可查看 Build ID 和尝试过的每个路径。
 
-- **`N frames ... no build IDs in trace, symbol lookup requires build IDs`**：trace 的 mapping 没有 Build ID，因此即使有正确的二进制文件也无法匹配符号。使用带 Build ID 的二进制文件重新构建（链接器标志 `-Wl,--build-id`）并重新录制。
+- **`N frames from M mappings: kernel frames, no vmlinux in the searched paths`**：安装内核调试包（Debian/Ubuntu 上是 `linux-image-$(uname -r)-dbg`，Fedora 上是 `dnf debuginfo-install kernel`），或将 `--symbol-paths` 指向你内核构建产物的 `vmlinux`。
+
+- **`N frames from M mappings: no build ID recorded, so symbols cannot be looked up`**：trace 的 mapping 没有 Build ID，因此即使有正确的二进制文件也无法匹配符号。使用带 Build ID 的二进制文件重新构建（链接器标志 `-Wl,--build-id`）并重新录制。
+
+- **`N frames from M mappings: no backing file to read symbols from (JIT, anonymous or [vdso]-style mappings)`**：这些帧来自没有二进制文件支撑的内存。离线工具无法为它们命名。
 
 - **`Kernel function names: this trace contains function_graph events ...`**：trace 包含**未**启用 `symbolize_ksyms` 录制的来自 `function_graph`（或类似 ftrace 事件）的内核地址。这些无法离线符号化；请启用 `symbolize_ksyms: true` 重新录制。参见[内核 ftrace 事件](#ftrace)。
 
 - **`no symbol paths were searched`**：自动发现被禁用（`--no-auto-symbol-paths`）且没有给出显式路径。传入带待搜索目录的 `--symbol-paths`。
 
-- **`failed to open output file ...`**：无法创建输出路径（例如父目录不存在或不可写）。检查该路径。
+- **`cannot create output file ...`**：无法创建输出路径（例如父目录不存在或不可写）。检查该路径。
 
 #### 找不到库
 
-在对 Profile 进行符号化时，你可能会看到如下消息：
+使用 `--verbose` 对 Profile 进行符号化时，你可能会看到如下消息：
 
 ```text
-Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so
-(Build ID: 44b7138abd5957b8d0a56ce86216d478).
+  Could not symbolize 12 frames from 1 mapping:
+    /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so (12 frames)
+      build ID: 44b7138abd5957b8d0a56ce86216d478
+      no binary with a matching build ID in:
+        /path/to/symbols/somelib.so (file not found)
+
+  To fix this:
+    If you build these binaries yourself, pass --symbol-paths DIR1,DIR2,... pointing at the unstripped build outputs.
+    If they come from your OS, install its debug symbols; see https://perfetto.dev/docs/learning-more/symbolization
 ```
 
 检查 `somelib.so` 是否存在于某个搜索路径下（`--symbol-paths` 或自动发现的位置）。然后使用 `readelf -n /path/to/somelib.so` 比较磁盘上的 Build ID 与消息中报告的 Build ID。如果它们不匹配，磁盘上的副本是不同于设备上的构建，无法使用。

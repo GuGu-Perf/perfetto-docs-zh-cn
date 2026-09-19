@@ -42,7 +42,7 @@ TAB: Android (Perfetto UI)
 
 #### 先决条件
 
-- 一台运行 Android 10- 的设备。
+- 一台运行 Android 10+ 的设备。
 - 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
@@ -67,7 +67,7 @@ TAB: Android (Command line)
 
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
 - _Windows 用户_：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
-- 一台运行 Android 10- 的设备。
+- 一台运行 Android 10+ 的设备。
 - 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
@@ -106,7 +106,7 @@ python3 heap_profile android -n com.google.android.apps.nexuslauncher
 
 ```bash
 Wrote profiles to /tmp/53dace (symlink /tmp/heap_profile-latest)
-The raw-trace file can be viewed using https://ui.perfetto.dev
+The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.perfetto.dev.
 ```
 
 TAB: Linux (Command line)
@@ -169,7 +169,7 @@ tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
 
 ### 可视化你的第一个 heap profile
 
-在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/heap_profile-latest` 文件，并点击 UI 中标记为_"Native heap profile"_的 UI track 中的 Slice。
+在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `/tmp/heap_profile-latest/raw-trace` 文件，并点击 UI 中标记为_"Native heap profile"_的 UI track 中的 Slice。
 
 ![heapprofd snapshots in the UI tracks](/docs/images/profile-slice-malloc.png)
 ![heapprofd flamegraph](/docs/images/native-heap-prof.png)
@@ -202,27 +202,33 @@ tools/ninja -C out/linux_clang_release heapprofd_glibc_preload
 例如，通过运行：
 
 ```
-INCLUDE PERFETTO MODULE android.memory.heap_graph.heap_graph_class_aggregation;
+INCLUDE PERFETTO MODULE android.memory.heap_profile.summary_tree;
 
 SELECT
- -- 类名(如果可用,则去混淆)
- type_name,
- -- 类实例计数
- obj_count,
- -- 类实例大小
- size_bytes,
- -- 类实例的 native 大小
- native_size_bytes,
- -- 可访问类实例计数
- reachable_obj_count,
- -- 可访问类实例大小
- reachable_size_bytes,
- -- 可访问类实例的 native 大小
- reachable_native_size_bytes
-FROM android_heap_graph_class_aggregation;
+ -- 调用栈的 id。在此上下文中,调用栈是直到根的唯一帧集。
+ id,
+ -- 此调用栈的父调用栈的 id。
+ parent_id,
+ -- 此调用栈的帧的函数名称。
+ name,
+ -- 包含帧的映射的名称。这可以是 native 二进制文件、库、JAR 或 APK。
+ mapping_name,
+ -- 包含函数的文件的名称。
+ source_file,
+ -- 文件中函数所在的行号。
+ line_number,
+ -- 以此函数为叶帧分配且*未释放*的内存量。
+ self_size,
+ -- 以此函数出现在调用栈上任何位置分配且*未释放*的内存量。
+ cumulative_size,
+ -- 以此函数为叶帧分配的内存量。这可能包括后来被释放的内存。
+ self_alloc_size,
+ -- 以此函数出现在调用栈上任何位置分配的内存量。这可能包括后来被释放的内存。
+ cumulative_alloc_size
+FROM android_heap_profile_summary_tree;
 ```
 
-你可以看到可访问聚合对象大小和对象计数的摘要。
+你可以查看 trace 中每个唯一调用栈分配的内存。
 
 ## ART Heap Dumps
 
@@ -244,7 +250,7 @@ TAB: Android (Perfetto UI)
 
 #### 先决条件
 
-- 一台运行 Android 10- 的设备。
+- 一台运行 Android 11+ 的设备。
 - 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
@@ -266,7 +272,7 @@ TAB: Android (Command line)
 
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
 - _Windows 用户_：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
-- 一台运行 Android 10- 的设备。
+- 一台运行 Android 11+ 的设备。
 - 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 _"eng"_），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
@@ -333,33 +339,27 @@ UI 将显示堆图的扁平版本，采用火焰图的形状。火焰图将共�
 例如，通过运行：
 
 ```
-INCLUDE PERFETTO MODULE android.memory.heap_profile.summary_tree;
+INCLUDE PERFETTO MODULE android.memory.heap_graph.heap_graph_class_aggregation;
 
 SELECT
- -- 调用栈的 id。在此上下文中,调用栈是直到根的唯一帧集。
- id,
- -- 此调用栈的父调用栈的 id。
- parent_id,
- -- 此调用栈的帧的函数名称。
- name,
- -- 包含帧的映射的名称。这可以是 native 二进制文件、库、JAR 或 APK。
- mapping_name,
- -- 包含函数的文件的名称。
- source_file,
- -- 文件中函数所在的行号。
- line_number,
- -- 以此函数为叶帧分配且*未释放*的内存量。
- self_size,
- -- 以此函数出现在调用栈上任何位置分配且*未释放*的内存量。
- cumulative_size,
- -- 以此函数为叶帧分配的内存量。这可能包括后来被释放的内存。
- self_alloc_size,
- -- 以此函数出现在调用栈上任何位置分配的内存量。这可能包括后来被释放的内存。
- cumulative_alloc_size
-FROM android_heap_profile_summary_tree;
+ -- 类名(如果可用,则去混淆)
+ type_name,
+ -- 类实例计数
+ obj_count,
+ -- 类实例大小
+ size_bytes,
+ -- 类实例的 native 大小
+ native_size_bytes,
+ -- 可访问类实例计数
+ reachable_obj_count,
+ -- 可访问类实例大小
+ reachable_size_bytes,
+ -- 可访问类实例的 native 大小
+ reachable_native_size_bytes
+FROM android_heap_graph_class_aggregation;
 ```
 
-你可以查看 trace 中每个唯一调用栈分配的内存。
+你可以看到可访问聚合对象大小和对象计数的摘要。
 
 ## 其他类型的内存
 

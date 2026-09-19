@@ -23,7 +23,7 @@ ZIP 工具）也可以；`util merge` 只是一个便捷辅助工具，说明见
 [下文](#merge-util)。
 
 接受普通 trace 的一切都接受此类归档：交互式 shell、`-q` 批量查询、
-提供 UI 的 [httpd 模式](/docs/analysis/trace-processor.md#subcommands)，
+提供 UI 的 [httpd 模式](/docs/reference/trace-processor-cli.md#subcommands)，
 以及 [C++](/docs/analysis/trace-processor.md#embedding) 和
 [Python](/docs/analysis/trace-processor-python.md) API，
 它们像处理任何其他 trace 一样流式处理归档字节。

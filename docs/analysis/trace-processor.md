@@ -98,171 +98,35 @@ trace_processor server unix --name mysession --daemonize trace.pftrace
 trace_processor query --remote mysession "SELECT count(*) FROM slice"
 ```
 
-`query`、`interactive`、`metrics` 和 `summarize` 子命令都接受 `--remote`，它通过 Perfetto UI 所用的同一 TraceProcessor RPC 接口与一个 session 通信。参见[从命令行分析 trace](/docs/getting-started/command-line-analysis.md) 了解完整 walkthrough，以及下文的 [`server` 子命令](#subcommand-server)了解模式和标志细节。
+`query`、`interactive`、`metrics` 和 `summarize` 子命令都接受 `--remote`，它通过 Perfetto UI 所用的同一 TraceProcessor RPC 接口与一个 session 通信。参见[从命令行分析 trace](/docs/getting-started/command-line-analysis.md) 了解完整 walkthrough，以及 [`server` 参考](/docs/reference/trace-processor-cli.md#subcommand-server)了解模式和标志细节。
 
-### {#subcommands} 子命令接口
+### {#subcommands} 命令行参考
 
-除了交互式 REPL，`trace_processor` 还接受一个子命令作为第一个参数，用于非交互式工作流：
+有关命令、选项、环境变量和输出行为，请参阅 [trace_processor CLI 参考](/docs/reference/trace-processor-cli.md)。
 
-```text
-trace_processor <command> [flags] [positional args]
-```
+#### {#subcommand-query} query
 
-`trace_processor --help` 会打印下面的顶级摘要。要查看某个子命令的标志，请运行 `trace_processor <command> --help`（等价于 `trace_processor help <command>`）：
+请参阅 CLI 参考中的 [query](/docs/reference/trace-processor-cli.md#subcommand-query)。
 
-```text
-Perfetto Trace Processor.
-Usage: trace_processor [command] [flags] [trace_file]
+#### {#subcommand-interactive} interactive
 
-If no command is given, opens an interactive SQL shell on the trace file.
+请参阅 CLI 参考中的 [interactive](/docs/reference/trace-processor-cli.md#subcommand-interactive)。
 
-Commands:
-  query         Load a trace and run a SQL query.
-  interactive   Interactive SQL shell (default if no command is given).
-  server        Start an RPC server.
-  summarize     Compute a trace summary from specs and/or built-in metrics.
-  export        Export trace data (sqlite, arrow_tar, perfetto).
-  metrics       Run v1 metrics (deprecated; use 'summarize --metrics-v2').
-  convert       Convert trace format.
+#### {#subcommand-server} server
 
-Common flags (apply to all commands):
-  -h, --help                  Show help (per-command if after a command).
-  -v, --version               Print version.
-      --full-sort             Force full sort ignoring windowing.
-      --no-ftrace-raw         Prevent ingestion of typed ftrace into raw table.
-      --add-sql-package PATH  Register SQL files from a directory as a package.
-  -m, --metatrace FILE        Enable metatracing, write to FILE.
-```
+请参阅 CLI 参考中的 [server](/docs/reference/trace-processor-cli.md#subcommand-server)。
 
-> **向后兼容。** 经典的扁平标志接口（`-q`、`-Q`、`--httpd`、`--summary`、`--run-metrics`、`-e`、`--stdiod`）仍通过内部转换层支持，因此现有脚本可以继续工作而无需更改。运行 `trace_processor --help-classic` 查看完整的经典标志列表。
+#### {#subcommand-summarize} summarize
 
-#### {#subcommand-query} `query`：运行 SQL
+请参阅 CLI 参考中的 [summarize](/docs/reference/trace-processor-cli.md#subcommand-summarize)。
 
-`query` 加载 trace，运行一个或多个以 `;` 分隔的 SQL 语句，将结果打印到标准输出，然后退出。SQL 可以作为参数传递、从文件读取或通过 stdin 管道传入：
+#### {#subcommand-export} export
 
-```bash
-# 将 SQL 作为参数传递。
-trace_processor query trace.pftrace "SELECT ts, dur, name FROM slice LIMIT 5"
+请参阅 CLI 参考中的 [export](/docs/reference/trace-processor-cli.md#subcommand-export)。
 
-# 从文件读取 SQL。
-trace_processor query -f queries.sql trace.pftrace
+#### {#global-flags} 全局标志
 
-# 通过 stdin 管道传入 SQL。
-cat queries.sql | trace_processor query trace.pftrace
-```
-
-每个语句的结果集都作为 CSV 打印，连续的结果集之间用一个空行分隔。因为所有字符串值都加了引号，所以该分隔符是明确的。
-
-标志：
-
-- `--remote ADDR`：对热身好的 session 运行，而不是加载本地 trace；参见 [session](#sessions)。`ADDR` 是 session 名称、`*.sock` 或绝对 socket 路径，或 `host:port`。在此模式下不传递 trace 文件参数。
-- `-f, --query-file FILE`：从 `FILE` 读取 SQL；传递 `-` 表示从 stdin 读取。
-- `-i, --interactive`：查询完成后进入交互式 REPL。
-- `-W, --wide`：打印结果时使用双倍宽度列。
-- `--perf-file FILE`：将 trace 加载和查询计时写入 `FILE`。
-- `--structured-query-id ID` 加 `--summary-spec FILE` _(高级)_：从一个或多个 [TraceSummarySpec](trace-summary.md) 文件中按 ID 运行单个结构化查询，替代上述 SQL 源。
-
-#### {#subcommand-interactive} `interactive`：REPL
-
-`interactive` 打开上一节中展示的交互式 PerfettoSQL 提示符。这是默认子命令，因此 `trace_processor trace.pftrace` 和 `trace_processor interactive trace.pftrace` 是等价的。唯一的特定子命令标志是 `-W, --wide`。
-
-#### {#subcommand-server} `server`：HTTP、stdio 或 unix RPC
-
-`server` 通过远程过程调用协议暴露 trace processor：
-
-```bash
-# HTTP 服务器，ui.perfetto.dev 使用。默认监听 9001 端口。
-trace_processor server http
-
-# 预加载 trace 并通过 HTTP 服务。
-trace_processor server http trace.pftrace
-
-# stdio 服务器：长度前缀 RPC，用于将 trace_processor 作为子进程嵌入的工具。
-trace_processor server stdio
-
-# 命名 unix-socket session：让 trace 保持热身状态，
-# 供重复的 `query --remote <name>` 调用使用（参见上面的 session 一节）。
-trace_processor server unix --name mysession --daemonize trace.pftrace
-
-# 按名称或 socket 路径停止一个 unix session。
-trace_processor server kill mysession
-```
-
-标志：
-
-- `--port PORT`：HTTP 端口（默认 9001）。
-- `--ip-address IP`：HTTP 绑定地址。
-- `--additional-cors-origins O1,O2,...`：在默认值（`https://ui.perfetto.dev`、`http://localhost:10000`、`http://127.0.0.1:10000`）之外的额外 CORS 允许来源。
-- `--name NAME`：unix 模式的 session 名称（默认：自动生成）。
-- `--path PATH`：unix 模式的显式 socket 路径（与 `--name` 互斥）。
-- `--daemonize`：脱离到后台运行（unix 模式，仅限 POSIX）。
-- `--idle-timeout auto|DUR`：在这么长时间不活动后回收服务器（例如 `30m`、`90s`）；`auto` 表示 unix 为 30 分钟、http 为永不；`0`/`never` 禁用。
-- `--idle-start auto|orphaned|last-query`：空闲时钟何时开始计时（默认 `auto`：感知所有者）。
-
-在 `http` 和 `unix` 模式下，trace 文件是可选的；客户端也可以远程加载 trace。最常见的客户端是 Perfetto UI，它会自动检测本地服务器并将 trace 解析卸载给它。参见[可视化大型 trace](/docs/visualization/large-traces.md) 了解用户端流程，或 [trace_processor.proto](/protos/perfetto/trace_processor/trace_processor.proto) 了解 RPC 线路架构。
-
-#### {#subcommand-summarize} `summarize`：计算 trace 汇总
-
-`summarize` 计算 [trace 汇总](trace-summary.md)。先传递 trace 文件，再传递任意规范文件；通过 `--metrics-v2` 选择内置 v2 Metric：
-
-```bash
-# 运行每一个可用的 v2 Metric。
-trace_processor summarize --metrics-v2 all trace.pftrace
-
-# 运行 spec.textproto 中定义的两个特定 Metric。
-trace_processor summarize \
-  --metrics-v2 startup_metric,memory_metric \
-  trace.pftrace spec.textproto
-```
-
-标志：
-
-- `--metrics-v2 IDS`：逗号分隔的 metric ID，或字面值 `all`。
-- `--metadata-query ID`：用于填充汇总 `metadata` 字段的查询 ID。
-- `--format text|binary`：`TraceSummary` proto 的输出格式（默认 `text`）。
-- `--post-query FILE`：汇总完成后运行此 SQL 文件。设置后，不打印汇总 proto；而是打印 SQL 输出。
-- `--perf-file FILE`：将加载/查询计时写入 `FILE`。
-- `-i, --interactive`：汇总完成后进入 REPL。
-
-规范文件根据扩展名（`.pb` 为二进制，`.textproto` 为文本）检测为二进制或文本，并附带内容嗅探回退。
-
-#### {#subcommand-export} `export`：将 trace 数据写入文件
-
-`export` 将解析后的 trace 数据写入文件。格式是第一个位置参数，输出路径通过 `-o` 给出：
-
-```bash
-# 版本绑定的归档，可由同一版本的 trace processor 加载。
-trace_processor export perfetto -o archive.tar trace.pftrace
-
-# 静态表导出为 tar 中的标准 Arrow 文件。
-trace_processor export arrow_tar -o tables.tar trace.pftrace
-
-# 静态表和视图导出为 SQLite 数据库。
-trace_processor export sqlite -o trace.db trace.pftrace
-```
-
-格式：
-
-- **`perfetto`**：非空静态表组成的版本绑定归档。同一版本的新 trace processor 实例可以将其作为 trace 加载回来；不同版本也许能加载，但不保证。这是唯一可以重新加载的格式。
-- **`arrow_tar`**：由标准 [Apache Arrow](https://arrow.apache.org/) 文件组成的 tar，每个静态注册的表一个文件，包括空表和隐式 ID 列。跨版本稳定且向前兼容，适合外部消费者（例如 pandas、Polars、pyarrow）。无法加载回 trace processor。
-- **`sqlite`**：静态注册的表加上 trace 的视图，导出为任何 SQLite 工具都可读取的 SQLite 数据库。
-
-标志：
-
-- `-o, --output FILE`：输出文件路径（必填）。
-
-这三种格式都导出静态注册的表；只有 `sqlite` 还包括视图。session 期间创建的运行时表（例如 `CREATE PERFETTO TABLE`）不会被导出。导出以流式写入磁盘，因此在处理大型 trace 时内存使用保持有界。有关面向任务的配方，请参阅[导出 trace 数据](/docs/getting-started/command-line-analysis.md#export-trace-data)。
-
-#### {#global-flags} 全局标志（适用于每个子命令）
-
-除了上面的特定子命令标志外，还接受以下全局标志，在所有子命令中行为相同：
-
-- **Trace 摄取：** `--full-sort`、`--no-ftrace-raw`、`--analyze-trace-proto-content`、`--crop-track-events`。
-- **PerfettoSQL 包：** `--add-sql-package PATH[@PKG]`、`--override-sql-package PATH[@PKG]`、`--override-stdlib PATH`(需要 `--dev`)。
-- **Metric 扩展：** `--metric-extension DISK_PATH@VIRTUAL_PATH`。
-- **辅助文件内容：** `--register-files-dir PATH` 将 `PATH` 下的文件内容暴露给导入器（例如 ETM 解码器）。
-- **开发：** `--dev`、`--dev-flag KEY=VALUE`、`--extra-checks`。
-- **元追踪：** `-m, --metatrace FILE`、`--metatrace-buffer-capacity N`、`--metatrace-categories CATEGORIES`。这会生成 Trace Processor 自身的 Perfetto trace，你可以将其重新加载到 UI 中进行性能调试。
+请参阅 CLI 参考中的[全局标志](/docs/reference/trace-processor-cli.md#global-flags)。
 
 ## {#embedding} 嵌入 C++ 库
 

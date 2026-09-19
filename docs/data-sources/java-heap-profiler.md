@@ -12,7 +12,7 @@ Heap dumps 不得与 [ART Allocation Profiling](native-heap-profiler.md#art-allo
 
 ## UI
 
-在单击进程的 _"Heap Profile"_ track 中的菱形后，堆图转储在 UI 中显示为火焰图。每个菱形对应一个堆转储。
+在单击进程的 _"ART heap dump"_ track 中的菱形后，堆图转储在 UI 中显示为火焰图。每个菱形对应一个堆转储。
 
 ![进程 track 中的 ART 堆转储](/docs/images/profile-diamond.png)
 

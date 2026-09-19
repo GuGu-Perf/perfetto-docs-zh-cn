@@ -11,7 +11,7 @@
 
 ### 贡献给 SQL 标准库
 
-1. 在 `perfetto/src/trace_processor/stdlib/` 内添加或编辑 SQL 文件。该 SQL 文件将是一个新的标准库模块。
+1. 在 `perfetto/src/trace_processor/perfetto_sql/stdlib/` 内添加或编辑 SQL 文件。该 SQL 文件将是一个新的标准库模块。
 2. 对于现有包内的新文件，将该文件添加到相应的 `BUILD.gn` 中。
 3. 对于新包（`/stdlib/` 的子目录），包名（目录名）必须添加到 `/stdlib/BUILD.gn` 中的列表中。
 

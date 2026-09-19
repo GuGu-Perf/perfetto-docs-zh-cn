@@ -232,16 +232,16 @@ WHERE tid = 5678;
 
 #### Child Track 排序
 
-对于通过 `parent_uuid` 父化到另一个自定义 Track 的标准自定义 Track，使用父 Track `TrackDescriptor` 上的 `child_ordering` 字段和对于 `EXPLICIT` 排序使用子 Track `TrackDescriptor` 上的 `sibling_order_rank` 来实现。
+对于通过 `parent_uuid` 父化到另一个自定义 Track 的标准自定义 Track，你可以在父 Track 上配置子 Track 排序。
 
-父 Track 上的此 `child_ordering` 设置仅影响其直接子 Track。
+此设置仅影响该父 Track 的直接子 Track。
 
-可用的 `child_ordering` 模式(在 `TrackDescriptor.ChildTracksOrdering` 中定义):
+可用的 `child_ordering` 模式（在 `TrackDescriptor.ChildTracksOrdering` 中定义）：
 
-- `ORDERING_UNSPECIFIED`：默认值。UI 将使用自己的启发式方法。
-- `LEXICOGRAPHIC`：子 Track 按其 `name` 字母顺序排序。
-- `CHRONOLOGICAL`：子 Track 根据其中每一个上发生的最早 `TrackEvent` 的时间戳排序。具有较早事件的 Track 首先出现。
-- `EXPLICIT`：子 Track 根据在各自 `TrackDescriptor` 中设置的 `sibling_order_rank` 字段排序。排名较低的首先出现。如果排名相等，或者如果未设置 `sibling_order_rank`，则决胜顺序未定义。
+- `UNKNOWN`：默认值。UI 将使用自己的启发式方法。
+- `LEXICOGRAPHIC`：子 Track 按其 `name` 或 `static_name` 的字母顺序排序。
+- `CHRONOLOGICAL`：子 Track 根据每个 Track 上发生的最早 `TrackEvent` 的时间戳排序。具有较早事件的 Track 排在前面。
+- `EXPLICIT`：子 Track 根据各自 `TrackDescriptor` 中设置的 `sibling_order_rank` 字段排序。排名较低的排在前面。如果排名相等或未设置 `sibling_order_rank`，则决胜顺序未定义。
 
 #### 进程排序
 
@@ -423,7 +423,7 @@ WHERE tid = 5678;
 - **防止合并**： 强制 Track（即使具有相同名称）始终单独显示。
 - **按键合并**： 强制 Track 根据自定义密钥合并，无论它们的名称如何。
 
-`Sibling_merge_behavior` 字段可以设置为以下值之一：
+`sibling_merge_behavior` 字段可以设置为以下值之一：
 
 - `SIBLING_MERGE_BEHAVIOR_BY_TRACK_NAME`(默认)：合并具有相同 `name` 的同级 Track。
 - `SIBLING_MERGE_BEHAVIOR_NONE`：防止 Track 与其任何同级合并。
@@ -432,47 +432,47 @@ WHERE tid = 5678;
 #### Python 示例：防止合并
 
 在此示例中，我们创建两个具有相同名称的 Track。通过将其
-`Sibling_merge_behavior` 设置为 `SIBLING_MERGE_BEHAVIOR_NONE`，我们确保它们
+`sibling_merge_behavior` 设置为 `SIBLING_MERGE_BEHAVIOR_NONE`，我们确保它们
 始终在 UI 中显示为不同的 Track。
 
 <details>
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9003
+    TRUSTED_PACKET_SEQUENCE_ID = 9003
 
- # --- 定义 Track UUID ---
- track1_uuid = 1
- track2_uuid = 2
+    # --- Define Track UUIDs ---
+    track1_uuid = 1
+    track2_uuid = 2
 
- # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_NONE
+    # Helper to define a TrackDescriptor
+    def define_custom_track(track_uuid, name):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
+        desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_NONE
 
-# 1. 定义 Track
-    define_custom_track(track1_uuid, "我的独立 Track")
-    define_custom_track(track2_uuid, "我的独立 Track")
+    # 1. Define the tracks
+    define_custom_track(track1_uuid, "My Separate Track")
+    define_custom_track(track2_uuid, "My Separate Track")
 
-    # 添加 Slice 事件的辅助函数
+    # Helper to add a slice event
     def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = event_track_uuid
+        if name:
+            packet.track_event.name = name
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
- # 2. 向 Track 添加事件
- add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="Slice 1")
- add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
+    # 2. Add events to the tracks
+    add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="Slice 1")
+    add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
 
- add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="Slice 2")
- add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
+    add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="Slice 2")
+    add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
 ```
 
 </details>
@@ -482,7 +482,7 @@ WHERE tid = 5678;
 #### Python 示例：按键合并
 
 在此示例中，我们创建两个具有不同名称但相同
-`sibling_merge_key` 的 Track。通过将其 `Sibling_merge_behavior` 设置为
+`sibling_merge_key` 的 Track。通过将其 `sibling_merge_behavior` 设置为
 `SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY`，我们指示 UI 将它们
 合并到单个视觉 Track 中。合并组的名称将取自其中一个 Track(通常是具有较低 UUID 的 Track)。
 
@@ -490,41 +490,41 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9004
+    TRUSTED_PACKET_SEQUENCE_ID = 9004
 
- # --- 定义 Track UUID ---
- track1_uuid = 1
- track2_uuid = 2
+    # --- Define Track UUIDs ---
+    track1_uuid = 1
+    track2_uuid = 2
 
- # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name, merge_key):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY
- desc.sibling_merge_key = merge_key
+    # Helper to define a TrackDescriptor
+    def define_custom_track(track_uuid, name, merge_key):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
+        desc.sibling_merge_behavior = TrackDescriptor.SIBLING_MERGE_BEHAVIOR_BY_SIBLING_MERGE_KEY
+        desc.sibling_merge_key = merge_key
 
-# 1. 定义具有相同合并密钥的 Track
+    # 1. Define the tracks with the same merge key
     define_custom_track(track1_uuid, "HTTP GET", "conn-123")
     define_custom_track(track2_uuid, "HTTP POST", "conn-123")
 
-    # 添加 Slice 事件的辅助函数
+    # Helper to add a slice event
     def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = event_track_uuid
+        if name:
+            packet.track_event.name = name
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
- # 2. 向 Track 添加事件
- add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="GET /data")
- add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
+    # 2. Add events to the tracks
+    add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track1_uuid, name="GET /data")
+    add_slice_event(ts=1100, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track1_uuid)
 
- add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="POST /submit")
- add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
+    add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_BEGIN, event_track_uuid=track2_uuid, name="POST /submit")
+    add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_END, event_track_uuid=track2_uuid)
 ```
 
 </details>
@@ -774,7 +774,7 @@ WHERE tid = 5678;
 **帧**、**调用堆栈**，并从你的事件中引用这些调用堆栈。其他部分是可选的，当你拥有该信息时可以提供：
 
 1. **构建 ID** 和 **映射路径** → **映射**(二进制文件/库)。如果你没有二进制元数据，则可以完全跳过此内容。
-2. **映射** → **帧**(函数 + 位置)。`mapping_id`、`rel_pc`、`source_file_id`、`line_number` 等都是可选的——只设置对你的数据有意义的部分。
+2. **映射** → **帧**(函数 + 位置)。`mapping_id`、`rel_pc`、`source_path_iid`、`line_number` 等都是可选的——只设置对你的数据有意义的部分。
 3. **帧** → **调用堆栈**(帧序列)
 4. **调用堆栈** → 事件(通过 `callstack_iid`)
 
@@ -977,7 +977,7 @@ WHERE tid = 5678;
 - 重用：事件 3 重用 `CALLSTACK_1`，演示效率增益。
 
 运行脚本后，在
-[Perfetto UI](https://ui.perfetto.dev) 中打开生成的 trace并进行区域选择将显示以下输出：
+[Perfetto UI](https://ui.perfetto.dev) 中打开生成的 trace 并进行区域选择将显示以下输出：
 
 ![驻留调用堆栈](/docs/images/synthetic-track-event-interned-callstack.png)
 
@@ -985,7 +985,7 @@ WHERE tid = 5678;
 
 除了名称和时间戳之外，每个事件还可以携带额外数据：改变 callstack 如何聚合到火焰图的 weight、将相关事件链接在一起的 correlation ID，以及通过你自己的 protobuf schema 定义的完全自定义类型字段。
 
-### {#callstack-weights} Weighted Callstacks and Custom Measures
+### {#callstack-weights} 加权调用堆栈与自定义 measure
 
 默认情况下，附加到事件的每个 callstack 在聚合到火焰图时只计数一次：这就是 **Samples** measure。然而，通常每次出现应该贡献不同的量：该 stack 分配的字节数、归因于它的延迟，等等。
 
@@ -1006,7 +1006,7 @@ message TrackEvent {
 
 除了 weight 之外，附加到携带 callstack 的事件的任何**数字参数**都可以在 UI 中用作额外的火焰图 measure。这包括 [debug annotations](/docs/getting-started/converting.md#debug-annotations) 和来自 [proto 扩展](#proto-extensions) 的整数/双精度字段 — 任何最终作为 `args` 表中数字条目的内容。这让单个事件流可以携带多个并行 measure：例如，allocation profiler 可以使用 `callstack_weight` 表示字节数，使用 `objects` debug annotation 表示对象数量。
 
-#### Python 示例：Weighted Callstacks
+#### Python 示例：加权调用堆栈
 
 此示例模拟一个简单的 allocation profiler：每个 slice 记录分配的 callstack，`callstack_weight` 设置为分配的字节数，以及两个额外的每事件 measure — 一个统计分配对象数量的 `objects` debug annotation，以及一个记录分配耗时的 `alloc_stats.latency_us` proto 扩展字段。
 
@@ -1174,7 +1174,7 @@ Perfetto 支持三种类型的关联标识符：
  [驻留数据以优化 trace 大小](#interning-data-for-trace-size-optimization)
  有关驻留的详细信息)
 
-#### Python 示例：Correlation IDs
+#### Python 示例：关联 ID
 
 此示例通过模拟跨越多个服务 Track 的两个单独请求的处理的不同阶段来演示使用整数标识符的关联 ID。
 
@@ -1378,7 +1378,7 @@ WHERE EXTRACT_ARG(slice.arg_set_id, 'request_metadata.request_id') IS NOT NULL;
 
 ## {#handling-large-traces-with-streaming} 使用流处理大型 trace
 
-到目前为止，所有示例都使用了 `TraceProtoBuilder`，它在将 trace 写入文件之前在内存中构建整个 trace。这对于中等大小的 trace简单有效，但如果你生成具有数百万事件的 trace，则可能会导致高内存消耗。
+到目前为止，所有示例都使用了 `TraceProtoBuilder`，它在将 trace 写入文件之前在内存中构建整个 trace。这对于中等大小的 trace 简单有效，但如果你生成具有数百万事件的 trace，则可能会导致高内存消耗。
 
 对于这些情况，`StreamingTraceProtoBuilder` 是推荐的解决方案。它在创建每个 `TracePacket` 时将其写入文件，无论 trace 大小如何，都保持内存使用最小化。
 
@@ -1394,7 +1394,7 @@ WHERE EXTRACT_ARG(slice.arg_set_id, 'request_metadata.request_id') IS NOT NULL;
 
 这是一个完整的、独立的 Python 脚本，演示如何使用
 `StreamingTraceProtoBuilder`。它基于
-[入门指南](/docs/getting-started/converting.md）中的"创建基本 Timeline
+[入门指南](/docs/getting-started/converting.md) 中的"创建基本 Timeline
 Slice"示例。
 
 你可以将此代码保存为新文件（例如，`streaming_converter.py`）并运行它。

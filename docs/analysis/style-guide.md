@@ -13,4 +13,4 @@ _本页面提供了编写 PerfettoSQL 的建议样式指南，该指南在 trace
 
 PerfettoSQL 带有一个自动格式化程序，由 `tools/format-sql-sources` 驱动。它通过外壳调用 `syntaqlite fmt`，使用与 trace processor 本身相同的 PerfettoSQL 语法（作为共享库加载）进行解析。该脚本可以对任何文件或目录运行，并自动格式化代码以遵守上述规则。
 
-在向标准库贡献时，必须运行此脚本。它在运行 `tools/gen_all` 时自动执行，这是 Perfetto 标准开发工作流程的一部分。预提交检查将确保你已完成此操作。
+在向标准库贡献时，必须运行此脚本。它在运行 `tools/format-sources` 时自动执行，这是 Perfetto 标准开发工作流程的一部分。预提交检查将确保你已完成此操作。

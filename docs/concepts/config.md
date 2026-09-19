@@ -374,7 +374,7 @@ Perfetto 支持基于触发器的替代启动或停止 trace 模式。总体思�
 
 启动触发器允许仅在发生某些重大事件后才激活 trace 会话。传递具有 `START_TRACING` 触发器的 trace 配置会导致 trace 会话保持空闲（即不记录任何数据），直到触发器被击中或 `trigger_timeout_ms` 超时被击中。
 
-`trace_duration_ms` 和触发的 trace 不能同时使用。
+`duration_ms` 和触发的 trace 不能同时使用。
 
 示例配置：
 
@@ -405,9 +405,6 @@ STOP_TRACING 触发器允许在触发器被击中时过早地完成 trace。在�
 示例配置：
 
 ```protobuf
-# 如果没有触发器被击中,trace 将在 30 秒后结束。
-trigger_timeout_ms: 30000
-
 # 如果击中 "missed_frame",trace 将在 1 秒后停止。
 trigger_config {
  trigger_mode: STOP_TRACING
@@ -415,6 +412,8 @@ trigger_config {
  name: "missed_frame"
  stop_delay_ms: 1000
  }
+ # 如果没有触发器被击中,trace 将在 30 秒后结束。
+ trigger_timeout_ms: 30000
 }
 
 # 配置的其余部分照常。

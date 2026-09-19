@@ -380,7 +380,7 @@ Counters 可以表示的常见示例包括：
 要创建 counter track，你需要：
 
 1.  为你的 counter 定义一个 `TrackDescriptor`。此 track 需要一个 `uuid`、一个 `name`，重要的是，它的 `counter` 字段应该被填充。这告诉 Perfetto 将此 track 视为 counter。
-2.  发出带有 `type: TYPE_COUNTER` 的 `TrackEvent` packets。每个这样的 packet 应该有一个 `timestamp` 和一个 `counter_value`(可以是整数或双精度浮点数)。
+2.  发出带有 `type: TYPE_COUNTER` 的 `TrackEvent` packets。每个这样的 packet 应该有一个 `timestamp` 和一个 `counter_value`(整数)或一个 `double_counter_value`(双精度浮点数)。
 
 ### Python 示例：Counters
 
@@ -1048,7 +1048,7 @@ WHERE track.name = 'Nested Debug Annotations';
 
 NOTE: 帧从最外层(堆栈底部，例如 `main()`)到最内层（堆栈顶部，事件发生的地方）排序。
 
-当你在 slice 结束事件上提供调用栈时，Trace Processor 会将其与开始调用栈分开存储（在 `slice` 表中的 `end_callsite_id` 参数下）。这对于快速比较进入/退出堆栈非常方便。
+当你在 slice 结束事件上提供调用栈时，Trace Processor 会将其与开始调用栈分开存储（存储为 `end_callsite_id` 而非 `callsite_id`）。这对于快速比较进入/退出堆栈非常方便。
 
 运行脚本后，在 [Perfetto UI](https://ui.perfetto.dev) 中打开生成的 `my_custom_trace.pftrace` 将显示以下输出：
 
@@ -1107,9 +1107,9 @@ NOTE: 仅支持字符串和 64 位整数值。如果相同的 key 被多次设�
 
 </details>
 
-与本页中的其他示例不同，Timeline 视图中没有 track 或 slice 可看。相反，运行脚本并在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `my_custom_trace.pftrace` 后，这些属性会显示在 "Overview" 页面上（可从左侧侧边栏进入），位于 "Info and Stats (advanced)" 标签页下，与 trace 的其他元数据一起。
+与本页中的其他示例不同，Timeline 视图中没有 track 或 slice 可看。相反，运行脚本并在 [Perfetto UI](https://ui.perfetto.dev) 中打开 `my_custom_trace.pftrace` 后，这些属性会显示在 "Overview" 页面上（可从左侧侧边栏进入），位于 "Metadata" 标签页的 "Trace Attributes" 部分下，与 trace 的其他元数据一起。
 
-![Info and Stats 页面中的 Trace 属性](/docs/images/converting-trace-attributes.png)
+![Overview 页面中的 Trace 属性](/docs/images/converting-trace-attributes.png)
 
 在 Trace Processor 中，每个属性都成为 `metadata` 表中的一行，其 key 带有 `trace_attribute.` 前缀，以将自定义属性与内置元数据分开。你可以在 Perfetto UI 的 Query 标签页中使用 SQL 查询 trace 级别元数据，或使用 [Trace Processor](/docs/analysis/getting-started.md)：
 
@@ -1129,7 +1129,7 @@ trace_processor export arrow_tar -o tables.tar my_custom_trace.pftrace
 trace_processor export sqlite -o trace.db my_custom_trace.pftrace
 ```
 
-`perfetto` 可以由同一版本的 trace processor 实例重新加载，`arrow_tar` 面向 pandas、Polars 或 pyarrow 等外部工具，而 `sqlite` 会生成一个任何 SQLite 工具都能打开的数据库。关于如何在各种格式之间选择以及每种格式的具体内容，请参阅[导出 trace 数据](/docs/getting-started/command-line-analysis.md#export-trace-data)和 [Trace Processor reference](/docs/analysis/trace-processor.md#subcommand-export)。
+`perfetto` 可以由同一版本的 trace processor 实例重新加载，`arrow_tar` 面向 pandas、Polars 或 pyarrow 等外部工具，而 `sqlite` 会生成一个任何 SQLite 工具都能打开的数据库。关于如何在各种格式之间选择以及每种格式的具体内容，请参阅[导出 trace 数据](/docs/getting-started/command-line-analysis.md#export-trace-data)和 [trace_processor CLI 参考](/docs/reference/trace-processor-cli.md#subcommand-export)。
 
 ## 下一步
 

@@ -1,7 +1,7 @@
 # Cookbook: 从命令行分析 Trace
 
 本页面是一组面向任务的配方，介绍如何在 shell 中使用 `trace_processor` 处理 trace：运行查询、免重复解析地迭代、合并、导出和转换。它展示每个任务的常见形式；完整的子命令和标志列表见
-[Trace Processor reference](/docs/analysis/trace-processor.md)。
+[trace_processor CLI 参考](/docs/reference/trace-processor-cli.md)。
 
 ## 获取二进制文件
 
@@ -59,7 +59,7 @@ session 会在 30 分钟后被自动回收。
   已经预热好的 session 上进入 REPL，或对其进行汇总。
 
 session 命名、socket 路径和空闲超时调整见
-[reference](/docs/analysis/trace-processor.md#subcommand-server)。
+[reference](/docs/reference/trace-processor-cli.md#subcommand-server)。
 
 ## 合并 trace
 
@@ -112,7 +112,7 @@ trace_processor export sqlite -o trace.db trace.pftrace
 这三种格式导出的都是静态注册的表；只有 `sqlite` 还包含视图。session
 期间创建的运行时表（例如 `CREATE PERFETTO TABLE`）不会被导出。标志和
 格式详情见
-[Trace Processor reference](/docs/analysis/trace-processor.md#subcommand-export)。
+[trace_processor CLI 参考](/docs/reference/trace-processor-cli.md#subcommand-export)。
 
 ## 转换为其他 trace 格式
 
@@ -137,4 +137,4 @@ traceconv 工具的更多信息。`convert` 转换的是 trace 本身；如果�
 - 使用 Python 在大量 trace 上自动化分析：
   [Batch Trace Processor](/docs/analysis/batch-trace-processor.md)。
 - 所有子命令和标志：
-  [Trace Processor reference](/docs/analysis/trace-processor.md)。
+  [trace_processor CLI 参考](/docs/reference/trace-processor-cli.md)。

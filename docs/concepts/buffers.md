@@ -122,14 +122,14 @@ class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
 > select * from stats where name like 'ftrace_cpu_overrun_end'
 name idx severity source value
 -------------------- -------------------- -------------------- ------ ------
-ftrace_cpu_overrun_e 0 data_loss trace 0
-ftrace_cpu_overrun_e 1 data_loss trace 0
-ftrace_cpu_overrun_e 2 data_loss trace 0
-ftrace_cpu_overrun_e 3 data_loss trace 0
-ftrace_cpu_overrun_e 4 data_loss trace 0
-ftrace_cpu_overrun_e 5 data_loss trace 0
-ftrace_cpu_overrun_e 6 data_loss trace 0
-ftrace_cpu_overrun_e 7 data_loss trace 0
+ftrace_cpu_overrun_e 0 info trace 0
+ftrace_cpu_overrun_e 1 info trace 0
+ftrace_cpu_overrun_e 2 info trace 0
+ftrace_cpu_overrun_e 3 info trace 0
+ftrace_cpu_overrun_e 4 info trace 0
+ftrace_cpu_overrun_e 5 info trace 0
+ftrace_cpu_overrun_e 6 info trace 0
+ftrace_cpu_overrun_e 7 info trace 0
 ```
 
 这些丢失可以通过增加[`TraceConfig.FtraceConfig.buffer_size_kb`][FtraceConfig]或减少[`TraceConfig.FtraceConfig.drain_period_ms`][FtraceConfig]来缓解
@@ -169,7 +169,7 @@ traced_buf_trace_wri 0 data_loss trace 0
 name idx severity source value
 -------------------- -------------------- -------------------- ------- -----
 traced_buf_chunks_di 0 info trace 0
-traced_buf_chunks_ov 0 data_loss trace 0
+traced_buf_chunks_ov 0 info trace 0
 ```
 
 当使用[流模式]时，覆盖也是一种数据丢失：被覆盖的数据永远不会写入文件，因此 trace 中会出现空隙。这些数据可以在 `stats` 表中查到，每个受影响的中央缓冲区对应一个条目，其中 `idx` 是缓冲区编号，`value` 是其覆盖的字节数：
@@ -252,7 +252,7 @@ Trace Processor 具有内置机制，可以检测驻留数据的丢失，并跳�
 [流模式]: /docs/concepts/config#long-traces
 [TraceConfig]: /docs/reference/trace-config-proto.autogen#TraceConfig
 [FtraceConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig
-[IncrStateConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig.IncrementalStateConfig
+[IncrStateConfig]: /docs/reference/trace-config-proto.autogen#TraceConfig.IncrementalStateConfig
 [FtraceCpuStats]: /docs/reference/trace-packet-proto.autogen#FtraceCpuStats
 [FtraceEventBundle]: /docs/reference/trace-packet-proto.autogen#FtraceEventBundle
 [TracePacket]: /docs/reference/trace-packet-proto.autogen#TracePacket

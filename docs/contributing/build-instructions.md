@@ -110,7 +110,7 @@ m traced traced_probes perfetto
 Android 构建文件([Android.bp](/Android.bp))通过 `tools/gen_android_bp` 从 GN 文件自动生成，每当更改涉及 GN 文件或引入新文件时都需要调用该脚本。
 同样，Bazel 构建文件([BUILD](/BUILD))通过 `tools/gen_bazel` 脚本自动生成。
 
-通过 `git cl upload` 提交 CL 时，预提交检查会检查 Android.bp 是否与 GN 文件一致。
+预提交检查（`tools/run_presubmit`，CI 也会在每个 pull request 上运行）会检查 Android.bp 是否与 GN 文件一致。
 
 生成器有一个将被翻译到 Android.bp 文件的根目标列表。如果你要添加新目标，请在 [`tools/gen_android_bp`](/tools/gen_android_bp) 的 `default_targets` 变量中添加一个新条目。
 
@@ -119,12 +119,12 @@ Android 构建文件([Android.bp](/Android.bp))通过 `tools/gen_android_bp` 从
 **Linux 桌面**(Debian Testing/Rodete)
 
 - 封闭的 clang + libcxx 工具链(两者都遵循 Chromium 的版本)
-- GCC-7 和 libstdc++ 6
+- GCC-9 和 libstdc++ 6
 - 为 arm 和 arm64 交叉编译（更多内容见下方）。
 
 **Android**
 
-- Android 的 NDK r15c(使用 NDK 的 libcxx)
+- Android 的 NDK r26c(使用 NDK 的 libcxx)
 - AOSP 的树内 clang(使用树内 libcxx)
 
 **Mac**

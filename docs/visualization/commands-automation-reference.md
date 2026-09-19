@@ -54,7 +54,7 @@
 }
 ```
 
-**Example with track path filtering:**
+**使用 track 路径过滤的示例：**
 
 ```json
 {
@@ -94,7 +94,7 @@
 }
 ```
 
-**Example with track path filtering:**
+**使用 track 路径过滤的示例：**
 
 ```json
 {
@@ -128,7 +128,7 @@
 }
 ```
 
-**Example with track path filtering:**
+**使用 track 路径过滤的示例：**
 
 ```json
 {
@@ -137,7 +137,7 @@
 }
 ```
 
-**提示：** Use `".*"` 将所有 tracks 折叠作为专注分析的起点。
+**提示：** 使用 `".*"` 将所有 tracks 折叠作为专注分析的起点。
 
 ### Debug Track 命令
 
@@ -387,8 +387,6 @@ Workspaces 允许你通过将特定的 tracks 组织在一起来创建 trace 数
 }
 ```
 
----
-
 #### `dev.perfetto.RunQueryAndShowTab`
 
 执行 PerfettoSQL 查询并在新的查询标签页中显示结果。
@@ -470,96 +468,9 @@ Workspaces 允许你通过将特定的 tracks 组织在一起来创建 trace 数
 - 宏 ID 应使用反向域名风格的命名（例如，`user.myteam.MacroName`、`com.company.AnalysisWorkflow`）
 - 当用作启动命令时，宏中的所有命令也必须在允许列表中
 - 宏可以包含本参考中的任何稳定自动化命令
-- 宏中的失败命令会被记录，但不会停止剩余命令的执行
+- 宏中失败的命令会停止剩余命令的执行
 
 > **注意（迁移）：** 宏的格式已从字典更改为数组结构。现有的宏已自动迁移，并使用格式为 `dev.perfetto.UserMacro.<old_name>` 的 ID。新宏应使用反向域名风格的 ID。
-
-### 导航命令
-
-#### `dev.perfetto.GoToTime`
-
-导航到 trace 中的特定时间戳。
-
-**参数：**
-
-- `time` (number, required): 时间戳（纳秒）
-
-**示例：**
-
-```json
-{
-  "id": "dev.perfetto.GoToTime",
-  "args": [1000000000]
-}
-```
-
----
-
-#### `dev.perfetto.SelectArea`
-
-选择特定的时间范围。
-
-**参数：**
-
-- `start` (number, required): 开始时间戳（纳秒）
-- `end` (number, required): 结束时间戳（纳秒）
-
-**示例：**
-
-```json
-{
-  "id": "dev.perfetto.SelectArea",
-  "args": [1000000000, 2000000000]
-}
-```
-
-### 可视化命令
-
-#### `dev.perfetto.ShowCurrentSelectionTab`
-
-显示 "Current Selection" 标签页。
-
-**参数：** 无
-
-**示例：**
-
-```json
-{
-  "id": "dev.perfetto.ShowCurrentSelectionTab"
-}
-```
-
----
-
-#### `dev.perfetto.PinJankyFrameTracks`
-
-固定所有 janky frame tracks。
-
-**参数：** 无
-
-**示例：**
-
-```json
-{
-  "id": "dev.perfetto.PinJankyFrameTracks"
-}
-```
-
----
-
-#### `dev.perfetto.ShowStackTrace`
-
-显示所选事件的 stack trace。
-
-**参数：** 无
-
-**示例：**
-
-```json
-{
-  "id": "dev.perfetto.ShowStackTrace"
-}
-```
 
 ---
 

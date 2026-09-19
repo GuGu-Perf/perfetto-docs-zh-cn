@@ -209,12 +209,12 @@ Macro IDs 必须以你的命名空间开头（例如，`com.example.myteam.`）�
 2. 点击 **Add Server** 并选择 **GitHub**。
 3. 以 `owner/repo` 格式输入仓库（例如，
    `my-org/perfetto-extensions`）。
-4. 在 **Ref** 字段中输入分支或标签（例如，`main`）。
+4. 在 **Branch/Tag** 字段中输入分支或标签（例如，`main`）。
 5. UI 获取 manifest 并显示可用模块。`default` 模块
    自动选择；根据需要启用其他模块。
-6. 点击 **Save** 并重新加载页面。
+6. 点击 **Add** 并重新加载页面。
 
-对于 **私有仓库**，在认证下选择 **Personal Access Token (PAT)**：
+对于 **私有仓库**，在认证下选择 **Personal Access Token**：
 
 1. 转到
    [GitHub personal access tokens](https://github.com/settings/personal-access-tokens)
@@ -230,7 +230,7 @@ Macro IDs 必须以你的命名空间开头（例如，`com.example.myteam.`）�
 1. 点击 **Add Server** 并选择 **HTTPS**。
 2. 输入服务器 URL（例如，`https://perfetto-ext.corp.example.com`）。如果省略，`https://` 前缀会自动添加。
 3. 选择模块并配置认证（见下文）。
-4. 点击 **Save** 并重新加载页面。
+4. 点击 **Add** 并重新加载页面。
 
 ## 共享 extension servers
 
@@ -239,8 +239,8 @@ Macro IDs 必须以你的命名空间开头（例如，`com.example.myteam.`）�
 
 - 如果他们没有配置服务器，**Add Server** 对话框会打开
   预填充共享配置。
-- 如果他们已经有服务器，**Edit** 对话框会打开，共享的
-  模块合并进来。
+- 如果他们已经有服务器，**Edit** 对话框会打开，其已启用的
+  模块将被共享的模块替换。
 
 Secrets（PATs、密码、API keys）会自动从共享 URL 中剥离。
 如果服务器需要认证，接收者输入他们自己的凭据。

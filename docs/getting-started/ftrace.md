@@ -260,7 +260,7 @@ NOTE: tracebox 将负责启用 tracing 和 ticker 事件（如我们在前面的
 
 我们现在可以在 perfetto UI 中探索采集的 trace。导航到 https://ui.perfetto.dev 并将文件拖放到窗口中（或按 `Ctrl+O` 打开文件对话框）。
 
-展开 "Ftrace Events" track 组以获取每个 CPU 的事件视图，可以选择这些事件以显示其字段。此外，`Ctrl+shift+P -> "Show Ftrace Tab"` 会打开一个带有文本输出近似的标签页。但是请注意，由于 perfetto 记录事件的二进制表示，它不会根据 `TP_printk(..)` 说明符将事件文本化。
+展开 "Ftrace Events" track 组以获取每个 CPU 的事件视图，可以选择这些事件以显示其字段。此外，`Ctrl+shift+P -> "Show ftrace tab"` 会打开一个带有文本输出近似的标签页。但是请注意，由于 perfetto 记录事件的二进制表示，它不会根据 `TP_printk(..)` 说明符将事件文本化。
 
 ![Raw ticker events](https://storage.googleapis.com/perfetto-misc/ticker-raw.gif)
 
@@ -330,7 +330,7 @@ static constexpr auto kTickerCountBlueprint = tracks::CounterBlueprint(
 
 // ~~ 省略 ~~
 
-      case FtraceEvent::kTickerEventFieldNumber: {
+      case FtraceEvent::kTickerTickFieldNumber: {
         ParseTickerEvent(cpu, ts, fld_bytes);
         break;
       }
@@ -340,7 +340,7 @@ static constexpr auto kTickerCountBlueprint = tracks::CounterBlueprint(
 void FtraceParser::ParseTickerEvent(uint32_t cpu,
                                     int64_t timestamp,
                                     protozero::ConstBytes data) {
-  protos::pbzero::TickerEventFtraceEvent::Decoder ticker_event(data);
+  protos::pbzero::TickerTickFtraceEvent::Decoder ticker_event(data);
 
   PERFETTO_LOG("Parsing ticker event: %" PRId64 ", %" PRIu32 ", %d",
                timestamp,
@@ -482,7 +482,7 @@ for (int i=0; i < 3; i++) {
 TRACE_EX_END();
 ```
 
-我们可以使用以下配置采集 trace(在撰写本文时，`denser_generic_event_encoding` 是必要的，但可能会成为默认值)：
+我们可以使用以下配置采集 trace(`denser_generic_event_encoding` 选项自 perfetto v53 起是默认值，但在较旧版本中是必要的)：
 
 ```
 // trace.txtpb
@@ -533,23 +533,28 @@ Tracepoint 声明示例，名为 `trk_example/tgid_track_example`：
 
 #include <linux/tracepoint.h>
 
-TRACE_EVENT(tgid_counter_example,
+TRACE_EVENT(tgid_track_example,
     TP_PROTO(
-        u64 counter_value,
+        char track_event_type,
+        const char *slice_name,
         int scope_tgid
     ),
-    TP_ARGS(counter_value, scope_tgid),
+    TP_ARGS(track_event_type, slice_name, scope_tgid),
     TP_STRUCT__entry(
-        __field(u64, counter_value)
+        __field(char, track_event_type)
+        __string(slice_name, slice_name)
         __field(int, scope_tgid)
     ),
     TP_fast_assign(
-        __entry->counter_value = counter_value;
+        __entry->track_event_type = track_event_type;
+        /* v6.10 之前的内核：__assign_str(slice_name, slice_name) */
+        __assign_str(slice_name);
         __entry->scope_tgid = scope_tgid;
     ),
     TP_printk(
-        "counter_value=%llu tgid=%d",
-        (unsigned long long)__entry->counter_value,
+        "type=%c slice_name=%s tgid=%d",
+        __entry->track_event_type,
+        __get_str(slice_name),
         __entry->scope_tgid
     )
 );

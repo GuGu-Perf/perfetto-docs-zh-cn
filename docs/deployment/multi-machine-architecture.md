@@ -57,7 +57,7 @@ Host 的 `traced` 将每个唯一提示映射到一个小的整数 `MachineId`�
 
 ## 跨机器时钟同步
 
-每台远程机器都有自己的 `CLOCK_BOOTTIME`，因此其 Producer 写入的时间戳不能直接与 host 时间戳比较。`traced_relay` 针对 host 的 Relay 端点运行一个轻量级 Ping 协议，发送和接收带时间戳的消息来估算每机器的时钟偏移和往返时间。Host 定期将估算的偏移作为 `ClockSnapshot` Packet 发出到 Trace 中。
+每台远程机器都有自己的 `CLOCK_BOOTTIME`，因此其 Producer 写入的时间戳不能直接与 host 时间戳比较。`traced_relay` 针对 host 的 Relay 端点运行一个轻量级 Ping 协议，发送和接收带时间戳的消息来估算每机器的时钟偏移和往返时间。Host 将每台远程机器所得的成对 `ClockSnapshot` 作为 `RemoteClockSync` Packet 发出到 Trace 中。
 
 此后一切复用[时钟同步](/docs/concepts/clock-sync.md)中描述的现有单机器机制：Trace Processor 将跨机器偏移折叠到它已经为 `CLOCK_REALTIME`、`CLOCK_MONOTONIC` 等构建的同一时钟图中，并在导入时将每个事件解析为单一的全局 Trace 时钟。DataSource 不需要做任何额外工作。同样的时钟图也支持[事后 trace 合并](/docs/concepts/merging-traces.md)，其中跨机器边来源于挂钟汇合点或 [manifest](/docs/reference/perfetto-manifest.md)，而不是 Ping 协议。
 

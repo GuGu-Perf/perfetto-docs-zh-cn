@@ -193,18 +193,18 @@ data_sources: {
  ```
 - **配置**：`InodeFileConfig` 允许指定 `scan_mount_points`、`mount_point_mapping`（以重新映射扫描根）、`scan_interval_ms`、`scan_delay_ms`、`scan_batch_size` 和 `do_not_scan`。
 
-### `metatrace`(Perfetto 自 tracing)
+### `perfetto.metatrace`(Perfetto 自 tracing)
 
 - **描述**： 自trace data源，记录 Perfetto 本身内的事件，用于调试和分析tracing system的性能。
 - **配置示例**：
  ```protobuf
  data_sources: {
  config {
- name: "metatrace"
+ name: "perfetto.metatrace"
  }
  }
  ```
-- **配置**： `DataSourceConfig` 中没有特定配置。
+- **配置**： `SystemInfoConfig` 允许启用 `irq_names`，以记录来自 `/proc/interrupts` 的硬件中断 ID 到名称的映射。
 
 ### `linux.system_info`(系统信息)
 
@@ -344,14 +344,14 @@ data_sources: {
 - **配置**： `AndroidGameInterventionListConfig` 允许按
  `package_name_filter` 进行过滤。
 
-### `android.cpu.uid`(每 UID CPU 时间)
+### `android.cpu_per_uid`(每 UID CPU 时间)
 
 - **描述**： 从内核收集每 UID CPU 时间。
 - **配置示例**：
  ```protobuf
  data_sources: {
  config {
- name: "android.cpu.uid"
+ name: "android.cpu_per_uid"
  cpu_per_uid_config {
  poll_ms: 1000
  }
@@ -404,10 +404,10 @@ data_sources: {
  name: "android.statsd"
  statsd_tracing_config {
  pull_config {
- pull_atom_id: 10000 # 示例拉取原子
+ pull_atom_id: ATOM_SYSTEM_UPTIME # 示例拉取原子
  pull_frequency_ms: 1000
  }
- push_atom_id: 10037 # 示例推送原子
+ push_atom_id: ATOM_FLASHLIGHT_STATE_CHANGED # 示例推送原子
  }
  }
  }

@@ -50,45 +50,74 @@ iframe.contentWindow.postMessage({perfetto: {buffer, title}}, '*');
 `perfetto` 对象的字段：
 
 | 字段          | 类型                                                      | 必需 | 默认值 | 含义                                                                                                                              |
-| -------------- | -------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `buffer`       | `ArrayBuffer` | 是   | 无     | trace 文件内容（protobuf、JSON 或其他支持的格式）。                                                                                |
-| `title`        | `string` | 否   | `""`   | 在 UI 中显示的标题（已清理）。                                                                                                    |
-| `url`          | `string` | 否   | 无     | 用于推断文件名的 URL（已清理）；仅在未提供 `title` 时显示。                                                                         |
-| `fileName`     | `string` | 否   | 无     | 用于推断文件名以进行格式检测的字符串；不直接显示。                                                                                  |
+| -------------- | -------------------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `buffer`       | `ArrayBuffer`                                             | 是      | -       | 原始 trace 字节，例如来自 `fetch(...).then(r => r.arrayBuffer())`。                                                                  |
+| `title`        | `string`                                                 | 是      | -       | 在 UI 中显示的 trace 标题。                                                                                                          |
+| `fileName`     | `string`                                                 | 否      | -       | 用户下载 trace 时建议的文件名。                                                                                                      |
+| `url`          | `string`                                                 | 否      | -       | 分享 URL。分享详情参见[深度链接到 Perfetto UI](/docs/visualization/deep-linking-to-perfetto-ui.md)。                                                          |
+| `appStateHash` | `string`                                                 | 否      | -       | 40 字符十六进制哈希；从 GCS 恢复已保存的 UI 状态。参见[深度链接到 Perfetto UI](/docs/visualization/deep-linking-to-perfetto-ui.md)。 |
+| `shareable`    | `boolean`                                                | 否      | `false` | 若为 `true`，UI 可以共享该 trace（例如上传以生成永久链接）。                                                                          |
+| `downloadable` | `boolean`                                                | 否      | `false` | 若为 `true`，用户可以下载该 trace。                                                                                                  |
+| `localOnly`    | `boolean`                                                | 否      | `true`  | 遗留字段。设为 `false` 会将 `shareable` 和 `downloadable` 都设为 `true`。显式指定的 `shareable`/`downloadable` 优先。                    |
+| `keepApiOpen`  | `boolean`                                                | 否      | `false` | 若为 `true`，监听器保持活跃，宿主之后可以发送更多 trace。若为 `false`/省略，处理器在第一个 trace 之后移除自己的消息监听器（避免重复发送，b/182502595）。 |
+| `pluginArgs`   | `{[pluginId: string]: {[key: string]: unknown}}`         | 否      | -       | 传递给 plugin 的 `onTraceLoad()`。                                                                                                  |
 
-## 控制 UI
+### 裸 ArrayBuffer 简写
 
-要控制已打开的 trace，发送带有单个 `perfetto` 键及以下字段的对象
-（不要包含 `buffer`）：
+裸 `ArrayBuffer`（`event.data instanceof ArrayBuffer`）也会被接受。它
+会被视为 `{title: 'External trace', buffer}`。
 
-| 字段              | 类型       | 含义                                                                                             |
-| ----------------- | ---------- | ------------------------------------------------------------------------------------------------ |
-| `timeStart`       | `number`   | 以秒为单位的可见范围开始时间。仅当其大于当前 `timeStart` 时生效，这意味着宿主无法缩小范围。           |
-| `timeEnd`         | `number`   | 以秒为单位的可见范围结束时间。仅当其小于当前 `timeEnd` 时生效。                                     |
-| `sliceId`         | `number`   | 要高亮和选择的 Slice ID。                                                                         |
+## 滚动到时间范围
+
+trace 加载后发送以下消息，将视口滚动/缩放到一个时间范围：
+
+```js
+iframe.contentWindow.postMessage(
+    {perfetto: {timeStart, timeEnd, viewPercentage}}, '*');
+```
+
+| 字段            | 类型     | 必需 | 含义                                          |
+| ---------------- | -------- | -------- | ------------------------------------------------ |
+| `timeStart`      | `number` | 是      | 范围开始，**绝对 trace 时间（秒）**（非相对于 trace 起点；会被钳制到 trace 边界）。 |
+| `timeEnd`        | `number` | 是      | 范围结束，**绝对 trace 时间（秒）**。   |
+| `viewPercentage` | `number` | 否      | 该范围应填充的视口比例，取值 `(0.0, 1.0]`。越界值会被忽略并以 `0.5` 替代。 |
+
+处理器会在内部重试（大约每 200ms 一次，共约 20 次）直到 trace 就绪，因此
+这条消息可以在发送 trace 后不久发出，无需等待显式的"已加载"信号。
+
+## 字符串命令
+
+处理器可理解以下字符串消息：
+
+| 消息                 | 效果                                  |
+| ----------------------- | --------------------------------------- |
+| `'PING'`                | 回复 `'PONG'`（发送到 `'*'`）。  |
+| `'SHOW-HELP'`           | 打开帮助对话框。                  |
+| `'RELOAD-CSS-CONSTANTS'`| 重新加载 CSS 常量。                  |
 
 ## URL 参数
 
-将 trace 嵌入为 `<iframe src="https://ui.perfetto.dev/#!/?<params>">` 时，
-以下参数可用：
+在 iframe 的 `src` 上设置这些参数。路由基于 hash：
+`https://ui.perfetto.dev/#!/?key=val&...`。
 
-| 参数              | 值                            | 含义                                                                                                                             |
-| ----------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `url`             | `<trace-url>`                 | 从此 URL（CORS 支持或代理后）打开 trace。                                                                                         |
-| `local_cache_key` | `<key>`                       | 与配对的 `perfetto.openTrace({localCacheKey})` 调用一起使用。                                                                      |
-| `ts`              | `<n>`                         | 以纳秒为单位的切片选择开始时间。                                                                                                   |
-| `dur`             | `<n>`                         | 以纳秒为单位的切片选择持续时间。                                                                                                   |
-| `pid`             | `<n>`                         | 用于消除切片选择歧义的进程 ID。                                                                                                   |
-| `tid`             | `<n>`                         | 用于消除切片选择歧义的线程 ID。                                                                                                   |
-| `query`           | `<sql>`                        | 加载时运行一个 SQL 查询（对值进行 URL 编码）。                                                                                     |
-| `startupCommands` | `<url-encoded JSON array>`     | 加载后运行 UI 命令，例如 `[{id:'dev.perfetto.PinTracksByRegex', args:['.*CPU [0-3].*']}]`。                                       |
-| `enablePlugins`   | `<comma,list>`                 | 按 ID 启用特定 plugin。                                                                                                           |
+| 参数         | 值                          | 效果                                                                                                                              |
+| ----------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`            | `embedded`                     | 启用嵌入模式：侧边栏被**完全禁用**（而非仅隐藏），且不安装文件拖放处理器。嵌入时使用此项。 |
+| `hideSidebar`     | `true`                         | 在视觉上隐藏侧边栏，但不完全禁用它。                                                                             |
+| `url`             | `<https url>`                  | UI 自行获取公开 trace（要求 CORS 允许 UI 源）。公开 trace 场景下可作为 `postMessage` 的替代方案。           |
+| `s`               | `<hash>`                       | 加载一个 permalink（已保存状态）。                                                                                                   |
+| `visStart`        | `<ns>`                         | 初始视口起点，原始**纳秒**时间戳（与 SQL 表中一致）。与 `visEnd` 配对使用。                                       |
+| `visEnd`          | `<ns>`                         | 初始视口终点，原始**纳秒**时间戳。                                                                               |
+| `ts`              | `<ns>`                         | 加载时要选择的 slice 的时间戳，单位**纳秒**。链接依据是 `ts`+`dur`，**而非** `id`（id 不稳定）。        |
+| `dur`             | `<ns>`                         | 加载时要选择的 slice 的持续时间，单位**纳秒**。                                                                       |
+| `query`           | `<sql>`                        | 加载时运行一个 SQL 查询（对值进行 URL 编码）。                                                                                  |
+| `startupCommands` | `<url-encoded JSON array>`     | 加载后运行 UI 命令，例如 `[{id:'dev.perfetto.PinTracksByRegex', args:['.*CPU [0-3].*']}]`。                                |
+| `enablePlugins`   | `<comma,list>`                 | 按 id 启用特定 plugin。                                                                                                    |
 
 NOTE: `visStart`/`visEnd` 和 `ts`/`dur` 是原始的**纳秒**值，
 而 `timeStart`/`timeEnd` 的 `postMessage` 字段是**秒**。
 
-NOTE: 切片选择通过 `ts`+`dur`（加上可选的 `pid`/`tid`）进行，绝不通过
-`id`，因为 ID 在不同运行之间不稳定。
+NOTE: 切片选择通过 `ts`+`dur` 进行，绝不通过 `id`，因为 ID 在不同运行之间不稳定。
 
 ## 来源信任
 
@@ -101,7 +130,7 @@ NOTE: 切片选择通过 `ts`+`dur`（加上可选的 `pid`/`tid`）进行，绝
 
 如果来源**不**受信任，UI 会显示一个模态框：
 
-> `<origin>` 正在尝试打开一个 trace 文件。你信任该来源吗？
+> `<origin>` 正在尝试打开一个 trace 文件。你信任该来源并想继续吗？
 
 选项为 **No**、**Yes** 和 **Always trust**。"Always trust" 将来源
 持久化在 `localStorage` 中。
@@ -110,7 +139,7 @@ NOTE: 切片选择通过 `ts`+`dur`（加上可选的 `pid`/`tid`）进行，绝
 （同源 => 受信任）。
 
 `title` 和 `url` 中的字符串会被清理为字符集
-`[A-Za-z0-9.\\-_#:/?=&;%+$ ]`。
+`[A-Za-z0-9.\-_#:/?=&;%+$ ]`。
 
 ## 约束
 

@@ -535,16 +535,22 @@ run_deploy() {
     fi
 
     print_step "2b" "修改首页配置"
-    BUILD_GN_FILE="infra/perfetto.dev/BUILD.gn"
+    if [ -f "infra/perfetto.dev/BUILD.gn" ]; then
+        # 旧构建系统（GN+ninja）：需要 patch BUILD.gn 让首页使用 README.md
+        BUILD_GN_FILE="infra/perfetto.dev/BUILD.gn"
 
-    print_info "备份原始 BUILD.gn..."
-    cp "$BUILD_GN_FILE" "$BUILD_GN_FILE.bak"
+        print_info "备份原始 BUILD.gn..."
+        cp "$BUILD_GN_FILE" "$BUILD_GN_FILE.bak"
 
-    print_info "修改首页配置，使用 README.md 作为首页内容..."
-    sed -i '' 's/md_to_html("gen_index") {/md_to_html("gen_index") {\n  markdown = "${src_doc_dir}\/README.md"/' "$BUILD_GN_FILE"
-    sed -i '' 's|html_template = "src/template_index.html"|html_template = "src/template_markdown.html"|' "$BUILD_GN_FILE"
+        print_info "修改首页配置，使用 README.md 作为首页内容..."
+        sed -i '' 's/md_to_html("gen_index") {/md_to_html("gen_index") {\n  markdown = "${src_doc_dir}\/README.md"/' "$BUILD_GN_FILE"
+        sed -i '' 's|html_template = "src/template_index.html"|html_template = "src/template_markdown.html"|' "$BUILD_GN_FILE"
 
-    print_success "首页配置已修改"
+        print_success "首页配置已修改"
+    else
+        # 新构建系统（build.mjs）：原生以 docs/README.md 作为首页，无需 patch
+        print_success "新构建系统（build.mjs）检测到，首页原生使用 README.md，无需修改"
+    fi
 
     print_step "3" "验证文档"
 
@@ -568,30 +574,44 @@ run_deploy() {
     print_info "Node.js 版本: $(node --version 2>/dev/null || echo '未知')"
 
     cd "$PERFETTO_DIR"
-    BUILD_JS="$PERFETTO_DIR/infra/perfetto.dev/build.js"
-    if grep -q "exec(installBuildDeps, depsArgs)" "$BUILD_JS" 2>/dev/null; then
-        sed -i '' 's/exec(installBuildDeps, depsArgs);/\/\/ exec(installBuildDeps, depsArgs); \/\/ 跳过 test_data 检查/' "$BUILD_JS"
-        print_success "已跳过 build.js 中的 test_data 依赖检查"
+
+    # 探测构建系统：新系统为 infra/perfetto.dev/build（build.mjs），旧系统为 build.js（GN+ninja）
+    if [ -x "infra/perfetto.dev/build" ] && [ ! -f "infra/perfetto.dev/build.js" ]; then
+        USE_NEW_BUILD=1
     else
-        print_info "build.js 无需 patch"
+        USE_NEW_BUILD=0
     fi
 
-    print_info "检查 npm 依赖..."
-    cd "$PERFETTO_DIR/infra/perfetto.dev"
-    if [ ! -d "node_modules" ] || [ ! -d "node_modules/argparse" ]; then
-        print_warning "npm 依赖不完整，正在安装..."
-        if npm install 2>&1 | tee -a "$LOG_FILE"; then
-            print_success "npm 依赖安装完成"
+    if [ "$USE_NEW_BUILD" -eq 1 ]; then
+        print_success "使用新构建系统（build.mjs，自带 hermetic 依赖安装）"
+    else
+        print_info "使用旧构建系统（GN+ninja + build.js）"
+
+        BUILD_JS="$PERFETTO_DIR/infra/perfetto.dev/build.js"
+        if grep -q "exec(installBuildDeps, depsArgs)" "$BUILD_JS" 2>/dev/null; then
+            sed -i '' 's/exec(installBuildDeps, depsArgs);/\/\/ exec(installBuildDeps, depsArgs); \/\/ 跳过 test_data 检查/' "$BUILD_JS"
+            print_success "已跳过 build.js 中的 test_data 依赖检查"
         else
-            print_error "npm 依赖安装失败"
-            print_info "请手动运行: cd perfetto/infra/perfetto.dev && npm install"
-            exit 1
+            print_info "build.js 无需 patch"
         fi
-    else
-        print_success "npm 依赖已满足"
-    fi
 
-    cd "$PERFETTO_DIR"
+        print_info "检查 npm 依赖..."
+        cd "$PERFETTO_DIR/infra/perfetto.dev"
+        if [ ! -d "node_modules" ] || [ ! -d "node_modules/argparse" ]; then
+            print_warning "npm 依赖不完整，正在安装..."
+            if npm install 2>&1 | tee -a "$LOG_FILE"; then
+                print_success "npm 依赖安装完成"
+            else
+                print_error "npm 依赖安装失败"
+                print_info "请手动运行: cd perfetto/infra/perfetto.dev && npm install"
+                exit 1
+            fi
+        else
+            print_success "npm 依赖已满足"
+        fi
+
+        cd "$PERFETTO_DIR"
+    fi
 
     if ! check_port 8082; then
         print_info "端口 8082 被占用，尝试清理..."
@@ -603,21 +623,44 @@ run_deploy() {
     print_success "旧构建输出已清理"
 
     print_info "执行构建（不启动服务器）..."
-    print_info "使用命令: node infra/perfetto.dev/build.js"
-    print_info "首次构建需要 2-5 分钟，请耐心等待..."
-    echo ""
 
-    BUILD_LOG=$(mktemp)
-    export BUILD_LOG
-    print_debug "构建日志: $BUILD_LOG"
+    BUILD_OK=0
+    if [ "$USE_NEW_BUILD" -eq 1 ]; then
+        print_info "使用命令: ./infra/perfetto.dev/build"
+        BUILD_LOG=$(mktemp)
+        export BUILD_LOG
+        print_debug "构建日志: $BUILD_LOG"
 
-    node infra/perfetto.dev/build.js > "$BUILD_LOG" 2>&1 &
-    BUILD_PID=$!
+        if ./infra/perfetto.dev/build > "$BUILD_LOG" 2>&1; then
+            BUILD_OK=1
+        else
+            print_error "构建失败，最后 50 行日志:"
+            tail -50 "$BUILD_LOG"
+            rm -f "$BUILD_LOG"
+            exit 1
+        fi
+        rm -f "$BUILD_LOG"
+    else
+        print_info "使用命令: node infra/perfetto.dev/build.js"
+        print_info "首次构建需要 2-5 分钟，请耐心等待..."
+        echo ""
 
-    print_info "构建进程 PID: $BUILD_PID"
-    print_info "正在监控编译进度..."
+        BUILD_LOG=$(mktemp)
+        export BUILD_LOG
+        print_debug "构建日志: $BUILD_LOG"
 
-    if monitor_build_progress "$BUILD_LOG"; then
+        node infra/perfetto.dev/build.js > "$BUILD_LOG" 2>&1 &
+        BUILD_PID=$!
+
+        print_info "构建进程 PID: $BUILD_PID"
+        print_info "正在监控编译进度..."
+
+        if monitor_build_progress "$BUILD_LOG"; then
+            BUILD_OK=1
+        fi
+    fi
+
+    if [ "$BUILD_OK" -eq 1 ]; then
         print_success "构建完成！"
 
         if [ -d "out/perfetto.dev" ]; then
@@ -704,13 +747,15 @@ run_deploy() {
 
         echo ""
         print_info "启动 HTTP 服务器..."
-        print_info "使用命令: node infra/perfetto.dev/build.js --serve"
-        print_info "服务器将在后台运行"
-        echo ""
-
         SERVER_LOG="/tmp/perfetto-server-$(date +%Y%m%d-%H%M%S).log"
 
-        node infra/perfetto.dev/build.js --serve > "$SERVER_LOG" 2>&1 &
+        if [ "$USE_NEW_BUILD" -eq 1 ]; then
+            print_info "使用命令: ./infra/perfetto.dev/build --serve"
+            ./infra/perfetto.dev/build --serve > "$SERVER_LOG" 2>&1 &
+        else
+            print_info "使用命令: node infra/perfetto.dev/build.js --serve"
+            node infra/perfetto.dev/build.js --serve > "$SERVER_LOG" 2>&1 &
+        fi
         SERVER_PID=$!
 
         print_info "服务器进程 PID: $SERVER_PID"

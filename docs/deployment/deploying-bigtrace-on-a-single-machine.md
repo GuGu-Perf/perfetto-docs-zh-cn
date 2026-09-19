@@ -65,4 +65,4 @@ docker-compose up
 
 minikube 集群可用于在本地机器上模拟 Kubernetes 集群设置。这可以通过脚本 `tools/setup_minikube_cluster.sh` 创建。
 
-这将启动一个 minikube 集群，构建 Orchestrator 和 Worker 镜像，并将它们部署在集群上。然后可以通过 Python API 等客户端，使用 `minikube ip:5051` 作为 Orchestrator 服务地址与之交互。
+这将启动一个 minikube 集群，构建 Orchestrator 和 Worker 镜像，并将它们部署在集群上。然后可以通过 Python API 等客户端，使用 `minikube ip:30051` 作为 Orchestrator 服务地址与之交互。

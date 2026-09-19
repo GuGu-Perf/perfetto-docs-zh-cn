@@ -71,7 +71,7 @@ Perfetto 能够打开和分析由各种外部工具和系统生成的 trace 文�
 **Perfetto 支持：**
 
 - **CPU 样本：** 调用栈、样本时间戳和线程/进程信息被导入到标准的 `cpu_profile_stack_sample`、`stack_profile_callsite`、`stack_profile_frame` 和 `stack_profile_mapping` 表中，支持在 Perfetto UI 中进行火焰图可视化。
-- **Markers：** 每个 Firefox marker 都会成为一个 Perfetto slice。Track 布局镜像 Firefox Profiler 的 marker 图表：每个 `(线程, marker 名称)` 对应一个 track，例如每个 `Awake` marker 出现在该线程的 `Awake` track 上，每个 `BINARY_OP` 操作码 marker 出现在该线程的 `BINARY_OP` track 上，依此类推。
+- **Markers：** 每个 Firefox marker 都会成为一个 Perfetto slice。Track 布局镜像 Firefox Profiler 的 marker 图表：每个 `(线程, 类别, marker 名称)` 对应一个 track，例如每个 `Awake` marker 出现在该线程的 `Awake` track 上，每个 `BINARY_OP` 操作码 marker 出现在该线程的 `BINARY_OP` track 上，依此类推。
   - `Instant` markers（阶段 0）成为零持续时间的 slice。
   - `Interval` markers（阶段 1）成为 `dur = endTime - startTime` 的 slice。
   - `IntervalStart`/`IntervalEnd` 对（阶段 2 和 3）在同一线程上按名称 LIFO 匹配，并生成跨越其时间范围的单个 slice。
@@ -430,6 +430,93 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 - **`trace-cmd` Man Page：** `man trace-cmd` (或在线查找，例如在 [Arch Linux man pages](https://man.archlinux.org/man/trace-cmd.1.en))
 - **Tracefs 文档：** [The Tracefs Pseudo Filesystem (kernel.org)](https://www.kernel.org/doc/html/latest/trace/tracefs.html)
 
+## {#strace-format} Linux `strace` 文本格式
+
+**描述：** [`strace`](https://strace.io/) 是观察进程所做系统调用的标准 Linux 工具，它通过 `ptrace` 附加到进程来实现。Perfetto 摄取 strace 写入的文本日志，即 `strace -ttt -f` 所产生的形式：每个系统调用一行，携带调用线程的 pid、Unix epoch 时间戳、系统调用名称、其参数、返回值，以及——在使用 `-T` 时——在该调用内部花费的时间。
+
+```
+66    1787745825.395990 execve("/usr/bin/sh", ["sh", "-c", "ls /usr/bin > /dev/null; sleep 0"...], 0xffffe3fb3ce0 /* 4 vars */) = 0 <0.003849>
+66    1787745825.527876 clone(child_stack=0xffffede25a00, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+67    1787745825.534500 execve("/usr/bin/ls", ["ls", "/usr/bin"], 0xaaaaf807e498 /* 4 vars */ <unfinished ...>
+66    1787745825.543303 <... clone resumed>) = 67 <0.014914>
+67    1787745825.550192 <... execve resumed>) = 0 <0.014576>
+66    1787745825.554319 wait4(-1,  <unfinished ...>
+67    1787745826.332621 exit_group(0)   = ?
+66    1787745826.348956 <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 67 <0.794037>
+```
+
+当一个调用阻塞时，strace 会将其拆分到两行——上面的 `<unfinished ...>` 和与之匹配的 `<... wait4 resumed>`——以便中间其他线程发出的调用保持时间顺序。
+
+**常见场景：** 此格式在以下情况下很有用：
+
+- 你想查看进程的挂钟时间在内核中花在了*哪里*：哪个 `read` 阻塞了、阻塞了多久，一次 `futex` 等待持续了多长时间，一条启动路径发出了多少次 `openat` 调用——以时间线的形式呈现，而不是数千行文本。同一问题也可以用 SQL 来问，例如一次运行中在其内部耗时最长的调用：
+
+  ```sql
+  select name, count(*) as calls, sum(dur) as total_dur
+  from slice
+  where category = 'strace'
+  group by name
+  order by total_dur desc
+  limit 10;
+  ```
+
+- 在你正在调试的机器上无法使用 Perfetto 自带的 tracing——例如锁定的容器、客户的机器、没有 `tracefs` 的发行版——但 `strace` 可用。
+- 有人在 bug 报告中附上了一份 strace 日志，你希望分析它而不是阅读它。
+- 你想跟踪用 `strace -f` 捕获的整个进程树上的系统调用行为。
+
+**Perfetto 支持：** strace 日志通过其内容识别，因此不需要特定的文件扩展名。
+
+- **Perfetto UI & Trace Processor：**
+  - 每个完成的系统调用都成为发出调用的线程的线程 track 上的一个 slice，`slice.name` 设置为系统调用名称，`slice.category` 设置为 `strace`。
+  - 对于打印在单行上的调用，`slice.dur` 是 `-T` 测得的在该调用内部的持续时间。不使用 `-T` 时，这样的行只记录调用*进入*的时刻，因此这些 slice 成为零持续时间的标记。
+  - 阻塞的调用打印在两行上，在其 `<unfinished ...>` 行打开一个 slice，并在匹配的 `<... resumed>` 行关闭——因此无论是否使用了 `-T`，阻塞本身都显示为一个跨越两者间隔的 slice。日志结束时仍未完成的调用保持打开状态（`dur` 为 -1）。
+  - 参数和返回值的原始文本作为 `args` 和 `ret` 参数附加到 slice 上，因此 errno 得以完整保留（`-1 ENOENT (No such file or directory)`），并可以通过 `extract_arg(arg_set_id, 'ret')` 读回。
+  - 不是系统调用的行——信号送达（`--- SIGCHLD {si_signo=SIGCHLD, ...} ---`）、退出横幅（`+++ exited with 0 +++`）以及 strace 自身的消息（`strace: Process 75 attached`）——会被跳过。
+  - 时间戳是 Unix epoch，并在实时（realtime）时钟域上公开。
+- **必需的 strace 标志：**
+  - **`-ttt`。** 时间戳必须是 Unix epoch 秒。`-t` 和 `-tt` 打印不带日期的挂钟时刻，无法还原为绝对时间点，因此这些行会被拒绝，而不是在合并时被悄无声息地放到与所有其他 trace 相距数十年的位置。参见 `strace_unsupported_timestamp_format` 统计信息。
+  - **`-f`。** strace 只在跟踪进程时才打印 pid。没有 pid 就没有可将系统调用归属到的线程，因此这样的行会被丢弃；参见 `strace_missing_pid` 统计信息。
+- **限制：**
+  - 系统调用参数按 strace 打印的单个不透明字符串保留。它们不会被解码为结构化字段，因此没有可 JOIN 的按 fd 或按路径的表。
+  - strace 在每个系统调用处停止被跟踪进程两次。这会显著拖慢工作负载并扰动正在测量的时序本身，因此 strace 时间线是系统调用行为的定性图景，而不是低开销的测量。
+  - 只有 strace 打印的内容可用：没有调度、CPU 频率或用户空间插桩数据。在 Perfetto 自带的 tracing 可用时，请优先使用它。
+
+无法导入的行会计入 `stats` 表，每一项都带有应做何种修改的说明：
+
+```sql
+select name, value from stats where name glob 'strace*' and value > 0;
+```
+
+**如何生成：**
+
+- **跟踪一条命令及其派生的所有进程，并将日志写入文件：**
+
+  ```bash
+  strace -ttt -f -T -o my_trace.strace -- ./my_program
+  ```
+
+  或者附加到已在运行的进程：
+
+  ```bash
+  sudo strace -ttt -f -T -o my_trace.strace -p 1234
+  ```
+
+- **使用 `-o FILE`；不要重定向 stderr。** 使用 `-o` 时，strace 会为每一行加上其所属 pid 的前缀。而改为写入 stderr 时，strace 启动的进程在第二个进程附加之前没有前缀，这些没有前缀的行在导入时必须被丢弃。对于一个从不派生进程的程序，永远不会有第二个进程被附加，因此 stderr 捕获会被整体丢弃，什么也不会导入。
+
+- **要获得纳秒分辨率的持续时间，**请传入 `--syscall-times=ns` 代替 `-T`：
+
+  ```bash
+  strace -ttt -f --syscall-times=ns -o my_trace.strace -- ./my_program
+  ```
+
+  （`--syscall-times` 是 `-T` 的长形式，取值为 `s`、`ms`、`us` 或 `ns` 之一；默认为微秒。精度参数是在 strace 5.6 中加入的；在较旧版本上只有默认的 `-T` 精度可用。）
+
+**外部资源：**
+
+- **`strace` man page：**
+  [strace(1) (man7.org)](https://man7.org/linux/man-pages/man1/strace.1.html)
+- **`strace` 主页：** [strace.io](https://strace.io/)
+
 ## ART method tracing 格式
 
 **描述：** Android Runtime (ART) method tracing 格式（通常在 `.trace` 文件中找到）是 Android 特定的二进制格式。它捕获关于 Android 应用内 Java 和 Kotlin 方法执行的详细信息，本质上是记录每个被调用方法的进入和退出点。这允许对应用的运行时行为进行细粒度的方法级分析。
@@ -494,13 +581,35 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 - **Perfetto UI & Trace Processor：** Perfetto 可以解析从 macOS Instruments trace 导出的 XML 文件。
   - 此导入的主要重点是 **CPU 栈样本**。
-  - 诸如调用栈、样本时间戳和线程信息等数据被提取并加载到 Perfetto 的 profiling 表中，特别是 `cpu_profile_stack_sample` 用于样本本身，`stack_profile_callsite`、`stack_profile_frame`、`stack_profile_mapping` 用于调用栈信息。
+  - 诸如调用栈、样本时间戳和线程信息等数据被提取并加载到 Perfetto 的 profiling 表中，特别是 `instruments_sample` 用于样本本身，`stack_profile_callsite`、`stack_profile_frame`、`stack_profile_mapping` 用于调用栈信息。
   - 这允许在 Perfetto UI 中将 CPU profile 可视化为火焰图，并允许对样本数据进行基于 SQL 的查询。
 - **限制：**
   - 支持主要针对来自 XML 导出的 CPU 栈样本数据。
   - Instruments 中各种工具的其他丰富数据类型或特定功能（例如，详细的内存分配、自定义 os_signpost 数据，如果不在 XML 的兼容部分中）可能不受支持或通过此 XML 导入路径完全表示。
 
-**如何生成：** Traces 最初使用 Xcode 中的 Instruments 应用程序或 `xctrace` 命令行实用程序收集，生成 `.trace` 包。Perfetto 摄取的 XML 文件是从此类 trace 导出的。(在 Instruments 工具本身中导出到此 XML 格式的具体步骤需要遵循；Perfetto 然后消费生成的 XML 文件)。
+**如何生成：** Traces 最初使用 Xcode 中的 Instruments 应用程序或 `xctrace` 命令行实用程序收集，生成 `.trace` 包。Perfetto 摄取的 XML 文件是该包的导出，`xctrace` 可以直接生成：
+
+```bash
+# Record a CPU profile of a command (requires the full Xcode, not just the
+# command line tools).
+xcrun xctrace record --template 'CPU Profiler' --output profile.trace \
+    --launch -- /path/to/binary
+
+# Export the samples as XML.
+xcrun xctrace export --input profile.trace \
+    --xpath '//trace-toc/run/data/table[@schema="cpu-profile"]' \
+    --output profile.xml
+
+# Open profile.xml in ui.perfetto.dev.
+```
+
+此类导出中的时间戳是相对于录制开始的。如果并行录制了 Perfetto trace 且两者需要共享时钟，请在导出样本的同时导出兴趣点（points-of-interest）signpost 表：Perfetto 在 tracing 期间会发出 `dev.perfetto.clock_sync` signpost，导入器使用它们将 Instruments 时间戳转换为 Perfetto boottime 时钟。
+
+```bash
+xcrun xctrace export --input profile.trace \
+    --xpath '//trace-toc/run/data/table[@schema="os-signpost" and @category="PointsOfInterest"] | //trace-toc/run/data/table[@schema="cpu-profile"]' \
+    --output profile.xml
+```
 
 **外部资源：**
 
@@ -520,7 +629,7 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 - **Perfetto UI & Trace Processor：** Perfetto 的 Trace Processor 可以解析 `.ninja_log` 文件。
   - `.ninja_log` 中记录的每个构建步骤通常作为不同的 slice 导入到 `slice` 表中。
-  - 为了在 Timeline 上可视化这些构建步骤，Perfetto 通常会合成进程和线程信息。例如，所有构建步骤可能在单个 "Ninja Build" 进程下分组，可能会为每个唯一的输出文件路径创建单独的 tracks，或基于其他启发式方法来表示并发性。
+  - 为了在 Timeline 上可视化这些构建步骤，Perfetto 会合成进程和线程信息：所有构建步骤分组在单个 "Build" 进程下，并从重叠的时间戳推断出 "Worker" tracks 来表示并发性。
   - 时间戳（开始和结束时间）从毫秒转换为纳秒以与 Perfetto 保持一致。
   - 这允许在 Perfetto UI 中可视化构建过程，显示各种编译、链接和其他构建任务的持续时间和并发性，这对于理解构建的临界路径非常有帮助。
 - **限制：** `.ninja_log` 仅记录已完成的命令。它不会直接在其每步日志格式中提供关于依赖项的信息，尽管有时可以通过分析输出文件的序列和时间来推断。
@@ -550,22 +659,18 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 - **Perfetto UI & Trace Processor：** Perfetto 的 Trace Processor 可以解析文本 logcat 文件。
   - 导入的日志消息被填充到 `android_logs` SQL 表中。这与 Perfetto 通过其 [Android Log 数据源](/docs/data-sources/android-log.md）本机收集 logcat 数据时使用的表相同。
   - 在 Perfetto UI 中，这些日志出现在 "Android Logs" 面板中，按时间顺序显示并可以过滤。这允许将日志消息与主 Timeline 上的其他 trace 事件相关联。
-- **支持的格式：** Perfetto 的解析器设计用于处理常见的 `adb logcat` 输出格式，对 `logcat -v long` 和 `logcat -v threadtime` 有很好的支持。其他更奇特或高度定制的 logcat 格式可能无法完全解析。
+- **支持的格式：** Perfetto 的解析器处理 `logcat -v threadtime` 输出格式，可选择与 `-v uid` 或 `-v year` 组合。其他 logcat 格式（如 `logcat -v long`）不会被解析。
 
 **如何生成文本 Logcat 文件：**
 
 - **使用 `adb logcat`：** 主要方法是通过 `adb logcat` 命令，将其输出重定向到文件。
   - 转储日志缓冲区的当前内容然后退出(对于快照很有用)：
     ```bash
-    # 以 'long' 格式转储日志
-    adb logcat -d -v long > logcat_dump_long.txt
-    # 以 'threadtime' 格式转储日志(时间戳、PID、TID、优先级、tag、消息)
+    # Dumps logs in 'threadtime' format (timestamp, PID, TID, priority, tag, message)
     adb logcat -d -v threadtime > logcat_dump_threadtime.txt
     ```
   - 将实时日志流式传输到文件(按 Ctrl-C 停止)：
     ```bash
-    adb logcat -v long > logcat_stream_long.txt
-    # 或者，对于更适合解析的流式格式：
     adb logcat -v threadtime > logcat_stream_threadtime.txt
     ```
 - **来自 Android Bug 报告：** Logcat 数据是 `adb bugreport` 生成的 bug 报告的标准组件。你通常可以在主 `bugreport.txt` 文件中找到 logcat 输出，或作为 bug 报告存档中的单独日志文件。
@@ -588,11 +693,11 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 - **Perfetto UI & Trace Processor：** Perfetto 可以直接打开和处理 Android bugreport `.zip` 文件。
   - 当加载 bugreport zip 时，Perfetto 自动：
-    - 在已知位置（例如，`FS/data/misc/perfetto-traces/`、`proto/perfetto-trace.gz`）扫描 **Perfetto trace 文件**(`.pftrace`、`.perfetto-trace`)。加载找到的主要 Perfetto trace 以进行可视化和 SQL 查询。
-    - 将主要的 **`dumpstate` 板级信息**（通常在 `bugreport-*.txt` 或 `dumpstate_board.txt` 等文件中找到）解析到 `dumpstate` SQL 表中。此表包括系统属性、内核版本、构建指纹和其他硬件/软件详细信息。
-    - 将 `batterystats` 部分的详细 **电池统计信息**提取到 `battery_stats` SQL 表中。这提供有关电池电量、充电状态和随时间的电源事件的信息。
-  - 这种集成方法允许用户在统一的 Perfetto 环境中分析系统 trace，以及来自 bugreport 的关键系统状态（来自 `dumpstate`）和电池信息（来自 `batterystats`），无需手动提取这些组件。
-  - **注意：** Perfetto 处理 bugreport 时的重点是它自己的原生 trace 格式和 `dumpstate` 的特定结构化部分，如 `batterystats`。它通常 **不会** 尝试导入或解析可能存在于旧 bugreport 中的旧版 Systrace 文件（`systrace.html` 或 `systrace.txt`）。要分析这些，你通常会手动提取它们并按照 [Android systrace 格式](#android-systrace-format）部分打开它们。
+    - 将主要的 **`dumpstate` 输出**（`bugreport-*.txt` 文件）解析到 `android_dumpstate` SQL 表中，每行一条记录，并标记其来源的 dumpstate `section` 和 dumpsys `service`。
+    - 将 dumpstate 输出的 **logcat** 部分以及持久化的 logcat 文件（`FS/data/misc/logd/logcat*`）导入到 `android_logs` SQL 表中。
+    - 从 dumpstate 的 `CHECKIN BATTERYSTATS` 部分提取 **电池统计信息** 到 `battery_stats.*` counter 和事件 track 中。
+  - 这种集成方法允许用户在统一的 Perfetto 环境中分析来自 bugreport 的关键系统状态（来自 `dumpstate`）、日志和电池信息，无需手动提取这些组件。
+  - **注意：** Perfetto 处理 bugreport 时的重点是 `dumpstate` 的这些特定结构化部分。它 **不会** 加载可能存在于 bugreport 中的 Perfetto trace 文件或旧版 Systrace 文件（`systrace.html` 或 `systrace.txt`）。要分析这些，请手动提取并直接打开（对于 Systrace 文件，请参见 [Android systrace 格式](#android-systrace-format) 部分）。
 
 **如何生成：**
 
@@ -636,7 +741,7 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 **Perfetto 支持：**
 
 - **Perfetto UI：** `.fxt` 文件可以直接在 Perfetto UI 中打开进行可视化。UI 可以显示各种 Fuchsia 特定的事件和系统活动。
-- **Trace Processor：** Perfetto 的 Trace Processor 支持解析 Fuchsia 二进制格式。这允许将 trace 数据，包括事件、调度记录和日志，导入到标准的 Perfetto SQL 表中，使其可用于基于查询的分析。
+- **Trace Processor：** Perfetto 的 Trace Processor 支持解析 Fuchsia 二进制格式。这允许将 trace 数据，包括事件和调度记录，导入到标准的 Perfetto SQL 表中，使其可用于基于查询的分析。
 
 **如何生成：**
 
@@ -674,13 +779,20 @@ Python 标准库在 [`profiling.sampling`](https://docs.python.org/3.15/library/
 
 1.  **从 Go 程序收集 CPU profile：** 你可以使用 `runtime/pprof` 包以编程方式收集 profile，或使用 `net/http/pprof` 包在运行的服务器上公开 profiling 端点。
 
-    要从运行的服务器收集 profile，你可以使用 `go tool pprof` 命令：
+    要从运行的服务器收集 profile，直接获取 profiling 端点：
+
+    ```bash
+    curl -o cpu.pprof 'http://localhost:6060/debug/pprof/profile?seconds=30'
+    ```
+
+    `go tool pprof <url>` 会收集同样的 30 秒 profile：它在 `$HOME/pprof/` 下保存一份副本，打印它使用的路径，然后进入交互模式。在其中，`proto` 命令可以再次将 profile 写出：
 
     ```bash
     go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
+    (pprof) proto >cpu.pprof
     ```
 
-    这将收集 30 秒的 CPU profile 并在 pprof 工具中打开它。然后你可以使用 pprof 工具中的 `save` 命令将 profile 保存到文件。
+    生成的文件是 gzip 压缩的；Perfetto UI 和 trace processor 会按原样读取它，无需先解压。
 
 2.  **将 Linux `perf.data` 转换为 pprof 格式：** 使用 `perf_data_converter` 包中的 `perf_to_profile` 工具。
 

@@ -183,7 +183,7 @@ data_sources: {
  name: "linux.ftrace"
  ftrace_config {
  # 像 funcgraph 这样的高级功能现在可以更可靠地使用。
- function_graph: true
+ enable_function_graph: true
  ftrace_events: "sched/sched_switch"
  }
  }

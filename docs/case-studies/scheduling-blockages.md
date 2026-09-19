@@ -55,7 +55,7 @@ Linux - 以及许多其他操作系统 - 上的 callstack 采样要强大得多�
 
 - 定时器溢出，以实现 "每 X ms 抓取一个调用栈"。
 - PMU Counters 溢出，例如以实现 "每 N 条指令退役 / M 次缓存未命中抓取一个调用栈"。
-- `/sys/kernel/tracing/event/**/*` 中可用的任何内核跟踪点。
+- `/sys/kernel/tracing/events/**/*` 中可用的任何内核跟踪点。
 
 后者是可以将 callstack 采样变成实用的瑞士军刀的有趣选项。现在，内核中定义了大量跟踪点，但其中两个在这里特别有趣：
 
@@ -165,12 +165,12 @@ data_sources {
 ...
  tracepoint {
  name: "sched/sched_switch"
- filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\"
+ filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\""
  }
 ...
  tracepoint {
  name: "sched/sched_waking"
- filter: "comm ~ \"*systemui*\"
+ filter: "comm ~ \"*systemui*\""
  }
 ...
 ```

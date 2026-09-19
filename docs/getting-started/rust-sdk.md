@@ -135,7 +135,7 @@ fn draw_player(player_number: u32, x: f64, y: f64) {
 }
 ```
 
-该宏将函数体包装在 `scoped_track_event!` 中，因此事件跨越整个函数执行。类别名作为宏参数传入。
+该宏在函数体之前发出一个 slice 开始事件，并在其后发出一个 slice 结束事件，因此事件跨越整个函数执行。类别名作为宏参数传入。
 
 ## 使用 `tracing` crate
 

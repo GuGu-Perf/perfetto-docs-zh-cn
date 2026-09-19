@@ -47,11 +47,11 @@ TAB: Android (Perfetto UI)
     - **CPU** :
       - **Scheduling details** : 查看每个 CPU 上随时间运行的进程/线程。
       - **CPU frequency and idle states** : 查看每个 CPU 运行的频率。
-    - **Android Apps and Svcs** :
-      - **Atrace userspace annotations** : 获取有关系统和应用程序正在做什么的上下文。启用 "System server"、"View system" 和 "Input" 类别（按 Ctrl/Cmd 同时单击可多选）。
+    - **Android apps & svcs** :
+      - **Atrace userspace annotations** : 获取有关系统和应用程序正在做什么的上下文。启用 "System Server"、"View System" 和 "Input" 类别。
       - **Event log (logcat)** : 在 trace 中包含 `logcat` 消息。
 
-7. 点击绿色的 "Start Recording" 按钮，当 trace 正在录制时，在 Android 设备上执行一些操作（例如打开应用程序、解锁手机等）。
+7. 点击 "Start tracing" 按钮，当 trace 正在录制时，在 Android 设备上执行一些操作（例如打开应用程序、解锁手机等）。
 8. 10 秒后，trace 将自动停止，你将切换到收集的 trace 的 Timeline 视图；这将在下一节中讨论。
 
 TAB: Android (command line)

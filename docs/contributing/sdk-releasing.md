@@ -116,13 +116,12 @@ git checkout vX.Y
 5. 运行 `tools/release/package-github-release-artifacts vX.Y`。这将：
   - 验证工作目录是干净的(没有未提交的更改)
   - 验证你在正确的 git 标记（vX.Y）上
-  - 从 LUCI 下载预构建二进制文件
-  - 从当前检出生成合并的 SDK 源文件
+  - 从 LUCI 下载预构建二进制文件和 SDK 源代码 zip
   - 将所有内容打包到 `/tmp/perfetto-vX.Y-github-release/`
 
   - 必须总共有 12 个 zip 文件：
   - 10 个预构建二进制文件：linux-{arm,arm64,amd64},
- android-{arm,arm64,x86,x64}, mac-{amd64,arm64}, win-amd64
+ android-{arm,arm64,x86,x64}, mac-{amd64,arm64}, windows-amd64
   - 2 个 SDK 源代码 zip:perfetto-cpp-sdk-src.zip, perfetto-c-sdk-src.zip
   - 如果一个或多个预构建 zip 缺失，这意味着 LUCI 机器人之一失败，
  检查 Log(遵循调用 Log 中的"Task URL: "链接)。
@@ -136,7 +135,7 @@ git checkout vX.Y
   - "Attach binaries" -> 附加上一步中的所有十二个 .zip 文件
  (10 个预构建二进制文件 + 2 个 SDK 源代码 zip)。
 
-7. 运行 `tools/roll-prebuilts vX.Y`。它将更新 `tools/` 下各种脚本中的 SHA256。
+7. 运行 `tools/release/roll-prebuilts vX.Y`。它将更新 `tools/` 下各种脚本中的 SHA256。
  上传带有更改的 CL。
 
 8. 发送一封带有 CHANGELOG 的电子邮件到 perfetto-dev@（内部）和

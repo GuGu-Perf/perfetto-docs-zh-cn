@@ -15,7 +15,7 @@ Data Explorer 是一个可视化查询构建器，允许用户通过在有向无
 
 ## 节点图结构
 
-**QueryNode** (`ui/src/plugins/dev.perfetto.DataExplorer/query_node.ts:128-161`)
+**QueryNode** (`ui/src/plugins/dev.perfetto.DataExplorer/query_node.ts:139-175`)
 - 所有节点类型的基础抽象
 - 维护双向连接：`primaryInput`(上游)、`nextNodes`(下游)、`secondaryInputs`(侧连接)
 - 通过 `getStructuredQuery()` 生成结构化查询 protobuf
@@ -73,6 +73,12 @@ registerCoreNodes() {
 **IntervalIntersectNode** - 查找重叠的时间间隔
 **FilterDuringNode** - 使用次间隔输入进行过滤
 **CreateSlicesNode** - 将来自两个次源的开始/结束事件配对到 Slice 中
+
+### 4. 分组节点
+**GroupNode** - 封装内部子图，将其作为单个节点公开；内部连接通过序列化保留
+
+### 5. 仪表盘节点
+**DashboardNode** - 将查询节点输出连接到仪表盘可视化
 
 ## UI 组件
 
@@ -253,7 +259,7 @@ Builder 维护 `this.query` 作为查询状态的单一事实来源：
 
 这确保了 SQL/Proto 选项卡在自动和手动执行模式下都能正确显示。
 
-**竞态条件预防** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/builder.ts:283-292`)
+**竞态条件预防** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/builder.ts:309-316`)
 
 回调在创建时捕获选定节点以防止陈旧查询泄漏：
 ```typescript
@@ -475,6 +481,7 @@ analyzeNode(node, engine) {
 ## 文件路径参考
 
 **核心基础设施**：
+- `ui/src/plugins/dev.perfetto.DataExplorer/index.ts` - Plugin 入口、生命周期钩子、路由注册、localStorage/permalink 持久化
 - `ui/src/plugins/dev.perfetto.DataExplorer/data_explorer.ts` - 主插件、状态管理、键盘处理、依赖项构建
 - `ui/src/plugins/dev.perfetto.DataExplorer/query_node.ts` - 节点抽象和类型定义
 - `ui/src/plugins/dev.perfetto.DataExplorer/query_builder/builder.ts` - 主 UI 组件(接收 `GraphCallbacks`)

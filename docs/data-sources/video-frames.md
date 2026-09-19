@@ -144,26 +144,26 @@ issue 上评论和点赞以便进行优先级排序：
 
 ### 从命令行导出为 .mp4
 
-`tools/trace_video_conv.py` 使用 ffmpeg 将 trace 中捕获的视频提取为 `.mp4`（编码后的帧按原样复制，不会重新编码）。它需要 `ffmpeg` 在 `PATH` 中；`trace_processor` 会自动下载，或传递 `--trace-processor` 以使用本地构建。
+`python/tools/trace_video_conv.py` 使用 ffmpeg 的 libav 将 trace 中捕获的视频提取为 `.mp4`（编码后的帧按原样复制，不会重新编码）。它需要 PyAV 包（`pip install av`），另外使用 `--compare` 以及处理需要填充无帧间隙的片段时还需要 `PATH` 中有 `ffmpeg`；`trace_processor` 会自动下载，或传递 `--trace-processor` 以使用本地构建。
 
 ```bash
 # 列出 trace 中的视频流。
-tools/trace_video_conv.py TRACE.perfetto-trace --list
+python3 python/tools/trace_video_conv.py TRACE.perfetto-trace --list
 
 # 将整个视频转换为 .mp4。
-tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4
+python3 python/tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4
 
 # 剪辑到时间范围（trace ts，纳秒），或剪辑到查询选择的任何内容
 # （查询返回 `ts` 列，以及可选的 `dur`）。
-tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 --start <ts> --end <ts>
-tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 \
+python3 python/tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 --start <ts> --end <ts>
+python3 python/tools/trace_video_conv.py TRACE.perfetto-trace -o clip.mp4 \
     --query "SELECT ts, dur FROM slice WHERE name = 'my_cuj'"
 
 # 慢动作（0.5x）或 2 倍快放。
-tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4 --speed 0.5
+python3 python/tools/trace_video_conv.py TRACE.perfetto-trace -o out.mp4 --speed 0.5
 
 # 两个 trace 并排，每个都带标题（默认为文件名）。
-tools/trace_video_conv.py before.perfetto-trace --compare after.perfetto-trace \
+python3 python/tools/trace_video_conv.py before.perfetto-trace --compare after.perfetto-trace \
     -o compare.mp4 --title Before --title2 After
 ```
 

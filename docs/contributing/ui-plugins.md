@@ -58,7 +58,7 @@ ui/run-dev-server
 
 `ui/src/plugins/<your-plugin-name>/styles.scss`
 
-构建系统将自动检测此文件并将其包含在主样式表中。你可以在此文件中使用任何标准 SCSS 语法。
+在你的 `index.ts` 中导入它（`import './styles.scss';`），构建系统会将其包含在主样式表中。你可以在此文件中使用任何标准 SCSS 语法。
 
 例如，要更改插件中组件的背景颜色：
 
@@ -96,7 +96,7 @@ export default class implements PerfettoPlugin {
 
   static onActivate(app: App): void {
     // 在应用启动时调用一次
-    console.log('MyPlugin::onActivate()', app.pluginId);
+    console.log('MyPlugin::onActivate()');
     // 注意：插件很少需要这个钩子，因为大多数插件对 trace 细节感兴趣。因此，这个函数通常可以省略。
   }
 
@@ -244,9 +244,8 @@ trace.selection.clearSelection();
 这可以通过在 workspace 中找到适当的 track 并调用其 `pin()` 方法来实现。这将把它固定到其父 workspace 的顶部。
 
 ```ts
-trace.workspace
-  .flatTracks()
-  .find((t) => t.name.startsWith('foo'))
+trace.workspace.flatTracks
+  .filter((t) => t.name.startsWith('foo'))
   .forEach((t) => t.pin());
 ```
 
@@ -342,7 +341,7 @@ const myGroupNode = new TrackNode({
 - `name: string`：节点的可读的名称/标题。
 - `uri: string`：如果此节点表示可渲染的 track，这是已注册 `TrackRenderer` 的 URI。
 - `headless: boolean`（默认 `false`）：如果为 `true`，节点自己的 header/shell 不显示，其子节点显示为好像它们是此节点父节点的直接子节点。对于没有视觉嵌套的逻辑分组很有用。
-- `sortOrder: number`：一个数字，用于在调用 `addChildInOrder` 时对节点进行排序。较高的数字通常首先出现（或根据特定父实现）。
+- `sortOrder: number`：一个数字，用于在调用 `addChildInOrder` 时对节点进行排序。较低的数字首先出现。
 - `collapsed: boolean`（默认 `true`）：节点是否应该以折叠状态开始（子节点隐藏）。
 - `isSummary: boolean`（默认 `false`）：如果为 `true`，此 track 作为其子节点的摘要。它获得特殊的样式和行为（例如，展开时 sticky）。
 - `removable: boolean`（默认 `false`）：如果为 `true`，显示一个关闭按钮，允许用户从 workspace 中删除此节点。
@@ -425,7 +424,7 @@ registerCommand(command: {
   name: string;
   callback: (...args: any[]) => any;
   defaultHotkey?: Hotkey
-}): void;
+}): Disposable;
 ```
 
 注册一个新 command。接受一个 `Command` 对象，如下所示：
@@ -445,7 +444,7 @@ registerCommand(command: {
 
 ```ts
 appOrTrace.commands.registerCommand({
-  id: `${app.pluginId}#sayHello`,
+  id: 'com.example.MyPlugin#sayHello',
   name: 'Say hello',
   callback: () => console.log('Hello, world!'),
 });
@@ -464,7 +463,7 @@ appOrTrace.commands.registerCommand({
 除了注册自己的 commands 之外，插件还可以通过其 ID 调用任何现有的 command。这允许插件触发由其他插件或 Perfetto 核心提供的操作。`CommandManager`（可作为 `app.commands` 或 `trace.commands` 使用）为此提供了 `runCommand` 方法。
 
 ```ts
-runCommand(commandId: string, ...args: any[]): any;
+runCommand(commandId: string, ...args: any[]): Promise<unknown>;
 ```
 
 执行由 `commandId` 标识的 command，将任何附加参数传递给 command 的回调。它返回一个 Promise，解析为 command 回调的结果（如果有）。
@@ -473,7 +472,7 @@ runCommand(commandId: string, ...args: any[]): any;
   - `commandId`：要运行的 command 的 id。
   - `...args`：直接传递给 command 回调。
 - 返回
-  - `any`：从 command 回调返回的任何内容。
+  - `Promise<unknown>`：从 command 回调返回的任何内容。
 
 **示例：**
 
@@ -487,7 +486,7 @@ appOrTrace.commands.registerCommand({
 
 // PluginB
 try {
-  const result = appOrTrace.commands.runCommand('PluginA#increment', 1);
+  const result = await appOrTrace.commands.runCommand('PluginA#increment', 1);
   // result 应该是 2
 } catch (e) {
   console.error(`Failed to run command: ${(e as Error).message}`);
@@ -498,9 +497,9 @@ try {
 
 示例：
 
-- [com.example.ExampleSimpleCommand](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.ExampleSimpleCommand/index.ts)。
-- [perfetto.CoreCommands](https://github.com/google/perfetto/blob/main/ui/src/core_plugins/commands/index.ts)。
-- [com.example.ExampleState](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.ExampleState/index.ts)。
+- [com.example.Commands](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.Commands/index.ts)。
+- [dev.perfetto.CoreCommands](https://github.com/google/perfetto/blob/main/ui/src/core_plugins/dev.perfetto.CoreCommands/index.ts)。
+- [com.example.State](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.State/index.ts)。
 
 ### Track
 
@@ -516,41 +515,39 @@ Tracks 是向 UI 添加时间序列数据的主要方式。
 ```ts
 registerTrack(track: {
   uri: string;
-  track: TrackRenderer;
+  renderer: TrackRenderer;
   description?: string | (() => m.Children);
-  subtitle?: string;
   tags?: TrackTags;
-  chips?: ReadonlyArray<string>;
 }): void;
 ```
 
 向 Perfetto 注册新 track。传递一个 `Track` 对象，包括：
 
 - `uri`：此 track 的唯一 id。
-- `track`：Track renderer - 描述此 track 如何加载数据并将其渲染到 canvas。
+- `renderer`：Track renderer - 描述此 track 如何加载数据并将其渲染到 canvas。
 - `description`：此 track 的人类可读描述或帮助文本。
-- `subtitle`：显示在 track 标题下方。
 - `tags`：任意的键值对。
-- `chipd`：显示在 track 标题右侧的字符串列表。
 
-Track renderers 功能强大但复杂，因此强烈建议不要创建你自己的。相反，开始使用 tracks 的最简单方法是使用 `createQuerySliceTrack` 和 `createQueryCounterTrack` 帮助器。
+Track renderers 功能强大但复杂，因此强烈建议不要创建你自己的。相反，开始使用 tracks 的最简单方法是使用 `SliceTrack.create` 和 `CounterTrack.create` 帮助器。
 
 **示例：**
 
 ```ts
-import {createQuerySliceTrack} from '../../components/tracks/query_slice_track';
+import {SliceTrack} from '../../components/tracks/slice_track';
+import {SourceDataset} from '../../trace_processor/dataset';
 
 // ~~ snip ~~
 
-const uri = `${trace.pluginId}#MyTrack`;
+const uri = 'com.example.MyPlugin#MyTrack';
 
 // 基于查询创建新 track renderer
-const renderer = await createQuerySliceTrack({
+const renderer = SliceTrack.create({
   trace,
   uri,
-  data: {
-    sqlSource: 'select * from slice where track_id = 123',
-  },
+  dataset: new SourceDataset({
+    src: 'select id, ts, dur, depth, name from slice where track_id = 123',
+    schema: {id: NUM, ts: LONG, dur: LONG, depth: NUM, name: STR},
+  }),
 });
 
 // 向核心注册 track renderer
@@ -564,35 +561,33 @@ trace.workspace.addChildInOrder(trackNode);
 ```
 
 请参阅
-[the source](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/query_slice_track.ts)
+[the source](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/slice_track.ts)
 了解详细用法。
 
-你也可以使用 `createQueryCounterTrack` 添加 counter track，其工作方式类似。
+你也可以使用 `CounterTrack.create` 添加 counter track，其工作方式类似。
 
 ```ts
-import {createQueryCounterTrack} from '../../components/tracks/query_counter_track';
+import {CounterTrack} from '../../components/tracks/counter_track';
 
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyPlugin';
   async onTraceLoad(trace: Trace) {
-    const title = 'My Counter Track';
-    const uri = `${trace.pluginId}#MyCounterTrack`;
-    const query = 'select * from counter where track_id = 123';
+    const name = 'My Counter Track';
+    const uri = 'com.example.MyPlugin#MyCounterTrack';
+    const query = 'select ts, value from counter where track_id = 123';
 
     // 基于查询创建新 track renderer
-    const renderer = await createQueryCounterTrack({
+    const renderer = CounterTrack.create({
       trace,
       uri,
-      data: {
-        sqlSource: query,
-      },
+      sqlSource: query,
     });
 
     // 向核心注册 track renderer
-    trace.tracks.registerTrack({uri, title, renderer});
+    trace.tracks.registerTrack({uri, renderer});
 
     // 创建使用其 uri 引用 track 的 track node
-    const trackNode = new TrackNode({uri, title});
+    const trackNode = new TrackNode({uri, name});
 
     // 将 track node 添加到当前 workspace
     trace.workspace.addChildInOrder(trackNode);
@@ -601,7 +596,7 @@ export default class implements PerfettoPlugin {
 ```
 
 请参阅
-[the source](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/query_counter_track.ts)
+[the source](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/counter_track.ts)
 了解详细用法。
 
 ### Track 描述 / 帮助文本
@@ -665,11 +660,11 @@ https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.Tracks/i
 任何 track 都可以有子节点。只需使用其 `addChildXYZ()` 方法向任何 `TrackNode` 对象添加子节点。嵌套的 tracks 渲染为可折叠的树。
 
 ```ts
-const group = new TrackNode({title: 'Group'});
+const group = new TrackNode({name: 'Group'});
 trace.workspace.addChildInOrder(group);
-group.addChildLast(new TrackNode({title: 'Child Track A'}));
-group.addChildLast(new TrackNode({title: 'Child Track B'}));
-group.addChildLast(new TrackNode({title: 'Child Track C'}));
+group.addChildLast(new TrackNode({name: 'Child Track A'}));
+group.addChildLast(new TrackNode({name: 'Child Track B'}));
+group.addChildLast(new TrackNode({name: 'Child Track C'}));
 ```
 
 带有子节点的 Tracks 节点可以由用户在运行时手动折叠和展开，或使用其 `expand()` 和 `collapse()` 方法以编程方式折叠和展开。默认情况下，tracks 是折叠的，因此要 tracks 在启动时自动展开，你需要在添加 track node 后调用 `expand()`。
@@ -689,7 +684,7 @@ Summary tracks 的行为与普通 tracks 略有不同。Summary tracks：
 要创建 summary track，在其初始化程序列表中设置 `isSummary: true` 选项或在创建后将其 `isSummary` 属性设置为 true。
 
 ```ts
-const group = new TrackNode({title: 'Group', isSummary: true});
+const group = new TrackNode({name: 'Group', isSummary: true});
 // ~~~ 或 ~~~
 group.isSummary = true;
 ```
@@ -698,7 +693,7 @@ group.isSummary = true;
 
 示例
 
-- [com.example.ExampleNestedTracks](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.ExampleNestedTracks/index.ts)。
+- [com.example.Tracks](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.Tracks/index.ts)。
 
 #### Track 排序
 
@@ -715,10 +710,10 @@ group.isSummary = true;
 
 ```ts
 // PluginA
-workspace.addChildInOrder(new TrackNode({title: 'Foo', sortOrder: 10}));
+workspace.addChildInOrder(new TrackNode({name: 'Foo', sortOrder: 10}));
 
 // Plugin B
-workspace.addChildInOrder(new TrackNode({title: 'Bar', sortOrder: -10}));
+workspace.addChildInOrder(new TrackNode({name: 'Bar', sortOrder: -10}));
 ```
 
 现在，无论插件以何种顺序初始化，track `Bar` 都将出现在 track `Foo` 上方（除非稍后重新排序）。
@@ -727,42 +722,40 @@ workspace.addChildInOrder(new TrackNode({title: 'Bar', sortOrder: -10}));
 
 > 建议在插件s 中始终使用 `addChildInOrder()` 向 `workspace` 添加 tracks，特别是如果你想让你的插件默认启用，因为这将确保它尊重其他插件的 sortOrder。
 
-#### DatasetSliceTrack
+#### SliceTrack
 
-`DatasetSliceTrack` 是一个多功能的 track renderer 类，允许对基于 slice 的 tracks 的行为和外观进行更细粒度的控制。它是 `createQuerySliceTrack` 使用的底层组件，但提供了一组更丰富的自定义选项。
+`SliceTrack` 是一个多功能的 track renderer 类，允许对基于 slice 的 tracks 的行为和外观进行更细粒度的控制。
 
-要使用 `DatasetSliceTrack`，你需要用 `DatasetSliceTrackAttrs` 实例化它，包括：
+要使用 `SliceTrack`，你可以通过 `SliceTrack.create()` 和 `SliceTrackAttrs` 创建它，包括：
 
 - `trace`：`Trace` 对象。
 - `uri`：track 的唯一 URI。
 - `dataset`：这是 track 数据的核心。它是一个 `SourceDataset<T>`（或返回一个的函数），定义了 slices 的 SQL 查询或表和 schema。
   - **必需的列**：
-    - `id` (NUM)：每个 slice 的唯一标识符。
     - `ts` (LONG)：事件的时间戳（纳秒）。如果存在 `dur`，这是开始时间，否则是即时时间。
   - **可选的列**：
+    - `id` (NUM)：每个 slice 的唯一标识符。如果缺失则自动生成。
     - `dur` (LONG)：事件的持续时间（纳秒）。如果缺失，slices 是瞬时的。
     - `depth` (NUM)：slices 的垂直排列。
     - `layer` (NUM)：影响 mipmap 生成；较高的层渲染在顶部。
-- `sliceLayout`（可选）：一个对象，用于自定义 slices 的几何和布局（例如，`padding`、`rowHeight`）。
+- `sliceLayout`（可选）：一个对象，用于自定义 slices 的几何和布局（例如，`padding`、`sliceHeight`）。
 - `instantStyle`（可选）：一个对象，用于定义即时事件（没有 `dur` 的事件）的自定义渲染。它需要一个 `width` 和一个 `render` 函数。
 - `colorizer`（可选）：一个函数 `(row: T) => ColorScheme`，用于根据数据动态设置每个 slice 的颜色。
 - `sliceName`（可选）：一个函数 `(row: T) => string`，用于设置每个 slice 上显示的文本。默认为数据集中的 `name` 列。
-- `tooltip`（可选）：一个函数 `(slice: SliceWithRow<T>) => m.Children`，用于在悬停在 slice 上时提供自定义 Mithril 内容的 tooltip。
+- `tooltip`（可选）：一个函数 `(slice: SliceOrInstant<T>) => m.Children`，用于在悬停在 slice 上时提供自定义 Mithril 内容的 tooltip。
 - `detailsPanel`（可选）：一个函数 `(row: T) => TrackEventDetailsPanel`，用于在选中 slice 时定义自定义详细信息面板。
 - `fillRatio`（可选）：一个函数 `(row: T) => number`（在 0.0 和 1.0 之间），用于在 slice 内渲染水平条，适用于显示利用率或进度。
 - `shellButtons`（可选）：一个函数 `() => m.Children`，用于向 track 的 shell 添加自定义 Mithril 按钮。
 - `initialMaxDepth`（可选）：最大深度的估计值，用于在初始加载期间稳定 track 高度。
 - `rootTableName`（可选）：ID 命名空间解析的基础表名。
-- `forceTsRenderOrder`（可选）：如果为 true，强制按时间戳顺序渲染，这对于有许多重叠即时事件的 tracks 很有用，可能以小的性能成本为代价。
 
 **示例：**
 
 ```ts
-const trackUri = `${trace.pluginId}#MyCustomSliceTrack`;
+const trackUri = 'com.example.MyPlugin#MyCustomSliceTrack';
 
 // 定义你的 dataset
-const myDataset: SourceDataset<MySliceRow> = {
-  name: 'my_custom_slices', // 描述性名称
+const myDataset = new SourceDataset({
   schema: {
     id: NUM,
     ts: LONG,
@@ -771,7 +764,7 @@ const myDataset: SourceDataset<MySliceRow> = {
     dur: LONG, // 假设你的事件有持续时间
     depth: NUM, // 假设你想控制深度
   },
-  query: `
+  src: `
     SELECT
       slice_id as id,
       ts,
@@ -781,24 +774,24 @@ const myDataset: SourceDataset<MySliceRow> = {
       category
     FROM my_slice_table_or_view
   `,
-};
+});
 
-const renderer = new DatasetSliceTrack<MySliceRow>({
+const renderer = SliceTrack.create({
   trace,
   uri: trackUri,
   dataset: myDataset,
   sliceName: (row) => `${row.category}: ${row.name}`,
   colorizer: (row) => {
     if (row.category === 'important') {
-      return {background: '#FF0000', foreground: '#FFFFFF'}; // 红色
+      return makeColorScheme(new HSLColor({h: 0, s: 50, l: 50})); // 红色
     }
-    return {background: '#0000FF', foreground: '#FFFFFF'}; // 蓝色
+    return makeColorScheme(new HSLColor({h: 240, s: 50, l: 50})); // 蓝色
   },
   tooltip: (slice) => {
     return m('div', [
       m('div', `Name: ${slice.row.name}`),
       m('div', `Category: ${slice.row.category}`),
-      m('div', `Duration: ${formatDuration(trace, slice.dur)}`),
+      m('div', `Duration: ${formatDuration(trace, slice.row.dur)}`),
     ]);
   },
   // 添加其他自定义设置，如 detailsPanel、fillRatio 等。
@@ -807,20 +800,19 @@ const renderer = new DatasetSliceTrack<MySliceRow>({
 // 注册 track renderer
 trace.tracks.registerTrack({
   uri: trackUri,
-  title: 'My Custom Slices',
   renderer,
 });
 
 // 像往常一样将 track node 添加到 workspace
 const trackNode = new TrackNode({
   uri: trackUri,
-  title: 'My Custom Slices',
+  name: 'My Custom Slices',
 });
 trace.workspace.addChildInOrder(trackNode);
 ```
 
 此方法为你如何查询、处理和显示 track 数据提供了显著的灵活性。请记住查阅
-[`DatasetSliceTrack`](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/dataset_slice_track.ts)
+[`SliceTrack`](https://github.com/google/perfetto/blob/main/ui/src/components/tracks/slice_track.ts)
 和相关接口的源代码，以获取最新的详细信息和高级用法模式。
 
 ### Timeline 叠加层
@@ -868,7 +860,7 @@ export default class implements PerfettoPlugin {
 
 Tabs 是显示关于 trace、当前选择或操作结果的上下文信息的有用方式。
 
-要从插件注册 tab，使用 `Trace.registerTab` 方法。
+要从插件注册 tab，使用 `trace.tabs.registerTab` 方法。
 
 ```ts
 class MyTab implements Tab {
@@ -884,8 +876,8 @@ class MyTab implements Tab {
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyPlugin';
   async onTraceLoad(trace: Trace) {
-    trace.registerTab({
-      uri: `${trace.pluginId}#MyTab`,
+    trace.tabs.registerTab({
+      uri: 'com.example.MyPlugin#MyTab',
       content: new MyTab(),
     });
   }
@@ -901,8 +893,8 @@ export default class implements PerfettoPlugin {
 或者，可以使用 tabs API 以编程方式显示或隐藏 tabs。
 
 ```ts
-trace.tabs.showTab(`${trace.pluginId}#MyTab`);
-trace.tabs.hideTab(`${trace.pluginId}#MyTab`);
+trace.tabs.showTab('com.example.MyPlugin#MyTab');
+trace.tabs.hideTab('com.example.MyPlugin#MyTab');
 ```
 
 Tabs 具有以下属性：
@@ -925,9 +917,9 @@ Tabs 具有以下属性：
 可以通过在注册 tab 时设置 `isEphemeral` 标志来注册短暂 tabs。
 
 ```ts
-trace.registerTab({
+trace.tabs.registerTab({
   isEphemeral: true,
-  uri: `${trace.pluginId}#MyTab`,
+  uri: 'com.example.MyPlugin#MyTab',
   content: new MyEphemeralTab(),
 });
 ```
@@ -953,8 +945,8 @@ class MyNameTab implements Tab {
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyPlugin';
   async onTraceLoad(trace: Trace): Promise<void> {
-    trace.registerCommand({
-      id: `${trace.pluginId}#AddNewEphemeralTab`,
+    trace.commands.registerCommand({
+      id: 'com.example.MyPlugin#AddNewEphemeralTab',
       name: 'Add new ephemeral tab',
       callback: () => handleCommand(trace),
     });
@@ -964,16 +956,16 @@ export default class implements PerfettoPlugin {
 function handleCommand(trace: Trace): void {
   const name = prompt('What is your name');
   if (name) {
-    const uri = `${trace.pluginId}#MyName${uuidv4()}`;
+    const uri = `com.example.MyPlugin#MyName${uuidv4()}`;
     // 这使 tab 对 perfetto 可用
-    ctx.registerTab({
+    trace.tabs.registerTab({
       isEphemeral: true,
       uri,
       content: new MyNameTab(name),
     });
 
     // 这在 tab bar 中打开 tab
-    ctx.tabs.showTab(uri);
+    trace.tabs.showTab(uri);
   }
 }
 ```
@@ -1011,7 +1003,7 @@ trace.sidebar.addMenuItem({
 
 ```ts
 trace.sidebar.addMenuItem({
-  section: 'navigation',
+  section: 'settings',
   text: '插件',
   href: '#!/plugins',
 });
@@ -1045,11 +1037,11 @@ trace.sidebar.addMenuItem({
   请参阅完整列表 [here](https://fonts.google.com/icons)。
 - `tooltip` - 悬停时显示
 - `section` - 放置菜单项的位置。
-  - `navigation`
   - `current_trace`
-  - `convert_trace`
-  - `example_traces`
+  - `trace_files`
+  - `settings`
   - `support`
+  - `convert_trace`
 - `sortOrder` - sortOrder 越低，条越靠上。
 
 请参阅
@@ -1115,7 +1107,7 @@ trace.statusbar.registerItem({
 
 `popupContent` 回调是可选的，当单击 statusbar 项时，应返回要在弹出窗口中显示的 mithril 内容。
 
-- [core_plugins/flags_page/index.ts](https://github.com/google/perfetto/blob/main/ui/src/core_plugins/flags_page/index.ts)。
+- [dev.perfetto.TimelineSync](https://github.com/google/perfetto/blob/main/ui/src/plugins/dev.perfetto.TimelineSync/index.ts)。
 
 ### Omnibox 提示
 
@@ -1215,27 +1207,51 @@ async function selectProcess(
 
 此功能允许在你的插件中直接在 omnibox 中创建交互式工作流。
 
-### 区域选择标签页
+### 选择标签页
 
-插件可以注册 tabs 以在 Timeline 的某个区域被选中时显示在详细信息面板中。
+插件可以在底部详细信息面板中为 Timeline 选择注册自定义子标签页。
 
-要注册 area selection tab，使用 `trace.selection.registerAreaSelectionTab` 方法。
+Perfetto 提供了针对特定选择类型的便捷帮助器，以及一个通用方法：
+
+- `trace.selection.registerTrackEventSelectionTab`：为 track 事件（slices）注册标签页。
+- `trace.selection.registerAreaSelectionTab`：为区域选择注册标签页。
+- `trace.selection.registerSelectionTab`：为任何选择类型（`Selection` 联合类型）进行注册的通用方法。
+
+#### Track Event 选择标签页示例
+
+```ts
+trace.selection.registerTrackEventSelectionTab({
+  id: 'my-slice-tab',
+  name: 'My Slice Tab',
+  render: (selection) => {
+    return {
+      isLoading: false,
+      content: m('div', `Selected event: ${selection.eventId} on track ${selection.trackUri}`),
+    };
+  },
+});
+```
+
+#### 区域选择标签页示例
 
 ```ts
 trace.selection.registerAreaSelectionTab({
   id: 'my-area-selection-tab',
   name: 'My Area Selection Tab',
   render: (selection) => {
-    return m('div', `Selected area: ${selection.start} - ${selection.end}`);
+    return {
+      isLoading: false,
+      content: m('div', `Selected area: ${selection.start} - ${selection.end}`),
+    };
   },
 });
 ```
 
-`render` 回调应该返回在 tab 中显示的 mithril 内容。
-`selection` 参数是一个 `AreaSelection` 对象，包含有关所选区域的信息。
+`render` 回调应该返回一个 `ContentWithLoadingFlag` 对象（如果标签页不适用于当前选择，则返回 `undefined`）。
 
 示例：
 
+- [com.android.AndroidLockContention](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.android.AndroidLockContention/index.ts)。
 - [dev.perfetto.TraceProcessorTrack/index.ts](https://github.com/google/perfetto/blob/main/ui/src/plugins/dev.perfetto.TraceProcessorTrack/index.ts)。
 
 ### Metric 可视化
@@ -1295,13 +1311,13 @@ interface MyState {
 }
 ```
 
-要访问永久链接状态，请在 `Trace` 对象上调用 `mountStore()`，传入 migration 函数。
+要访问永久链接状态，请在 `Trace` 对象上调用 `mountStore()`，传入 store id 和 migration 函数。
 
 ```typescript
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyPlugin';
   async onTraceLoad(trace: Trace): Promise<void> {
-    const store = trace.mountStore(migrate);
+    const store = trace.mountStore('com.example.MyPlugin', migrate);
   }
 }
 
@@ -1362,7 +1378,7 @@ function migrate(initialState: unknown): MyState {
 
 示例：
 
-- [dev.perfetto.ExampleState](https://github.com/google/perfetto/blob/main/ui/src/plugins/dev.perfetto.ExampleState/index.ts)。
+- [com.example.State](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.example.State/index.ts)。
 
 ### 功能标志
 
@@ -1391,7 +1407,7 @@ function migrate(initialState: unknown): MyState {
 **示例：**
 
 ```typescript
-import {Flag, FlagSettings} from '../../public/featureflag'; // 根据需要调整路径
+import {Flag, FlagSettings} from '../../public/feature_flag'; // 根据需要调整路径
 import {App} from '../../public/app';
 import {PerfettoPlugin} from '../../public/plugin';
 import {Trace} from '../../public/trace';
@@ -1458,7 +1474,7 @@ export default class MyFeatureFlagPlugin implements PerfettoPlugin {
 **示例：**
 
 ```typescript
-import {Setting, SettingDescriptor} from '../../public/setting'; // 根据需要调整路径
+import {Setting, SettingDescriptor} from '../../public/settings'; // 根据需要调整路径
 import {App} from '../../public/app';
 import {PerfettoPlugin} from '../../public/plugin';
 import {Trace} from '../../public/trace';
@@ -1635,7 +1651,7 @@ export default class implements PerfettoPlugin {
 **示例：**
 
 ```typescript
-import {Trace, time} from '../../public'; // 根据需要调整路径
+import {Trace, Time} from '../../public'; // 根据需要调整路径
 
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyTimelineNotesPlugin';
@@ -1643,7 +1659,7 @@ export default class implements PerfettoPlugin {
   async onTraceLoad(trace: Trace): Promise<void> {
     // 示例：在 trace 10 秒处添加 point note
     const noteId = trace.notes.addNote({
-      timestamp: time.fromSeconds(10),
+      timestamp: Time.fromSeconds(10),
       text: 'Interesting event occurred here!',
       color: '#FF00FF', // 品红色
     });
@@ -1651,8 +1667,8 @@ export default class implements PerfettoPlugin {
 
     // 示例：从 15s 到 20s 添加 span note
     const spanNoteId = trace.notes.addSpanNote({
-      start: time.fromSeconds(15),
-      end: time.fromSeconds(20),
+      start: Time.fromSeconds(15),
+      end: Time.fromSeconds(20),
       text: 'Critical duration under investigation',
       color: 'rgba(255, 165, 0, 0.5)', // 橙色，半透明
     });
@@ -1700,7 +1716,7 @@ import {
   MinimapCell,
   HighPrecisionTimeSpan,
   duration,
-  time,
+  Time,
 } from '../../public'; // 调整路径
 
 class MyMinimapDataProvider implements MinimapContentProvider {
@@ -1718,7 +1734,7 @@ class MyMinimapDataProvider implements MinimapContentProvider {
     const step = resolution; // 使用提供的 resolution 作为步长
 
     while (currentTs < timeSpan.end) {
-      const cellEnd = time.add(currentTs, step);
+      const cellEnd = Time.add(currentTs, step);
       cells.push({
         ts: currentTs,
         dur: step,
@@ -1837,7 +1853,7 @@ export default class TraceProcessorTrackPlugin implements PerfettoPlugin {
 ## 默认插件
 
 一些插件默认启用。这些插件比非默认插件具有更高的质量标准，因为对这些插件的更改会影响 UI 的所有用户。默认插件的列表指定在
-[ui/src/core/default_plugins.ts](https://github.com/google/perfetto/blob/main/ui/src/core/default_plugins.ts)。
+[ui/src/core/embedder/default_plugins.ts](https://github.com/google/perfetto/blob/main/ui/src/core/embedder/default_plugins.ts)。
 
 特别是，你的插件的启动时间将受到审查，如果你的插件对不使用你插件功能的用户有重大影响，你的插件可能会被默认禁用。要查看插件及其启动时间的列表，请访问 [插件页面](https://ui.perfetto.dev/#!/plugins) 并按启动时间排序。
 

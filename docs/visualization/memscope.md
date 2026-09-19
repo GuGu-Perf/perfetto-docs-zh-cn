@@ -1,6 +1,6 @@
 # Memscope 与 Memory Overview
 
-NOTE: Memscope 和 Memory Overview 目前在 Autopush 和 Canary 渠道可用。可以使用[发布渠道标志](https://ui.perfetto.dev/#!/flags/releaseChannel)切换渠道。
+NOTE: Memscope 和 Memory Overview 目前正处于密集开发阶段，虽然它们现在已在所有分支上可用，但使用 **canary** 或 **autopush** 渠道可能会获得更好的结果。可以使用[发布渠道标志](https://ui.perfetto.dev/#!/flags/releaseChannel)更改渠道。
 
 Perfetto 为内存分析提供了两个互补的功能：
 

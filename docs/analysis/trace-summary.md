@@ -266,11 +266,11 @@ metric_template_spec {
   value_columns: "avg_duration_ns"
   query: {
     table: {
-      // 模块名称是相对于包根目录的目录路径，
-      // 去掉了 .sql 扩展名。
+      // 模块名称是包名称（包目录的名称），
+      // 后跟相对于包根目录的路径，去掉了 .sql 扩展名。
       table_name: "game_frame_stats"
     }
-    referenced_modules: "my_game.metrics"
+    referenced_modules: "my_sql_modules.my_game.metrics"
   }
 }
 ```
@@ -376,11 +376,11 @@ query: {
 query: {
   interval_intersect: {
     base: {
-      // 基础数据是每个线程的 CPU 时间。
+      // 基础数据是每个线程的 CPU 调度 slice。
       table: {
-        table_name: "thread_slice_cpu_time"
+        table_name: "sched_with_thread_process"
       }
-      referenced_modules: "slices.cpu_time"
+      referenced_modules: "sched.with_context"
       filters: {
         column_name: "thread_name"
         op: EQUAL
@@ -398,7 +398,7 @@ query: {
   group_by: {
     // 我们对相交间隔的 CPU 时间求和。
     aggregates: {
-      column_name: "cpu_time"
+      column_name: "dur"
       op: SUM
       result_column_name: "total_cpu_time"
     }
@@ -616,7 +616,7 @@ TAB: Command-line shell
   - `text`：人类可读的文本 protobuf（默认）。
   - `binary`：二进制 protobuf。
 
-NOTE: 经典的 `--summary --summary-spec FILE --summary-metrics-v2 IDS --summary-format FORMAT` 调用仍然受支持并生成相同的输出。参见 [Trace Processor → 子命令接口](trace-processor.md#subcommands) 了解新 CLI 的详细信息。
+NOTE: 经典的 `--summary --summary-spec FILE --summary-metrics-v2 IDS --summary-format FORMAT` 调用仍然受支持并生成相同的输出。参见 [Trace Processor → 子命令接口](/docs/reference/trace-processor-cli.md#subcommands) 了解新 CLI 的详细信息。
 
 </tabs?>
 

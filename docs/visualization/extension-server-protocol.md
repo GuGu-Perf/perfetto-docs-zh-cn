@@ -42,7 +42,7 @@ UI 仅对 manifest 中声明的功能获取可选的 endpoints。
 
 | 字段 | 类型 | 必需 | 描述 |
 |-------|------|----------|-------------|
-| `name` | string | 是 | 人类可读的服务器名称，显示在设置和命令面板源标签中。 |
+| `name` | string | 是 | 人类可读的服务器名称，显示在命令面板源标签中。 |
 | `namespace` | string | 是 | 反向域名表示法中的唯一标识符（例如，`com.acme`）。用于强制执行宏和 SQL 模块的命名约束。 |
 | `features` | array | 是 | 此服务器支持的功能。每个条目都有一个 `name` 字段。有效名称：`macros`、`sql_modules`、`proto_descriptors`。 |
 | `modules` | array | 是 | 可用模块。每个条目都有一个 `id`（用于 URL 路径和设置）和一个 `name`（人类可读的显示名称）。 |

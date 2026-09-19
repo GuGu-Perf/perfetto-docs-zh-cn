@@ -79,7 +79,7 @@ Orchestrator 是服务的核心组件，负责将 trace 分片到各个 Worker p
 ```bash
 gcloud auth login
 
-gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE]--project [PROJECT_NAME]
+gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE] --project [PROJECT_NAME]
 ```
 
 
@@ -175,7 +175,7 @@ kubectl apply -f infra/bigtrace/gke/worker-service.yaml
 此镜像基于基础 Clickhouse 镜像构建，并提供了 gRPC 与 Orchestrator 通信所需的 Python 库。
 
 ```bash
-docker build -t clickhouse infra/bigtrace/bigtrace_clickhouse
+docker build -t clickhouse infra/bigtrace/clickhouse
 
 docker tag clickhouse [ZONE]-docker.pkg.dev/[PROJECT_NAME]/[REPO_NAME]/clickhouse
 
@@ -187,9 +187,9 @@ docker push [ZONE]-docker.pkg.dev/[PROJECT_NAME]/[REPO_NAME]/clickhouse
 ```
 kubectl apply -f infra/bigtrace/clickhouse/clickhouse-config.yaml
 
-kubectl apply -f infra/bigtrace/clickhouse/pvc.yaml
+kubectl apply -f infra/bigtrace/clickhouse/clickhouse-pvc.yaml
 
-kubectl apply -f infra/bigtrace/clickhouse/pv.yaml
+kubectl apply -f infra/bigtrace/clickhouse/clickhouse-pv.yaml
 
 kubectl apply -f infra/bigtrace/clickhouse/clickhouse-deployment.yaml
 

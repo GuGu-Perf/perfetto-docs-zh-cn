@@ -41,20 +41,57 @@
 
 - **❌ `requestAnimationFrame` / `setTimeout` 时机 hack，希望 DOM 在"下一帧"
   就绪 → ✅ 使用恰当的渲染后回调。**用 rAF 规避 `ResizeObserver` 循环警告
-  是代码异味——重构为正确的渲染后回调。
-  *(#5595, #5243, #4226, #3780, #3522, #2486)*
+  是代码异味。如果需要在渲染后执行操作，暴露一个从 `oncreate` 和
+  `onupdate` 两处调用的 `onReady` 回调。*(#4761, #4146)*
+
+- **❌ 将 `m.Children`（vnode）传入长期存在/一次性的 API（例如 modal）→
+  ✅ 传递一个返回 `m.Children` 的函数。**存储的 vnode 会在多个渲染周期
+  间被复用，这在 Mithril 中是未定义行为。传递 `() => m.Children`，使其在
+  每次渲染时重新调用。同样，不要将 vnode 存储在 immer 控制的数据模型中
+  （immer 不支持 vnode；它会破坏 undo/redo）。*(#4192, #3999)*
+
+- **❌ 在生命周期钩子（`oncreate`、`onPopupMount`、构造函数）中做初始化/
+  异步加载，而 `view()` 就能完成 → ✅ 在 `view()` 中计算，在正确的位置
+  只初始化一次。**`onPopupMount` 仅用于真正需要 popup 的 DOM 元素的场合。
+  构造函数在每次重新挂载时都会运行，因此其中的异步加载可能触发多次——
+  在 plugin 的 `onTraceLoad()` 中加载一次，并通过 `attrs` 传入数据。
+  *(#3817, #1389)*
+
+- **❌ 用返回 `undefined` 的三元表达式处理条件子元素 → ✅ 短路写法
+  `cond && m(...)`。**Mithril 会忽略 falsy 子元素。*(#2021, #1389)*
+
+- **❌ 不必要的包装 `div` / 空的 `{}` attrs 或 `{style:{}}` 对象 → ✅ 将
+  class 应用到已有元素上并省略空对象。***(#5073, #4993, #2039, #1406)*
+
+- **❌ `stopPropagation()` *和* `preventDefault()` 一起使用"以防万一" → ✅
+  选择你真正需要的那个**，并说明它与其他处理器的交互方式。*(#3707)*
 
 ---
 
-## 2. 状态管理
+## 2. 状态、数据模型与生命周期
 
-- 🔁 **❌ 将异步数据加载到组件的本地状态中 → ✅ 使用 `AsyncLimiter` 或
-  `AsyncContent` 模式。**加载 trace 处理器查询结果、网络 fetches 或慢速
-  wasm 调用到本地状态会导致竞态条件（陈旧数据覆盖新鲜数据）。改用
-  `AsyncLimiter`（在 `oncreate` 中排队，在 `onremove` 中取消，每次 render
-  渲染陈旧数据时使用 `retainOn`），或在
-  `TrackEventDetailsPanel.load()` 中加载，它自动取消过期的加载。使用
-  `AsyncLimiter.isRunning` 而非自定义标志来守卫并发。
+- 🔁 **❌ 为"方便访问"而使用模块级全局变量/静态字段/新建单例 → ✅ 注入
+  依赖。**全局可变状态破坏了**多个 UI 实例可以在一个页面上运行**这一前提，
+  并带来顺序/维护问题。通过 `trace`/`app` 对象传递状态（像 tabs 那样
+  建模），或传递一个 context/settings 对象。Plugin 类本身实际上已经是
+  单例——使用 `this.member`，而非 `static` 字段。
+  *(#1097, #2036, #5436, #5284, #5286)*
+
+- 🔁 **❌ 在单例 plugin 上缓存 `Trace` 对象 → ✅ 将 `Trace` 作为函数参数
+  传递。**当第二个 trace 加载后，缓存的 trace 就成了*错误的* trace；进行中
+  的异步函数随后会针对过期的 trace 完成解析。在 `onTraceLoad()` 中初始化
+  每 trace 数据，并作为 `Readonly` 参数传递，这样还可以避免到处使用可选
+  成员和 `!` 断言。要在不扩展 `Trace` API 的情况下附加每 trace 数据，可
+  使用 `WeakMap<Trace, T>`。*(#5284, #2900)*
+
+- 🔁 **❌ 为异步数据手写加载中/进行中布尔值和手动变更检测 → ✅ 使用
+  `AsyncMemo`（以及 `AsyncLimiter`）。**直接由事件触发的 selection 驱动查询，
+  在用户点击快于查询执行时会导致无限制的队头阻塞。使用 `AsyncMemo`
+  （声明一个按值比较的 key，每次 render 调用 `.use()`，使用 `retainOn`
+  渲染陈旧数据），或在 `TrackEventDetailsPanel.load()` 中加载，它会自动
+  取消过期的加载。使用 `AsyncLimiter` 而非自定义标志来守卫并发。在
+  `onremove()` 中销毁 `AsyncMemo` 实例是可选的（有助于提前取消进行中的
+  任务或清理可释放的资源）。
   *(#4464, #4582, #4737, #5436, #4192)*
 
 - **❌ 维护需要手动保持同步的派生状态 → ✅ 从单一数据源派生。**不要通过
@@ -94,50 +131,115 @@
   *(#5284, #5153, #1624, #1241)*
 
 - **❌ 将纯粹的通用库代码（track 实现、面板）包装为 plugin → ✅ 放入
-  `src/core` 或 `src/public`。**Plugin 用于外部或可选功能。通用功能不应
-  是可选的；如果一个核心 tab 依赖于某项功能，它就不该是一个 plugin。
-  *(#5153, #4991, #4844)*
+  `ui/src/components`。**反过来，位于自己独立目录中的代码通常*应该*是一个
+  `PerfettoPlugin`；如果不是，请重新考虑其位置。真正可复用的 widget 放入
+  `widgets/`；*(#4767, #5284, #1097)*
 
-- **❌ 依赖整体 `App` / `TraceContext` 对象 → ✅ 只依赖所需的具体接口
-  （`TraceImpl`、`SelectionManager`、`TimelineController` 等）。这使得
-  测试更容易并防止意外耦合。*(#4769, #4613, #3331, #1190)*
+- **❌ 隐藏的/偶然的跨 plugin 依赖（"碰巧"通过加载顺序生效）→ ✅ 显式
+  声明依赖**，或将命令移到概念上所属的 plugin 中。在消费一个 track 之前，
+  先依赖*创建*它的 plugin。不要仅为复用一个共享资源就引入重型 plugin
+  依赖——将其提取出来（例如 `dev.perfetto.StandardGroups`）。
+  *(#4613, #2666, #2137)*
 
----
-
-## 4. Track 与 Track 事件
-
-- **❌ 除 `async` slice 之外的任何东西使用 `ChromeSliceTrack` 基类 → ✅
-  选择正确的 track 基类**（`ProcessCounterTrack` 用于 counter、
-  `ThreadStateTrack` 用于调度状态、`AsyncSliceTrack` 用于 async slice）。
-  每个基类提供正确的渲染和交互语义。*(#5595, #5436, #5243)*
-
-- **❌ Track 类型注册缺失或类型名称不一致 → ✅ 注册每个新 track 类型且
-  名称一致。**Track 类型名称必须跨 `TrackDescriptor.type` 和 UI 注册
-  保持一致；使用 `registerTrack`。
-  *(#5436, #5595, #5243, #4278, #5188)*
+- **❌ 继承/抽象基类层次结构，以及单方法的"manager"类 → ✅ 优先使用组合
+  和独立函数。**只有一个方法且无状态的类应该只是一个函数。删除仅重新
+  导出基础辅助函数的薄包装。*(#4844, #4184)*
 
 ---
 
-## 5. SQL 与查询
+## 4. Plugin 与 API 设计
 
-- 🔁 **❌ 直接写裸 SQL 字符串 → ✅ 尽可能使用 stdlib 表/视图/函数；必要
-  时使用 `perfetto-query-lang` DSL。**DSL 提供参数化、类型安全和构建时
-  检查。*(#4769, #5436, #5243, #5182, #4487, #3237)*
+- 🔁 **❌ Plugin 缺少/仅有占位符 `description` → ✅ 添加真实的
+  `static readonly description`。**它会显示在 plugins 页面上，告诉用户该
+  plugin 做什么以及为何启用它。不要写 TODO。
+  *(#4716, #2394, #5436, #5284)*
 
-- **❌ 查询中使用 `SELECT *` 的 `MATERIALIZED` 视图 → ✅ 仅物化所需列。**
-  MATERIALIZED 视图会在 trace 加载时物化所有列，即使 UI 只需要其中一列
-  也是如此，这会浪费内存。*(#5182, #4487)*
+- **❌ 在 plugin 中手动解析 `location.hash` → ✅ 使用 route-args 机制**——
+  带 plugin 前缀的 URL 参数会被解码并作为 `onActivate()` 的第二个参数传入。
+  使用标准约定（重复键或逗号分隔）和标准百分号编码设计 URL/查询参数格式；
+  一旦外部用户采用了定制格式，它就成了你无法更改的接口。*(#5019, #2471)*
 
-- **❌ 连接复杂查询时在 JS 代码中手动拼接 SQL 和参数 → ✅ 在 DSL 中完全
-  组合查询。**避免 SQL 注入和参数错配。*(#4487)*
+- **❌ 伸手进入内部结构（例如直接向 pinned-tracks 节点添加 track）→ ✅
+  使用高层 API**（`TrackNode.pin()`）。先将 track 添加到正常 workspace 再
+  pin，这样取消 pin 后它们仍留在树中。按 tag（例如 `trackIds` tag）过滤
+  track，不要手工构造/猜测 track URI。*(#4814, #4820, #4524)*
+
+- **❌ 将内部核心 schema 复用为传输/持久化格式 → ✅ 在本地定义外部
+  schema。**复用意味着对核心类型的无关变更会静默改变本应稳定的契约。
+  *(#4192)*
+
+- **❌ 未使用的抽象接口/推测性的回调 props → ✅ 删除它们（YAGNI）。**
+  不要引入无人实现的间接层，也不要为不支持的格式暴露选项然后再抛出异常。
+  *(#4767, #5065, #1565)*
+
+- **❌ 重启后才生效且无任何提示的设置 → ✅ 设置 `requiresReload: true`**，
+  以便提示用户重新加载。*(#2394, #1298)*
+
+- **❌ `has()/get()` 后再修改、迭代查找第一个、总是成对使用的分离访问器 →
+  ✅ 使用提供的辅助函数。**`getOrCreate(map, k, () => [])`、
+  `result.maybeFirstRow({...})`（0 行时为 undefined），并将成对的访问器
+  合并为一个函数。*(#5284, #4039, #2036)*
+
+- **❌ 假设 stdlib 表可用 → ✅ 添加查询依赖的 `INCLUDE PERFETTO
+  MODULE`**（例如 `slices.with_context`）。*(#5392)*
+
+---
+
+## 5. Widget 与复用
+
+> 🔁 **在构建任何东西之前先搜索 widget 库（`ui/src/widgets/`）。**"如果你
+> 使用现有的 widget 和主题变量，这个文件的大部分内容都可以消失。"这是
+> 最常见的一条复用意见。
+
+- **使用现有 widget 而非原始 HTML 或手写标记：**`Button`/`RadioGroup`
+  （而非 `<button>` 或 CSS 样式按钮——设置 `variant`/`intent` 来强调）、
+  `Select`（而非 `<select>`）、`Anchor`（而非 `<a>`；外部链接使用
+  `Icons.ExternalLink`）、详情面板用 `DetailsShell`、`Tabs`（而非
+  `TabStrip` 或自制 tab——它会保留每个 tab 的组件，切换时不会重新加载
+  数据）、`DataGrid`（已废弃的 `PivotTable` 正在被移除）、
+  `DownloadToFileButton`（用于下载反馈）。
+  *(#5153, #2394, #2772, #4582, #4464, #5276, #4226, #4481)*
+
+- **❌ 重新实现 widget 已提供的行为 → ✅ 使用它的 prop。**用 `fillHeight`
+  （在 `Editor`、`NodeGraph`、…… 上）代替 `height: 100%` CSS；用
+  `closeOnOutsideClick`/`closeOnEscape` 或显式打开状态代替相互关闭的
+  popup；将 overlay 挂载到滚动容器中的 `OverlayContainer`，而非手写
+  锚点/可见性逻辑。*(#4993, #4027, #3124, #3711)*
+
+- **❌ 覆盖 widget 的内部 class / 从外部重新实现其间距 → ✅ 将内容包裹
+  在你控制的容器中，或使用 `Stack`。**对 widget 内部样式化很脆弱，
+  widget 变更时会失效；应在 widget 自己的 SCSS 中修复尺寸问题。不要为
+  属于共享 widget 的 bug 添加按消费者的 CSS 变通方案。
+  *(#4027, #2615, #2394)*
+
+- **❌ 仅为设置静态配置而继承 track/widget 类 → ✅ 以选项实例化它**
+  （`new CounterTrack({trace, uri, sqlSource})`）。*(#5284)*
+
+- **为仅图标的控件提供 `title`/tooltip 文本**，使其用途可被发现；轻量
+  帮助优先使用 tooltip 而非 popup。*(#3185, #3124)*
+
+- **添加新 widget 或 widget 选项时，在 widgets 页面添加 demo**，并针对
+  边界情况（例如嵌套树节点）进行测试。*(#2383, #5659)*
 
 ---
 
 ## 6. CSS 与样式
 
-- **❌ 硬编码颜色 → ✅ 使用主题变量**（`--pf-*`、`--pf-colour-*`，
-  `theme.ts` 中的 Material Design 色调板）。仅在绝对必要时指定背景颜色，
-  以保持 UI 可主题化。*(#2615, #5153, #4991, #4185, #1097)*
+- 🔁 **❌ 内联 `style={...}` → ✅ 将样式放入组件的 `.scss` 文件。**静态
+  不变的样式永远属于样式表。*(#4737, #3185, #2394, #2615)*
+
+- 🔁 **❌ 无前缀/通用的 class 名（`.row`、`.selected`、`.ai`）→ ✅ `pf-`
+  前缀 + BEM。**通用选择器会与共享 widget 冲突（这是集成测试失败的一个
+  真实原因），并在 Perfetto 被嵌入时失效。使用 `.pf-component`、
+  `.pf-component__element`、`.pf-component--modifier`，将规则限定在其
+  所有者之下（`.pf-node .pf-show-on-hover`），并使用 SCSS 嵌套
+  （`&--horizontal`）。*(#2615, #1097, #2394, #3687, #3955, #1406, #2093, #5761, #2039)*
+
+- 🔁 **❌ 硬编码颜色/魔法像素值/自造 CSS 变量 → ✅ 使用
+  `theme_provider.scss` 中的主题变量/共享 token。**不要仅因为看起来合适
+  就从无关领域借用变量（将 track 颜色用于非 track UI）——语义很重要。
+  仅在绝对必要时指定背景颜色，以保持 UI 可主题化。
+  *(#2615, #5153, #4991, #4185, #1097)*
 
 - **❌ 通过字符串拼接/模板字面量构建 `classNames` → ✅ 使用 `classNames()`
   工具函数。***(#3693, #2615, #1406)*
@@ -264,8 +366,8 @@
   `document`；对不可能状态使用 `assertExists(queue.shift())` 而非防御性
   的 `if (!blob) continue`。*(#4994, #4761, #2580, #1302)*
 
-- **❌ 无超时的网络 fetches / 阻塞核心流程 → ✅ 使用 `fetchWithTimeout` /
-  `orTimeout` 并显示软错误。**不要依赖浏览器的约 5 分钟默认超时；核心
+- **❌ 无超时的网络 fetches / 阻塞核心流程 → ✅ 使用 `fetchWithTimeout`
+  并显示软错误。**不要依赖浏览器的约 5 分钟默认超时；核心
   路径上的细粒度延迟 fetches 有"UI 在流程中悄悄停止工作"的风险。（也不
   要过于激进地设置超时——10 秒以上，人们会使用热点网络。）
   *(#4192)*

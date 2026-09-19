@@ -186,7 +186,32 @@ data_sources: {
 
 对于 GPGPU 使用场景，推荐使用 Counter 描述符模式 2：生产者发送通过 IID 引用的 `InternedGpuCounterDescriptor`，为每个可信序列提供独立的局部 Counter ID。这避免了模式 1 所需的全局协调，并自然地支持多个生产者和 GPU。有关两种模式的详细信息，请参阅 [gpu\_counter\_event.proto](/protos/perfetto/trace/gpu/gpu_counter_event.proto)。
 
-Counter 名称和 ID 由 GPU 生产者通过数据源描述符中的 `GpuCounterSpec` 发布。Counter 按组分类（SYSTEM、VERTICES、FRAGMENTS、PRIMITIVES、MEMORY、COMPUTE、RAY_TRACING），并包含度量单位和描述。
+Counter 名称和 ID 由 GPU 生产者通过数据源描述符中的 `GpuCounterSpec` 发布，其中包含度量单位和描述。
+
+### Counter 分组
+
+Counter 分组被 Perfetto UI 用来将 Counter Track 组织成组。Counter 可以通过 `GpuCounterSpec.groups` 分配到内置分组（SYSTEM、VERTICES、FRAGMENTS、PRIMITIVES、MEMORY、COMPUTE、RAY_TRACING），生产者也可以使用 `GpuCounterDescriptor` 中的 `GpuCounterGroupSpec` 消息定义自定义 Counter 分组：
+
+```
+message GpuCounterGroupSpec {
+    optional uint32 group_id = 1;
+    optional string name = 2;
+    optional string description = 3;
+    repeated uint32 counter_ids = 4;
+}
+```
+
+自定义分组还可用于为固定的 `GpuCounterGroup` 枚举值（SYSTEM、VERTICES 等）提供显示名称和描述。为此，请将 `group_id` 设置为该枚举值，并提供 `name` 和/或 `description`。
+
+Counter 的组成员关系是通过 `GpuCounterSpec.groups`（固定枚举）和 `GpuCounterGroupSpec.counter_ids`（自定义分组）分配的组的并集。
+
+例如，使用自定义分组 "Compute Core" 和 "L2 Cache"：
+
+```
+GPU > Counters > Compute Core > Counter A
+GPU > Counters > Compute Core > Counter B
+GPU > Counters > L2 Cache > Counter C
+```
 
 ### 多 GPU
 
@@ -228,20 +253,6 @@ gpu_render_stage_event {
 ```
 
 这会创建一个从 memcpy 事件（event\_id 1）到 matmul kernel（event\_id 2）的流，在 Perfetto UI 中可视化依赖关系。
-
-### Counter 分组
-
-Counter 分组被 Perfetto UI 用来将 Counter Track 组织成组。Counter 可以通过 `GpuCounterSpec.groups` 分配到内置分组（SYSTEM、VERTICES、FRAGMENTS、PRIMITIVES、MEMORY、COMPUTE、RAY_TRACING），也可以通过 `GpuCounterDescriptor` 中的 `GpuCounterGroupSpec` 消息定义自定义 Counter 分组：
-
-Counter 的组成员关系是通过 `GpuCounterSpec.groups`（固定枚举）和 `GpuCounterGroupSpec.counter_ids`（自定义分组）分配的组的并集。
-
-例如，使用自定义分组 "Compute Core" 和 "L2 Cache"：
-
-```
-GPU > Counters > Compute Core > Counter A
-GPU > Counters > Compute Core > Counter B
-GPU > Counters > L2 Cache > Counter C
-```
 
 ### Host-to-GPU 关联
 
@@ -296,7 +307,7 @@ Perfetto UI 内置了多个消费 GPU trace 数据的 Plugin。它们在标准�
 Compute kernel 深入分析。添加了三个选项卡，当选择计算类 `gpu_render_stage` Slice（即 `gpu_slice.render_stage_category = COMPUTE`）时会填充：
 
 - **Summary** — trace 中每个 kernel 启动的表格，可按持续时间、占用率和其他硬件指标排序。双击跳转到该 kernel 的详情视图。
-- **Details** — 每个部分的指标表格（Speed-of-Light、Launch Statistics、Occupancy、Workload Analysis），支持两个 kernel 之间的可选基线比较。
+- **Details** — 每个部分的指标表格（Speed-of-Light、Launch Statistics、Occupancy、Compute Workload Analysis），支持两个 kernel 之间的可选基线比较。
 - **Toolbar** — kernel 选择器、基线固定、术语切换（CUDA / OpenCL / 厂商提供）以及自动单位转换（bytes → KB, ns → s 等）。
 
 核心 Plugin 内置 CUDA 和 AMD 支持；其他厂商通过注册术语、指标部分、知名 metric ID 和分析提供程序的配套 Plugin 添加。参见 [com.meta.GpuCompute/README.md](https://github.com/google/perfetto/blob/main/ui/src/plugins/com.meta.GpuCompute/README.md) 了解扩展 API。

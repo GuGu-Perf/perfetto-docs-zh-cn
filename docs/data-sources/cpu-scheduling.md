@@ -114,8 +114,8 @@ NOTE: `sched_waking` 和 `sched_wakeup` 提供几乎相同的信息。区别在�
 
 ```
 > select * from sched_slice limit 1
-id type ts dur cpu utid end_state priority
-0 sched_slice 70730062200 125364 0 1 S 130 
+id  ts          dur    cpu utid end_state priority ucpu
+0   70730062200 125364 0   1    S         130      0
 ```
 
 表的每一行显示给定线程（`utid`）何时开始运行（`ts`）、在哪个核心上运行（`cpu`）、运行了多长时间（`dur`）以及它为什么停止运行：`end_state`。

@@ -13,13 +13,9 @@ Perfetto SDK 是一个 C++ 库，允许你为你的应用程序添加插桩以�
 
 ### 设置
 
-签出最新的 SDK 版本
+从 https://github.com/google/perfetto/releases/latest 的最新 Perfetto release 下载 `perfetto-cpp-sdk-src.zip` 并解压。
 
-```
-git clone https://github.com/google/perfetto.git -b v50.1
-```
-
-SDK 由两个文件组成，`sdk/perfetto.h` 和 `sdk/perfetto.cc`。这些是客户端 API 的 amalgamation，旨在易于集成到现有构建系统。源代码是自包含的，只需要符合 C++17 的标准库。
+SDK 由两个文件组成，`perfetto.h` 和 `perfetto.cc`。这些是客户端 API 的 amalgamation，旨在易于集成到现有构建系统。源代码是自包含的，只需要符合 C++17 的标准库。
 
 将它们复制到你的项目中。接下来的步骤假设它们在 `perfetto/sdk` 文件夹中。假设你的构建看起来像这样：
 

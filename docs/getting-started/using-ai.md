@@ -40,7 +40,7 @@ curl.exe -fsSL https://get.perfetto.dev/agents-install | python - --target <path
 可安装到该 Agent 的默认目录中。
 
 要在团队中共享此设置，将 `--target` 指向仓库中的按 Agent 目录
-（例如 `.claude/skills/`），并将结果提交。
+（例如 `.claude/`），并将结果提交。
 
 ### 离线安装
 
@@ -66,7 +66,7 @@ cp trace_processor_shell ~/.local/share/perfetto/prebuilts/trace_processor_shell
 包装器信任任何已以该名称存在的文件，因此该二进制文件必须来自同一
 release。在 Windows 上，缓存目录是
 `%USERPROFILE%\.local\share\perfetto\prebuilts`，文件名是
-`trace_processor_shell.exe-<sha256 前缀>`。
+`trace_processor_shell-<sha256 前缀>.exe`。
 
 ## 更新
 

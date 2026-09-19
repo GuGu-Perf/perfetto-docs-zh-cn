@@ -61,7 +61,7 @@ WHERE name GLOB '*interesting_slice*'
 LIMIT 10;
 ```
 
-导航回 Timeline（按下 "Show timeline"）将在底部栏中显示结果表。你可以点击 slice ID 以跳转到 Timeline 中的 slice。
+结果表将显示在查询编辑器下方。你可以点击 slice ID 以跳转到 Timeline 中的 slice。
 
 PerfettoSQL 支持多种 [pattern matching operators](https://sqlite.org/lang_expr.html#like)，如 `GLOB`、`LIKE` 和 `REGEXP`。你还可以使用不同的聚合器来生成选择的统计信息。
 
@@ -107,7 +107,7 @@ AND t.is_main_thread
 ORDER BY dur DESC;
 ```
 
-在 SQL 视图中运行查询后，点击侧边栏中的 "Show timeline"，查询结果将出现在底部栏中。包含 slice 列 id、ts、dur、track_id 和 slice_id 的查询可以链接到 Timeline 视图中的 slices，以便轻松导航。点击 id 下的值，Timeline 将直接跳转到该 slice。
+在 SQL 视图中运行查询后，查询结果将显示在查询编辑器下方。包含 slice 列 id、ts、dur、track_id 和 slice_id 的查询可以链接到 Timeline 视图中的 slices，以便轻松导航。点击 id 下的值，Timeline 将直接跳转到该 slice。
 
 ![](/docs/images/analysis-cookbook-unint-sleep.png)
 
@@ -199,11 +199,11 @@ INCLUDE PERFETTO MODULE android.memory.process;
 SELECT
   process_name,
   -- 推荐：Anonymous memory + swap 是应用内存压力的最佳指标
-  MAX(anon_rss_and_swap) / 1024.0 AS peak_anon_rss_and_swap_mb,
+  MAX(anon_rss_and_swap) / 1024.0 / 1024.0 AS peak_anon_rss_and_swap_mb,
   -- FYI: 其他内存指标用于附加上下文
-  MAX(anon_rss) / 1024.0 AS peak_anon_rss_mb,
-  MAX(file_rss) / 1024.0 AS peak_file_rss_mb,
-  MAX(swap) / 1024.0 AS peak_swap_mb
+  MAX(anon_rss) / 1024.0 / 1024.0 AS peak_anon_rss_mb,
+  MAX(file_rss) / 1024.0 / 1024.0 AS peak_file_rss_mb,
+  MAX(swap) / 1024.0 / 1024.0 AS peak_swap_mb
 FROM memory_oom_score_with_rss_and_swap_per_process
 WHERE process_name GLOB 'com.android.systemui*'
 GROUP BY process_name;
@@ -236,7 +236,7 @@ data_sources: {
 }
 ```
 
-配置完成后，点击处于不可中断睡眠状态的 thread state slice 时，你将在底部栏中看到一个名为 "blocked_function" 的字段。你可以运行查询来汇总数据，而不是点击单个 slices：
+配置完成后，点击处于不可中断睡眠状态的 thread state slice 时，你将在底部栏中看到一个名为 "Blocked function" 的字段。你可以运行查询来汇总数据，而不是点击单个 slices：
 
 ```sql
 SELECT blocked_function, COUNT(thread_state.id), SUM(dur)
@@ -319,16 +319,16 @@ AND thread_name = 'OomAdjuster'
 AND name LIKE 'setProcessGroup %';
 ```
 
-使用 debug tracks，你可以将此信息添加到 Timeline。按下 "Show timeline"。在底部栏中，按下 "Show debug track" 并配置：
+使用 debug tracks，你可以将此信息添加到 Timeline。在查询结果上方，按下 "Add debug track" 并配置：
 
-- Track type: counter
-- ts: `ts`
-- value: `group_id`
-- pivot: `process_name`
+- Track type: Counter Track
+- Timestamp: `ts`
+- Value: `group_id`
+- Pivot on: `process_name`
 
 ![](/docs/images/debug-track-setprocessgroup-simple.png)
 
-按下 "Show"，你将看到从结果生成的 debug tracks：
+按下 "Add Track"，你将看到从结果生成的 debug tracks：
 ![](/docs/images/debug-track-setprocessgroup-simple-result.png)
 
 组的整数值在 `SchedPolicy` 中枚举，位于
@@ -451,6 +451,7 @@ data_sources {
 
 ```sql
 INCLUDE PERFETTO MODULE android.job_scheduler_states;
+INCLUDE PERFETTO MODULE time.conversion;
 
 SELECT
   job_id,
@@ -537,7 +538,7 @@ select
   MAX(max_freq) AS max_freq
 FROM cpu_cycles_per_process
 JOIN process USING (upid)
-WHERE process_name = 'system-server'
+WHERE process_name = 'system_server'
 GROUP BY process_name;
 ```
 
@@ -553,11 +554,11 @@ GROUP BY process_name;
 INCLUDE PERFETTO MODULE linux.cpu.utilization.slice;
 
 select
-  slice_name,
+  name,
   SUM(megacycles)
 FROM cpu_cycles_per_thread_slice
-WHERE slice_name GLOB '*interesting_slice*'  -- 或 cpu_cycles_per_thread_slice.id=<id of interesting slice>
-GROUP BY slice_name;
+WHERE name GLOB '*interesting_slice*'  -- 或 cpu_cycles_per_thread_slice.id=<id of interesting slice>
+GROUP BY name;
 ```
 
 或检查你进程的所有 slices 的 slice 利用率：

@@ -5,7 +5,7 @@
 
 ## 加载 Trace
 
-单击任务栏"示例 Traces"部分中的一个示例以开始。
+单击侧边栏"New Trace"部分中的一个示例以开始。
 
 从文件资源管理器拖放 trace，或单击侧边栏中的"打开 trace 文件"以打开本地 trace 文件。
 
@@ -41,8 +41,7 @@
  <source src="https://storage.googleapis.com/perfetto-misc/next-prev-events.webm" type="video/webm">
 </video>
 
-按 'F' 将所选实体在视口中居中，再次按 'F' 将该 Slice 适合视口。
-这对于当前缩放级别下无法清晰看到的非常短的事件很有用。
+按 'F' 将所选实体适合视口。这对于当前缩放级别下无法清晰看到的非常短的事件很有用。
 
 <video width="800" controls>
  <source src="https://storage.googleapis.com/perfetto-misc/focus-event.webm" type="video/webm">
@@ -82,7 +81,7 @@ Omnibox 转换为命令面板。可以使用模糊匹配搜索命令。
 
 ## 查找 Track
 
-按 'Ctrl+P'（Mac 上为 'Cmd+Shift+P'）打开 Track 查找器并开始输入以模糊查找 Track。
+按 'Ctrl+P'（Mac 上为 'Cmd+P'）打开 Track 查找器并开始输入以模糊查找 Track。
 
 <video width="800" controls>
  <source src="https://storage.googleapis.com/perfetto-misc/finding-tracks.webm" type="video/webm">

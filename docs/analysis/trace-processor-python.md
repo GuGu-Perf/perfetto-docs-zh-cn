@@ -103,7 +103,7 @@ tp = TraceProcessor(trace='trace.perfetto-trace', addr='localhost:9001')
 可以使用 `TraceProcessorConfig` 类自定义 `TraceProcessor`。
 
 ```python
-from perfetto.trace_processor import TraceProcessor, TraceProcessorConfig, SqlPackage
+from perfetto.trace_processor.api import TraceProcessor, TraceProcessorConfig, SqlPackage
 
 config = TraceProcessorConfig(
  bin_path='/path/to/trace_processor', # 自定义二进制文件的路径
@@ -120,7 +120,7 @@ tp = TraceProcessor(trace='trace.perfetto-trace', config=config)
 
 - `add_sql_packages`：要加载的 PerfettoSQL 包列表。每个元素可以是字符串路径（目录名称成为包名称）或 `SqlPackage` 对象（允许指定自定义包名称）。这些包中的所有 SQL 模块都可以使用 `INCLUDE PERFETTO MODULE` PerfettoSQL 语句包含。
 - `verbose`：如果为 `True`，`trace_processor` 将向 stdout 打印详细输出。这对于调试和查看更详细的错误消息很有用。
-- `bin_path`: `trace_processor` 二进制文件的路径。如果未提供，将下载并使用与已安装的 `perfetto` 包固定版本绑定的 `trace_processor` 版本。这可以保持结果的可重现性：升级二进制文件意味着升级软件包。
+- `bin_path`: `trace_processor` 二进制文件的路径。如果未提供，将下载并使用与已安装的 `perfetto` 包固定版本绑定的 `trace_processor` 版本。这可以保持结果的可重现性：升级二进制文件意味着升级软件包。固定的版本为 `perfetto.prebuilts.manifests.version.PREBUILTS_VERSION`。
 - `fetch_latest_trace_processor`：如果为 `True`（且 `bin_path` 未设置），则从 `get.perfetto.dev` 获取最新的预构建版本，而不是与软件包绑定的固定版本。使用此选项可以始终运行最新的构建版本，但会牺牲可重现性。请注意，此选项是尽力而为的，在以不同方式获取二进制文件的平台（例如 Google3 内部，二进制文件始终来自内部基础设施）上可能会被忽略。
 
 ## API
@@ -256,7 +256,7 @@ with TraceProcessor(trace='trace.perfetto-trace') as tp:
 
 ### Export
 
-`export()` 函数将解析后的 trace 数据写入文件，直接流式写入磁盘。格式为 `arrow_tar` 或 `perfetto` 之一：
+`export()` 函数将解析后的 trace 数据写入文件，直接流式写入磁盘。格式为 `arrow_tar`、`perfetto` 或 `sqlite` 之一：
 
 ```python
 from perfetto.trace_processor import TraceProcessor
@@ -270,7 +270,7 @@ tp.export('archive.tar', 'perfetto')
 tp.export('tables.tar', 'arrow_tar')
 ```
 
-`perfetto` 可以由同一版本的新 trace processor 实例加载回来（不同版本也许能加载，但不保证）。`arrow_tar` 为每个静态注册的表生成一个标准的 [Apache Arrow](https://arrow.apache.org/) 文件，可用 pandas、Polars 或 pyarrow 进行分析；它无法加载回 trace processor。Python API 支持这两种格式；要导出为 SQLite，请使用 [`export` shell 子命令](/docs/analysis/trace-processor.md#subcommand-export)。
+`perfetto` 可以由同一版本的新 trace processor 实例加载回来（不同版本也许能加载，但不保证）。`arrow_tar` 为每个静态注册的表生成一个标准的 [Apache Arrow](https://arrow.apache.org/) 文件，可用 pandas、Polars 或 pyarrow 进行分析；它无法加载回 trace processor。`sqlite` 将所有 SQL 可见的表和视图写入标准 SQLite 数据库，与 [`export` shell 子命令](/docs/reference/trace-processor-cli.md#subcommand-export) 类似。
 
 ### Metatracing
 

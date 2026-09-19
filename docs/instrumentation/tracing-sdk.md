@@ -183,7 +183,6 @@ class CustomDataSource : public perfetto::DataSource<CustomDataSource> {
 
  void OnStart(const StartArgs&) override {
  // 此通知可用于初始化 GPU 驱动程序、启用 Counters 等。
- // StartArgs 将包含 DataSourceDescriptor，可以进行扩展。
  }
 
  void OnStop(const StopArgs&) override {
@@ -267,7 +266,7 @@ GpuDataSource::Register(MakeDescriptor("com.example.gpu1"));
 
 ```C++
 CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
- auto safe_handle = trace_args.GetDataSourceLocked(); // 持有 RAII 锁。
+ auto safe_handle = ctx.GetDataSourceLocked(); // 持有 RAII 锁。
  DoSomethingWith(safe_handle->my_custom_state);
 });
 ```
@@ -288,7 +287,7 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 
 此模式在 Android、Linux、MacOS 和 Windows 上受支持。
 
-TIP: 当多个进程内 trace（例如来自分布式系统中不同机器的）后续需要[合并为一个 trace](/docs/analysis/merging-traces.md) 时，在初始化 SDK 时为每台机器设置唯一的 `TracingInitArgs.machine_id`：每个数据包都会标记其来源，合并后的 trace 无需进一步配置即可保持每台机器的数据分离。
+TIP: 当多个进程内 trace（例如来自分布式系统中不同机器的）后续需要[合并为一个 trace](/docs/analysis/merging-traces.md) 时，在初始化 SDK 时为每台机器设置唯一的 `TracingInitArgs.machine_id`：每个数据包都会标记其来源，合并后的 trace 可保持每台机器的数据分离。对于非零的 `machine_id`，`TraceConfig` 必须设置 `trace_all_machines: true`，否则数据源不会记录任何数据。
 
 ### 系统模式
 

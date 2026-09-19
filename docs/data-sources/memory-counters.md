@@ -78,13 +78,13 @@ data_sources: {
 - mem.mm.maj_flt：主要页面错误
 - mem.mm.swp_flt：由交换缓存服务的页面错误
 - mem.mm.read_io：由 I/O 支持的读取页面错误
-- mem.mm..compaction：内存压缩事件
+- mem.mm.compaction：内存压缩事件
 - mem.mm.reclaim：内存回收事件
 
 对于每个事件类型，事件记录：
 
 - count：自上一次事件以来事件发生的次数。
-- min_lat：自上一次事件以来记录的最小延迟（mm 事件的持续时间）。
+- avg_lat：自上一次事件以来记录的平均延迟（mm 事件的持续时间）。
 - max_lat：自上一次事件以来记录的最高延迟。
 
 ### UI {#ftrace-ui}
@@ -234,7 +234,7 @@ Android 上的 LMK，无论是旧内核 `lowmemkiller` 还是较新的 `lmkd`，
 
 ### SQL {#lmk-sql}
 
-较新的 lmkd 和传统内核驱动的 lowmemorykiller 事件在导入时被规范化，并在 `instants` 表的 `mem.lmk` 键下可用。
+较新的 lmkd 和传统内核驱动的 lowmemorykiller 事件在导入时被规范化，并在 `instant` 表的 `mem.lmk` 键下可用。
 
 ```sql
 SELECT ts, process.name, process.pid

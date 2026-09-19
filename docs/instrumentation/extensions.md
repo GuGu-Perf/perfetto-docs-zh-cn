@@ -61,7 +61,7 @@ project/
 └── acme_extension.proto
 ```
 
-字段编号 1000 及以上保留给扩展使用。选择一个不会与你共享 trace 的其他扩展生产者冲突的范围。
+字段编号 1000 到 9999 保留给扩展使用。选择一个不会与你共享 trace 的其他扩展生产者冲突的范围。
 
 ### 使扩展对 Trace Processor 和 UI 可见
 
@@ -124,7 +124,7 @@ WHERE EXTRACT_ARG(slice.arg_set_id, 'request_id') IS NOT NULL;
 #include "acme_extension.pbzero.h"  // 从你的 .proto 生成。
 
 TRACE_EVENT("my_cat", "HandleRequest", [&](perfetto::EventContext ctx) {
-  auto* event = ctx.event<perfetto::protos::pbzero::AcmeExtension>();
+  auto* event = ctx.event<com::acme::pbzero::AcmeExtension>();
   event->set_request_id("req-42");
   event->add_retry_latencies_ms(12);
   event->add_retry_latencies_ms(34);
@@ -139,8 +139,8 @@ TRACE_EVENT("my_cat", "HandleRequest", [&](perfetto::EventContext ctx) {
 ```cpp
 TRACE_EVENT(
     "my_cat", "HandleRequest",
-    perfetto::protos::pbzero::AcmeExtension::kRequestId, "req-42",
-    perfetto::protos::pbzero::AcmeExtension::kRetryLatenciesMs,
+    com::acme::pbzero::AcmeExtension::kRequestId, "req-42",
+    com::acme::pbzero::AcmeExtension::kRetryLatenciesMs,
         std::vector<int>{12, 34});
 ```
 

@@ -94,8 +94,9 @@ TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
 
 有关其他类型的支持 Track event 参数，请参阅[下文](#track-event-arguments)。对于更复杂的参数，你可以定义[自己的 protobuf 消息](/protos/perfetto/trace/track_event/track_event.proto)，并将它们作为事件的参数发出。
 
-NOTE: 目前自定义 protobuf 消息需要直接添加到 Perfetto 仓库的 `protos/perfetto/trace` 下，
- 并且 Perfetto 本身也必须重新构建。我们正在[努力消除此限制](https://github.com/google/perfetto/issues/11)。
+NOTE: 下面的方法会将自定义 protobuf 消息直接添加到 Perfetto 仓库的 `protos/perfetto/trace` 下，
+ 并且 Perfetto 本身也必须重新构建。要避免这一点，请改为将它们定义为
+ [TrackEvent extensions](extensions.md)。
 
 作为自定义 Track event 参数类型的示例，将以下内容保存为 `protos/perfetto/trace/track_event/player_info.proto`：
 
@@ -124,8 +125,8 @@ import "protos/perfetto/trace/track_event/player_info.proto";
 
 message TrackEvent {
  ...
- // 新参数类型放在这里。
- optional PlayerInfo player_info = 1000;
+ // 新参数类型放在这里。使用 TrackEvent 上方注释中的 "Next id"。
+ optional PlayerInfo player_info = 58;
 }
 ```
 
@@ -136,7 +137,7 @@ Player my_player;
 TRACE_EVENT("category", "MyEvent", [&](perfetto::EventContext ctx) {
  auto player = ctx.event()->set_player_info();
  player->set_name(my_player.name());
- player->set_player_score(my_player.score());
+ player->set_score(my_player.score());
 });
 ```
 
@@ -521,8 +522,8 @@ TRACE_COUNTER("category", perfetto::CounterTrack("Framerate", "fps"), 120);
 
 ```C++
 perfetto::CounterTrack memory_track = perfetto::CounterTrack("Memory")
- .set_unit("bytes")
- .set_multiplier(1024);
+ .set_unit_name("bytes")
+ .set_unit_multiplier(1024);
 TRACE_COUNTER("category", memory_track, 4 /* = 4096 bytes */);
 ```
 
@@ -725,7 +726,7 @@ class Observer : public perfetto::TrackEventSessionObserver {
 };
 
 Observer observer;
-observer.WaitForTracingToStart();
+observer.WaitForTracingStart();
 ```
 
 [RAII]: https://en.cppreference.com/w/cpp/language/raii

@@ -235,7 +235,7 @@ $ trace_processor_shell profile.pprof
 
 1. **文件加载：** 将 pprof 文件拖放到 Perfetto UI 中或使用文件选择器
 2. **自动检测：** Perfetto 识别 pprof 格式并导入数据
-3. **导航：** 从主导航转到"Pprof"页面
+3. **导航：** 从主导航转到"Aggregate Profiles"页面
 4. **交互式分析：** 选择范围/metrics 并探索火焰图
 
 #### 多 metrics 文件

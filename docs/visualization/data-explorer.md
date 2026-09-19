@@ -29,14 +29,14 @@ Data Explorer 中的工作按**项目**组织。每个项目包含一个查询�
 
 ### 节点
 
-Data Explorer 的核心概念是**节点**。节点分为以下类别：
+Data Explorer 的核心概念是**节点**。节点分为四个类别：
 
 ![Data Explorer 节点类型：源节点、修改节点和多源节点](../images/data-explorer-nodes.png)
 
 - **Source 节点**——提供初始数据。例如：SQL 表、Slice 查询或自定义 SQL 表达式。
 - **修改节点**——接收单个输入并对其进行转换。例如：过滤、聚合、排序、添加列。每行从一个上游节点进入，经过修改或过滤后输出。
 - **多源节点**——组合两个或更多输入的数据，没有单一的主数据源。例如：JOIN、UNION、区间交叉、创建 Slice。
-- **导出节点**——位于流水线末端，在查询图之外产出输出：仪表盘视图、图表、Metric 规范，或用于跨 Trace 分析的 Trace Summary。
+- **导出节点**——位于流水线末端，在查询图之外产出输出：仪表盘视图、Metric 规范，或用于跨 Trace 分析的 Trace Summary。
 
 ### 图
 
@@ -104,7 +104,7 @@ Data Explorer 的核心概念是**节点**。节点分为以下类别：
   <source src="https://storage.googleapis.com/perfetto-misc/de-adding-nodes.webm" type="video/webm">
 </video>
 
-选中一个节点后，打开节点菜单并选择一个操作。新节点会自动连接到选中的节点。操作分为两类：
+选中一个节点后，打开节点菜单并选择一个操作。新节点会自动连接到选中的节点。操作分为三类：
 
 **修改节点**转换单个输入：
 
@@ -115,7 +115,7 @@ Data Explorer 的核心概念是**节点**。节点分为以下类别：
 | [**Sort**](#sort) | 按一列或多列对行排序，升序或降序。 |
 | [**Modify Columns**](#modify-columns) | 重命名、移除或更改列类型。 |
 | [**Add Columns**](#add-columns) | 从辅助源或计算表达式添加列。 |
-| [**Limit / Offset**](#limit-offset) | 限制返回的行数。 |
+| [**Limit and Offset**](#limit-offset) | 限制返回的行数。 |
 | [**Filter During**](#filter) | 保留落在辅助源时间区间内的行。 |
 | [**Counter to Intervals**](#counter-to-intervals) | 将 Counter 数据（时间戳，无持续时间）转换为带 `ts` 和 `dur` 的区间。 |
 | [**Charts**](#charts) | 将数据可视化为条形图或直方图；点击条形可添加过滤。 |
@@ -133,7 +133,7 @@ Data Explorer 的核心概念是**节点**。节点分为以下类别：
 
 | 节点 | 描述 |
 |------|------|
-| [**Dashboard**](#dashboard) | 将数据源导出到仪表盘。 |
+| [**Export to Dashboard**](#dashboard) | 将数据源导出到仪表盘。 |
 | [**Metrics**](#metrics) | 使用值列和维度定义 Trace Metric。 |
 | [**Trace Summary**](#trace-summary) | 将多个 Metric 打包为单个 Trace Summary 规范。 |
 
@@ -147,17 +147,17 @@ Data Explorer 的核心概念是**节点**。节点分为以下类别：
 
 - **列排序**——点击列标题排序
 - **列过滤**——在网格内内联过滤值
-- **导出到 Timeline**——使用数据网格工具栏中的 **Export to timeline** 按钮将结果发送回主 Timeline 作为 [Debug Track](/docs/analysis/debug-tracks.md)
+- **导出到 Timeline**——使用结果面板菜单中的 **Export to Timeline** 项将结果发送回主 Timeline 作为 [Debug Track](/docs/analysis/debug-tracks.md)
 
 要查看选中节点生成的 SQL，点击节点侧边栏中的 **SQL** 标签。**Proto** 标签显示节点的内部查询表示为结构化 Proto——用于调试或以编程方式共享查询图。
 
 ## 导入 / 导出
 
-使用 **Export** 按钮将当前图保存为 JSON 文件。使用 **Import** 重新加载之前保存的图。这在与团队成员共享查询流水线或跨会话保存工作时很有用。
+使用画布菜单中的 **Export to JSON** 将当前图保存为 JSON 文件。使用 **Import from JSON** 重新加载之前保存的图。这在与团队成员共享查询流水线或跨会话保存工作时很有用。
 
 ## 示例
 
-点击 Data Explorer 工具栏中的 **Examples** 加载一组精选的预构建查询图。这些涵盖了常见的分析模式——查找长 Slice、按进程聚合 CPU 时间、按时间窗口过滤事件、JOIN 线程元数据和构建仪表盘——是构建自己查询的良好起点。
+导航面板在 **Tutorials** 和 **Solutions** 下列出了一组精选的预构建查询图。这些涵盖了图的基础知识、JOIN、基于时间的查询以及一个 Slice 分析流水线，是构建自己查询的良好起点。
 
 ## 节点参考
 
@@ -196,7 +196,7 @@ Query 节点只接受一个 `SELECT` 语句。你还可以在之前包含 `INCLU
 
 #### Time Range {#time-range}
 
-一个时间区间，用作数据源。区间可以手动输入或从当前 Timeline 选择同步——后者会在选择更改时动态更新。作为 [Filter During](#filter-during) 或 [Interval Intersect](#interval-intersect) 的输入很有用。
+一个时间区间，用作数据源。区间可以手动输入或从当前 Timeline 选择同步——后者会在选择更改时动态更新。作为 [Filter During](#filter) 或 [Interval Intersect](#interval-intersect) 的输入很有用。
 
 ---
 
@@ -342,7 +342,7 @@ TAB: Apply function
 
 多种类型的多个列可以在单个节点中添加，每种独立配置。如果自动推断不正确，每列的类型可以内联覆盖。
 
-#### Limit / Offset {#limit-offset}
+#### Limit and Offset {#limit-offset}
 
 限制返回的行数，并可选地跳过开头的若干行。等效于 SQL `LIMIT` / `OFFSET`。默认 limit=10，offset=0。适用于采样大型结果或分页浏览数据。
 
@@ -350,7 +350,7 @@ TAB: Apply function
 
 将 Counter 数据——有时间戳但无持续时间——转换为区间，将每个采样与下一个配对，产生 `ts`、`dur`、`next_value` 和 `delta_value` 列。输入必须有 `id`、`ts`、`track_id` 和 `value` 列，且不能已有 `dur` 列。
 
-这是将 Counter 数据与基于区间的节点（如 [Interval Intersect](#interval-intersect) 或 [Filter During](#filter-during)）配合使用的必要前提。
+这是将 Counter 数据与基于区间的节点（如 [Interval Intersect](#interval-intersect) 或 [Filter During](#filter)）配合使用的必要前提。
 
 #### Charts {#charts}
 

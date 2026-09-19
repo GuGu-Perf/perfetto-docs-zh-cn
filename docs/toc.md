@@ -137,6 +137,7 @@
 
   - [命令行工具](#)
 
+    - [trace_processor](reference/trace-processor-cli.md)
     - [perfetto](reference/perfetto-cli.md) {.tag-android .tag-linux}
     - [traced](reference/traced.md) {.tag-android .tag-linux}
     - [traced_probes](reference/traced_probes.md) {.tag-android .tag-linux}
@@ -176,7 +177,6 @@
 
     - [构建](contributing/build-instructions.md) {.tag-contrib}
     - [测试](contributing/testing.md) {.tag-contrib}
-    - [开发者工具](contributing/developer-tools.md) {.tag-contrib}
 
     - [UI 开发](#)
 

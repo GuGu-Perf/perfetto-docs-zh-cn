@@ -60,7 +60,7 @@ https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile)。
 
 #### 使用 Perfetto UI 的记录页面
 
-你还可以使用 [Perfetto UI](https://ui.perfetto.dev/#!/record/memory) 采集 heapprofd profile。在 trace 配置中勾选"Heap profiling"，输入你要定位的进程，单击"Add Device"配对你的手机，并直接从浏览器采集 profile。这在 Windows 上也是可能的。
+你还可以使用 [Perfetto UI](https://ui.perfetto.dev/#!/record/memory) 采集 heapprofd profile。在 trace 配置中勾选"Native heap profiling"，输入你要定位的进程，单击"Connect new device"配对你的手机，并直接从浏览器采集 profile。这在 Windows 上也是可能的。
 
 ## 查看数据
 
@@ -73,9 +73,7 @@ https://raw.githubusercontent.com/google/perfetto/main/tools/heap_profile)。
 * **未释放的 malloc 计数**：在此调用堆栈上完成的没有匹配释放的分配数，在整个 slice 的持续时间内。
 * **总 malloc 计数**：在此调用堆栈上完成的分配（包括具有匹配释放的分配）数，在整个 slice 的持续时间内。
 
-TIP: profile 应用程序时，你可能希望将 `libart.so` 设置为"隐藏正则表达式"。
-
-TIP: 单击左上角的 Left Heavy 以获得良好的可视化。
+TIP: profile 应用程序时，你可能希望将 `libart.so` 设置为"Hide Frame"过滤器。
 
 ## 持续转储
 
@@ -83,7 +81,7 @@ TIP: 单击左上角的 Left Heavy 以获得良好的可视化。
 
 可以配置 heap profiler 定期（不仅仅是在 trace 结束时）存储快照（连续转储），例如每 5000ms:
 
-* 通过在 UI 中将"Continuous dumps interval"设置为 5000。
+* 通过在 UI 中将"Continuous dump interval"设置为 5000。
 * 通过在 [HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig) 中添加
   ```
   continuous_dump_config {
@@ -373,7 +371,7 @@ SELECT
   -- 使用此函数分配且 *未释放* 的内存量
   -- 出现在调用堆栈的任何位置。
   cumulative_size
-FROM android_heap_profile_summary_tree;
+FROM android_heap_profile_summary_tree
 order by abs(cumulative_size) desc;
 ```
 
