@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfetto v57 - Perfetto Blog</title>
+  <meta property="og:title" content="Perfetto v57 - Perfetto Blog">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/blog/perfetto-v57">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+
+  <link rel="alternate" type="application/atom+xml" title="Perfetto blog" href="/blog/atom.xml">
+
+  <script type="text/javascript" src="/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/blog/">
+      <img src="/assets/brand.png">
+      <span class="brand-blog">Blog</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search the blog" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/">Home</a>
+  
+  
+  <a href="/docs/">Docs</a>
+  
+  
+  <a href="/docs/contributing/getting-started#community">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="blog blog-post">
+  <main class="md-content" data-md-file="/blog/perfetto-v57">
+    <a class="blog-back" href="/blog/">All posts</a>
+    <h1>Perfetto v57</h1>
+    <div class="blog-byline">
+      <div class="blog-avatars">
+        
+        <img src="/blog/media/authors/perfetto-team.png" alt="" width="40" height="40" loading="lazy">
+        
+      </div>
+      <div class="blog-byline-text">
+        <div class="blog-authors">
+          @perfetto-team
+        </div>
+        <time datetime="2026-07-02">2026-07-02</time>
+      </div>
+    </div>
+    <p>We&#39;re excited to share Perfetto v57.1! This release introduces an installable <strong>AI skill</strong> that teaches coding agents how to use Perfetto, a long-awaited fix for <strong>overlapping events in JSON traces</strong> (commonly affecting the PyTorch profiler), <strong>state tracks</strong>, a brand-new track type alongside slices and counters, end-to-end support for <strong>systemd journald logs</strong>, a rework of the query results grid, and new SDK capabilities like nested tracks and correlation ids.</p>
+<blockquote>
+<p><em>Note: v57.0 was never released due to an issue with the install of the newly introduced AI skill. v57.1 includes a fix for this issue.</em></p>
+</blockquote>
+<h2><a name="-an-ai-skill-for-perfetto" class="anchor" href="#-an-ai-skill-for-perfetto"></a>🤖 An AI skill for Perfetto</h2><p>Perfetto now ships an <strong>AI skill</strong> that teaches coding agents how to record, query, and analyze traces, including guided workflows for common investigations. It works with any Agent Skills-compatible agent (Claude Code, OpenAI Codex, Gemini CLI, OpenCode, and others) and bundles a working <code>trace_processor</code> for the agent to use:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment"># Claude Code</span>
+/plugin marketplace add google/perfetto@ai-agents
+
+<span class="hljs-comment"># Codex</span>
+codex plugin marketplace add google/perfetto --ref ai-agents
+
+<span class="hljs-comment"># Other agents</span>
+curl -fsSL https://get.perfetto.dev/agents-install | python3 - --agent &lt;opencode|antigravity|pi&gt;</code></div><p>See the <a href="https://perfetto.dev/docs/getting-started/using-ai">Using AI with Perfetto docs</a> for agent-specific install paths and what the skill can do.</p>
+<h2><a name="-overlapping-events-in-json-traces-now-work" class="anchor" href="#-overlapping-events-in-json-traces-now-work"></a>🧩 Overlapping events in JSON traces now work</h2><p>Perfetto now imports overlapping <code>&quot;ph&quot;: &quot;X&quot;</code> (complete) events in JSON (Chrome Trace Event Format) traces instead of silently dropping them. This was a long-standing pain point (<a href="https://github.com/google/perfetto/issues/4280">#4280</a>) for tools which emit overlapping synchronous events, notably traces from the <strong>PyTorch profiler</strong>: the affected slices vanished from both the timeline and SQL, and some users were resorting to self-hosting old versions of the UI. Overlapping events are now ingested onto overflow tracks which the UI merges back into a single thread track, so everything is visible in the timeline and queryable in SQL.</p>
+<p><img src="/blog/media/perfetto-v57/overlapping-json-events-rendering-in-the-timeline.png" alt="overlapping JSON events rendering in the timeline"></p>
+<p>Note that overlapping <code>&quot;X&quot;</code> events remain outside the Trace Event Format spec: the importer records stats naming the offending events (surfaced in the UI&#39;s import warnings) so you can flag them to your tracing tool&#39;s maintainers. If you maintain such a tool, prefer async (<code>&quot;b&quot;</code>/<code>&quot;e&quot;</code>) events, which is how the format natively represents genuinely overlapping intervals.</p>
+<h2><a name="-state-tracks" class="anchor" href="#-state-tracks"></a>🚦 State tracks</h2><p>Slices and counters have a new sibling: <strong>state tracks</strong>, a first-class way to record the state of a system or subsystem over time (e.g. &quot;Buffering&quot;, &quot;Playing&quot;, &quot;Paused&quot;). A state track always has exactly one current value; each event simply transitions it to a new state, and clearing it marks the track as idle.</p>
+<p><img src="/blog/media/perfetto-v57/state-tracks.png" alt="state_tracks"></p>
+<p>You can emit states from all the SDKs:</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// C++ SDK</span>
+<span class="hljs-function">perfetto::StateTrack <span class="hljs-title">track</span><span class="hljs-params">(<span class="hljs-string">&quot;Player state&quot;</span>)</span></span>;
+<span class="hljs-built_in">TRACE_STATE</span>(<span class="hljs-string">&quot;player&quot;</span>, <span class="hljs-string">&quot;Buffering&quot;</span>, track);</code></div><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">// C SDK (high-level API)</span>
+PERFETTO_TE(player, PERFETTO_TE_STATE(<span class="hljs-string">&quot;Buffering&quot;</span>),
+            PERFETTO_TE_REGISTERED_TRACK(&amp;player_state_track));</code></div><p>The Android Java SDK gets the same capability. Trace Processor ingests state events into a new <strong><code>state</code> SQL table</strong>, and the UI renders state tracks natively with a dedicated details panel.</p>
+<h2><a name="-systemd-journald-logs" class="anchor" href="#-systemd-journald-logs"></a>📜 systemd journald logs</h2><p>Linux system logs can now be captured as part of a trace, end to end:</p>
+<ul>
+<li>A new <strong><code>linux.systemd_journald</code> data source</strong> records journald entries while tracing, with filters for minimum syslog priority, <code>SYSLOG_IDENTIFIER</code>s, and systemd unit names.</li>
+<li>Trace Processor stores them alongside Android logcat entries in a <strong>unified log table</strong>, distinguished by a new <code>log_source</code> column (plus a <code>linux_systemd_journald_logs</code> view in the standard library).</li>
+<li>The UI gained a <strong>JournaldLog plugin</strong>: a logs track on the timeline plus a filterable logs tab (priority, tags, free text).</li>
+</ul>
+<p><img src="/blog/media/perfetto-v57/journald.png" alt="journald"></p>
+<p>Big thanks to @staticfloat for contributing this feature!</p>
+<h2><a name="-ui" class="anchor" href="#-ui"></a>🖥️ UI</h2><p>The <strong>query results grid</strong> got a big upgrade: columns can be sorted, reordered, and hidden, the sidebar is collapsible, and SQL errors are now surfaced properly in the grid.</p>
+<p><img src="/blog/media/perfetto-v57/query-grid.png" alt="query_grid"></p>
+<ul>
+<li><strong>Shift + mouse-wheel</strong> scrolls the timeline horizontally.</li>
+<li>The <strong>Heap Dump Explorer</strong> now opens by default on more traces, keeps its state in shared permalinks, and shows <code>oom_score_adj</code> in the overview.</li>
+<li>Saved custom textproto <strong>record configs can be re-opened and edited</strong>.</li>
+<li>Adjacent slices that share a boundary timestamp now render with a <strong>1px gap</strong>, so back-to-back instances of the same slice are visually distinguishable.</li>
+<li>A new <strong>smaps plugin</strong> shows an instants track with a datagrid details panel for traces containing <code>/proc/&lt;pid&gt;/smaps</code> data.</li>
+<li>A new opt-in <strong>Arm Telemetry Solution plugin</strong> adds an Arm CPU page (under Support) for loading Arm CPU telemetry specs, which turn raw PMU counters into derived per-CPU metrics (e.g. IPC, cache misses) shown as tracks.</li>
+</ul>
+<h2><a name="-sdk" class="anchor" href="#-sdk"></a>🧰 SDK</h2><ul>
+<li><strong>Nested tracks</strong> with sibling ordering and merging in the C SDK high-level ABI and the Android Java SDK (<code>PerfettoTrack</code>): build multi-level track hierarchies and control how sibling tracks are sorted and merged in the UI.</li>
+<li><strong>Correlation ids</strong>: tag events that belong to the same logical operation without implying a causal link (use flows for those), via <code>PERFETTO_TE_CORRELATION_ID()</code> / <code>PERFETTO_TE_CORRELATION_ID_STR()</code> in the C SDK and <code>PerfettoTrackEventBuilder.setCorrelationId()</code> in the Java SDK.</li>
+<li>The <code>TRACE_STATE</code> / <code>PERFETTO_TE_STATE()</code> APIs for state tracks described above.</li>
+</ul>
+<h2><a name="-profiling" class="anchor" href="#-profiling"></a>🔬 Profiling</h2><p><code>heapprofd</code>&#39;s <code>process_cmdline</code> now supports <strong>partial wildcard matching</strong> (e.g. <code>system_*</code> or <code>/system/bin/*</code>), with the same semantics as the perf profiling and Java heap dump data sources. Wildcards only match already-running processes, so configs using them must set <code>no_startup = true</code>.</p>
+<h2><a name="-trace-processor" class="anchor" href="#-trace-processor"></a>🧠 Trace Processor</h2><ul>
+<li><code>trace_processor</code> can now <strong>load traces directly from URLs and ui.perfetto.dev permalinks</strong>:</li>
+</ul>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">trace_processor query <span class="hljs-string">&quot;https://ui.perfetto.dev/#!/?s=&lt;hash&gt;&quot;</span> <span class="hljs-string">&quot;select count(*) from slice&quot;</span></code></div><ul>
+<li>Track descriptors support <strong>explicit thread and process ordering</strong>, so producers can control how their processes and threads are sorted in the UI.</li>
+<li>The Adreno GPU <code>adreno_cmdbatch_retired</code> and <code>adreno_cmdbatch_sync</code> ftrace events are now parsed into GPU timeline slices.</li>
+<li>The <code>perfetto</code> <strong>Python package</strong> now defaults to a <code>trace_processor</code> binary pinned to the package version instead of downloading the latest build at runtime, making analysis scripts reproducible. Opt back into the old behavior with <code>TraceProcessorConfig.fetch_latest_trace_processor</code>.</li>
+</ul>
+<h2><a name="-tracing-service-amp-probes" class="anchor" href="#-tracing-service-amp-probes"></a>⚙️ Tracing service &amp; probes</h2><ul>
+<li>The RelayPort IPC service (multi-machine tracing) is now only exposed on producer sockets that explicitly opt in; the new <code>--enable-relay-endpoint-on=&lt;sock&gt;</code> flag enables it per-socket, while <code>--enable-relay-endpoint</code> keeps its existing semantics.</li>
+<li>New ftrace events: <code>psci_domain_idle_enter</code> / <code>psci_domain_idle_exit</code> for finer-grained CPU power-state insight than <code>cpu_idle</code> alone, plus <code>disp_dpu_line_underrun</code> and panel settings events.</li>
+<li>The Windows ETW data source now supports <code>system_io_provider_events</code>.</li>
+</ul>
+<h2><a name="-v57-1-patch-fixes" class="anchor" href="#-v57-1-patch-fixes"></a>🛠️ v57.1 patch fixes</h2><ul>
+<li><strong>AI:</strong> Fixed the AI skill missing its bundled <code>trace_processor</code> wrapper. The wrapper now ships inside the skill directory itself, for every install method and agent.</li>
+</ul>
+<p>Happy Tracing!</p>
+<hr>
+<p>A huge thanks to everyone, both inside and outside of Google, who contributed to making Perfetto v57 a success. ♥️</p>
+<h2><a name="new-contributors" class="anchor" href="#new-contributors"></a>New Contributors</h2><ul>
+<li>@chrislu0129 made their first contribution in <a href="https://github.com/google/perfetto/pull/6012">https://github.com/google/perfetto/pull/6012</a></li>
+<li>@harshitrawatjgd made their first contribution in <a href="https://github.com/google/perfetto/pull/5983">https://github.com/google/perfetto/pull/5983</a></li>
+<li>@zzl360 made their first contribution in <a href="https://github.com/google/perfetto/pull/6048">https://github.com/google/perfetto/pull/6048</a></li>
+<li>@Piotrek605 made their first contribution in <a href="https://github.com/google/perfetto/pull/6089">https://github.com/google/perfetto/pull/6089</a></li>
+<li>@yuzhy8701 made their first contribution in <a href="https://github.com/google/perfetto/pull/6161">https://github.com/google/perfetto/pull/6161</a></li>
+<li>@BogdanLionte made their first contribution in <a href="https://github.com/google/perfetto/pull/6175">https://github.com/google/perfetto/pull/6175</a></li>
+<li>@abhmen01 made their first contribution in <a href="https://github.com/google/perfetto/pull/5284">https://github.com/google/perfetto/pull/5284</a></li>
+<li>@fmeawad made their first contribution in <a href="https://github.com/google/perfetto/pull/6279">https://github.com/google/perfetto/pull/6279</a></li>
+<li>@noamraph made their first contribution in <a href="https://github.com/google/perfetto/pull/6264">https://github.com/google/perfetto/pull/6264</a></li>
+<li>@shaybarak made their first contribution in <a href="https://github.com/google/perfetto/pull/6278">https://github.com/google/perfetto/pull/6278</a></li>
+</ul>
+<p><em>For complete details, see the <a href="https://github.com/google/perfetto/blob/v57.1/CHANGELOG">changelog</a> or <a href="https://github.com/google/perfetto/compare/v56.1...v57.1">view all changes on GitHub</a>.</em></p>
+<p><em>Download Perfetto v57.1 from our <a href="https://github.com/google/perfetto/releases">releases page</a>, get started at <a href="https://perfetto.dev/docs/">docs.perfetto.dev</a>, or try the UI directly at <a href="https://ui.perfetto.dev/">ui.perfetto.dev</a>.</em></p>
+<p><strong>Full Changelog</strong>: <a href="https://github.com/google/perfetto/compare/v56.1...v57.1">https://github.com/google/perfetto/compare/v56.1...v57.1</a></p>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
