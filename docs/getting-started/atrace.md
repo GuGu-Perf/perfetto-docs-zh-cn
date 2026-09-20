@@ -47,30 +47,30 @@ import android.os.Trace;
 import static android.os.Trace.TRACE_TAG_AUDIO;
 
 public void playSound(String path) {
- Trace.traceBegin(TRACE_TAG_AUDIO, "PlaySound");
- try {
+  Trace.traceBegin(TRACE_TAG_AUDIO, "PlaySound");
+  try {
  // 测量打开声音服务所需的时间。
- Trace.traceBegin(TRACE_TAG_AUDIO, "OpenAudioDevice");
- try {
- SoundDevice dev = openAudioDevice();
- } finally {
- Trace.traceEnd();
- }
+    Trace.traceBegin(TRACE_TAG_AUDIO, "OpenAudioDevice");
+    try {
+      SoundDevice dev = openAudioDevice();
+    } finally {
+      Trace.traceEnd();
+    }
 
- for(...) {
- Trace.traceBegin(TRACE_TAG_AUDIO, "SendBuffer");
- try {
- sendAudioBuffer(dev, ...)
- } finally {
- Trace.traceEnd();
- }
+    for(...) {
+      Trace.traceBegin(TRACE_TAG_AUDIO, "SendBuffer");
+      try {
+        sendAudioBuffer(dev, ...)
+      } finally {
+        Trace.traceEnd();
+      }
  // 在 trace 中记录缓冲区使用统计信息。
- Trace.setCounter(TRACE_TAG_AUDIO, "SndBufferUsage", dev.buffer)
- ...
- }
- } finally {
- Trace.traceEnd(); // 结束根 PlaySound slice
- }
+      Trace.setCounter(TRACE_TAG_AUDIO, "SndBufferUsage", dev.buffer)
+      ...
+    }
+  } finally {
+    Trace.traceEnd();  // End of the root PlaySound slice
+  }
 }
 ```
 
@@ -85,24 +85,24 @@ TAB: C/C++ (platform private)
 #include <cutils/trace.h>
 
 void PlaySound(const char* path) {
- ATRACE_BEGIN("PlaySound");
+  ATRACE_BEGIN("PlaySound");
 
  // 测量打开声音服务所需的时间。
- ATRACE_BEGIN("OpenAudioDevice");
- struct snd_dev* dev = OpenAudioDevice();
- ATRACE_END();
+  ATRACE_BEGIN("OpenAudioDevice");
+  struct snd_dev* dev = OpenAudioDevice();
+  ATRACE_END();
 
- for(...) {
- ATRACE_BEGIN("SendBuffer");
- SendAudioBuffer(dev, ...)
- ATRACE_END();
+  for(...) {
+    ATRACE_BEGIN("SendBuffer");
+    SendAudioBuffer(dev, ...)
+    ATRACE_END();
 
  // 在 trace 中记录缓冲区使用统计信息。
- ATRACE_INT("SndBufferUsage", dev->buffer);
- ...
- }
+    ATRACE_INT("SndBufferUsage", dev->buffer);
+    ...
+  }
 
- ATRACE_END(); // 结束根 PlaySound slice
+  ATRACE_END();  // End of the root PlaySound slice
 }
 ```
 
@@ -116,32 +116,32 @@ TAB: Java (SDK)
 import android.os.Trace;
 
 public void playSound(String path) {
- try {
- Trace.beginSection("PlaySound");
+  try {
+    Trace.beginSection("PlaySound");
 
  // 测量打开声音服务所需的时间。
- Trace.beginSection("OpenAudioDevice");
- try {
- SoundDevice dev = openAudioDevice();
- } finally {
- Trace.endSection();
- }
+    Trace.beginSection("OpenAudioDevice");
+    try {
+      SoundDevice dev = openAudioDevice();
+    } finally {
+      Trace.endSection();
+    }
 
- for(...) {
- Trace.beginSection("SendBuffer");
- try {
- sendAudioBuffer(dev, ...)
- } finally {
- Trace.endSection();
- }
+    for(...) {
+      Trace.beginSection("SendBuffer");
+      try {
+        sendAudioBuffer(dev, ...)
+      } finally {
+        Trace.endSection();
+      }
 
  // 在 trace 中记录缓冲区使用统计信息。
- Trace.setCounter("SndBufferUsage", dev.buffer)
- ...
- }
- } finally {
- Trace.endSection(); // 结束根 PlaySound slice
- }
+      Trace.setCounter("SndBufferUsage", dev.buffer)
+      ...
+    }
+  } finally {
+    Trace.endSection();  // End of the root PlaySound slice
+  }
 }
 ```
 
@@ -155,24 +155,24 @@ TAB: C/C++ (NDK)
 #include <android/trace.h>
 
 void PlaySound(const char* path) {
- ATrace_beginSection("PlaySound");
+  ATrace_beginSection("PlaySound");
 
  // 测量打开声音服务所需的时间。
- ATrace_beginSection("OpenAudioDevice");
- struct snd_dev* dev = OpenAudioDevice();
- ATrace_endSection();
+  ATrace_beginSection("OpenAudioDevice");
+  struct snd_dev* dev = OpenAudioDevice();
+  ATrace_endSection();
 
- for(...) {
- ATrace_beginSection("SendBuffer");
- SendAudioBuffer(dev, ...)
- ATrace_endSection();
+  for(...) {
+    ATrace_beginSection("SendBuffer");
+    SendAudioBuffer(dev, ...)
+    ATrace_endSection();
 
  // 在 trace 中记录缓冲区使用统计信息。
- ATrace_setCounter("SndBufferUsage", dev->buffer)
- ...
- }
+    ATrace_setCounter("SndBufferUsage", dev->buffer)
+    ...
+  }
 
- ATrace_endSection(); // 结束根 PlaySound slice
+  ATrace_endSection();  // End of the root PlaySound slice
 }
 ```
 </tabs?>
@@ -195,13 +195,13 @@ import android.os.Trace;
 import static android.os.Trace.TRACE_TAG_AUDIO;
 
 public void playSound(String path) {
- SoundDevice dev = openAudioDevice();
- for(...) {
- sendAudioBuffer(dev, ...)
- ...
+  SoundDevice dev = openAudioDevice();
+  for(...) {
+    sendAudioBuffer(dev, ...)
+    ...
  // 在 trace 中记录缓冲区使用统计信息。
- Trace.setCounter(TRACE_TAG_AUDIO, "SndBufferUsage", dev.buffer.used_bytes)
- }
+    Trace.setCounter(TRACE_TAG_AUDIO, "SndBufferUsage", dev.buffer.used_bytes)
+  }
 }
 ```
 
@@ -216,14 +216,14 @@ TAB: C/C++ (platform private)
 #include <cutils/trace.h>
 
 void PlaySound(const char* path) {
- struct snd_dev* dev = OpenAudioDevice();
+  struct snd_dev* dev = OpenAudioDevice();
 
- for(...) {
- SendAudioBuffer(dev, ...)
+  for(...) {
+    SendAudioBuffer(dev, ...)
 
  // 在 trace 中记录缓冲区使用统计信息。
- ATRACE_INT("SndBufferUsage", dev->buffer.used_bytes);
- }
+    ATRACE_INT("SndBufferUsage", dev->buffer.used_bytes);
+  }
 }
 ```
 
@@ -237,14 +237,14 @@ TAB: Java (SDK)
 import android.os.Trace;
 
 public void playSound(String path) {
- SoundDevice dev = openAudioDevice();
+  SoundDevice dev = openAudioDevice();
 
- for(...) {
- sendAudioBuffer(dev, ...)
+  for(...) {
+    sendAudioBuffer(dev, ...)
 
  // 在 trace 中记录缓冲区使用统计信息。
- Trace.setCounter("SndBufferUsage", dev.buffer.used_bytes)
- }
+    Trace.setCounter("SndBufferUsage", dev.buffer.used_bytes)
+  }
 }
 ```
 
@@ -258,14 +258,14 @@ TAB: C/C++ (NDK)
 #include <android/trace.h>
 
 void PlaySound(const char* path) {
- struct snd_dev* dev = OpenAudioDevice();
+  struct snd_dev* dev = OpenAudioDevice();
 
- for(...) {
- SendAudioBuffer(dev, ...)
+  for(...) {
+    SendAudioBuffer(dev, ...)
 
  // 在 trace 中记录缓冲区使用统计信息。
- ATrace_setCounter("SndBufferUsage", dev->buffer.used_bytes)
- }
+    ATrace_setCounter("SndBufferUsage", dev->buffer.used_bytes)
+  }
 }
 ```
 </tabs?>
@@ -294,21 +294,21 @@ import android.os.Trace;
 import static android.os.Trace.TRACE_TAG_NETWORK;
 
 public class AudioRecordActivity extends Activity {
- private AtomicInteger lastJobId = new AtomicInteger(0);
- private static final String TRACK_NAME = "User Journeys";
+  private AtomicInteger lastJobId = new AtomicInteger(0);
+  private static final String TRACK_NAME = "User Journeys";
 
- ...
- button.setOnClickListener(v -> {
- int jobId = lastJobId.incrementAndGet();
- Trace.asyncTraceForTrackBegin(TRACE_TAG_NETWORK, TRACK_NAME, "Load profile", jobId);
+    ...
+    button.setOnClickListener(v -> {
+        int jobId = lastJobId.incrementAndGet();
+        Trace.asyncTraceForTrackBegin(TRACE_TAG_NETWORK, TRACK_NAME, "Load profile", jobId);
 
  // 模拟异步工作(例如,网络请求)
- new Thread(() -> {
- Thread.sleep(800); // 模拟延迟
- Trace.asyncTraceForTrackEnd(TRACE_TAG_NETWORK, TRACK_NAME, jobId);
- }).start();
- });
- ...
+        new Thread(() -> {
+            Thread.sleep(800); // emulate latency
+            Trace.asyncTraceForTrackEnd(TRACE_TAG_NETWORK, TRACK_NAME, jobId);
+        }).start();
+    });
+    ...
 }
 ```
 
@@ -328,15 +328,15 @@ TAB: C/C++ (platform private)
 static constexpr const char* kTrackName = "User Journeys";
 
 void onButtonClicked() {
- static std::atomic<int> lastJobId{0};
+  static std::atomic<int> lastJobId{0};
 
- int jobId = ++lastJobId;
- ATRACE_ASYNC_FOR_TRACK_BEGIN(kTrackName, "Load profile", jobId);
+  int jobId = ++lastJobId;
+  ATRACE_ASYNC_FOR_TRACK_BEGIN(kTrackName, "Load profile", jobId);
 
- std::thread([jobId]() {
- std::this_thread::sleep_for(std::chrono::milliseconds(800));
- ATRACE_ASYNC_FOR_TRACK_END(kTrackName, jobId);
- }).detach();
+  std::thread([jobId]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(800));
+      ATRACE_ASYNC_FOR_TRACK_END(kTrackName, jobId);
+  }).detach();
 }
 ```
 
@@ -350,20 +350,20 @@ TAB: Java (SDK)
 import android.os.Trace;
 
 public class AudioRecordActivity extends Activity {
- private AtomicInteger lastJobId = new AtomicInteger(0);
+  private AtomicInteger lastJobId = new AtomicInteger(0);
 
- ...
- button.setOnClickListener(v -> {
- int jobId = lastJobId.incrementAndGet();
-Trace.beginAsyncSection("Load profile", jobId);
+    ...
+    button.setOnClickListener(v -> {
+        int jobId = lastJobId.incrementAndGet();
+        Trace.beginAsyncSection("Load profile", jobId);
 
       // 模拟异步工作（例如，网络请求）
-      new Thread(() -> {
-        Thread.sleep(800); // 模拟延迟
-        Trace.endAsyncSection("Load profile", jobId);
- }).start();
- });
- ...
+        new Thread(() -> {
+            Thread.sleep(800); // emulate latency
+             Trace.endAsyncSection("Load profile", jobId);
+        }).start();
+    });
+    ...
 }
 ```
 
@@ -380,15 +380,15 @@ TAB: C/C++ (NDK)
 #include <atomic>
 
 void onButtonClicked() {
- static std::atomic<int> lastJobId{0};
+  static std::atomic<int> lastJobId{0};
 
- int jobId = ++lastJobId;
- ATrace_beginAsyncSection("Load profile", jobId);
+  int jobId = ++lastJobId;
+  ATrace_beginAsyncSection("Load profile", jobId);
 
- std::thread([jobId]() {
- std::this_thread::sleep_for(std::chrono::milliseconds(800));
- ATrace_endAsyncSection("Load profile", jobId);
- }).detach();
+  std::thread([jobId]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(800));
+      ATrace_endAsyncSection("Load profile", jobId);
+  }).detach();
 }
 ```
 </tabs?>
@@ -429,28 +429,28 @@ TAB: Command line
 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace
 
 python3 record_android_trace \
- -o trace_file.perfetto-trace \
- -t 10s \
+  -o trace_file.perfetto-trace \
+  -t 10s \
  # To record atrace from apps.
- -a 'com.myapp' \ # or '*' for tracing all apps
+  -a 'com.myapp'  \  # or '*' for tracing all apps
  # To record atrace from system services.
- am wm webview
+  am wm webview
 ```
 
 TAB: Raw config
 
 ```js
-:data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
- atrace_categories: "am"
- atrace_categories: "wm"
- atrace_categories: "webview"
- atrace_apps: "com.myapp1"
- atrace_apps: "com.myapp2"
- }
- }
+data_sources {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      atrace_categories: "am"
+      atrace_categories: "wm"
+      atrace_categories: "webview"
+      atrace_apps: "com.myapp1"
+      atrace_apps: "com.myapp2"
+    }
+  }
 }
 ```
 </tabs?>

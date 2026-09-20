@@ -29,10 +29,10 @@ TIP: 这些示例中的代码也可在[仓库中](/examples/sdk/README.md) 找�
 #include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
- perfetto::Category("rendering")
- .SetDescription("Events from the graphics subsystem"),
- perfetto::Category("network")
- .SetDescription("Network upload and download statistics"));
+    perfetto::Category("rendering")
+        .SetDescription("Events from the graphics subsystem"),
+    perfetto::Category("network")
+        .SetDescription("Network upload and download statistics"));
 ```
 
 然后，在 cc 文件（例如，`my_app_tracing_categories.cc`）中为类别声明静态存储：
@@ -47,9 +47,9 @@ PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 ```C++
 int main(int argc, char** argv) {
- ...
- perfetto::Tracing::Initialize(args);
- perfetto::TrackEvent::Register(); // 添加此行。
+  ...
+  perfetto::Tracing::Initialize(args);
+  perfetto::TrackEvent::Register(); // 添加此行。
 }
 ```
 
@@ -59,8 +59,8 @@ int main(int argc, char** argv) {
 #include "my_app_tracing_categories.h"
 
 void DrawPlayer() {
- TRACE_EVENT("rendering", "DrawPlayer"); // 开始 "DrawPlayer" slice。
- ...
+  TRACE_EVENT("rendering", "DrawPlayer"); // 开始 "DrawPlayer" slice。
+  ...
  // 结束 "DrawPlayer" slice。
 }
 ```
@@ -71,15 +71,15 @@ void DrawPlayer() {
 
 ```C++
 void LoadGame() {
- DisplayLoadingScreen();
+  DisplayLoadingScreen();
 
- TRACE_EVENT_BEGIN("io", "Loading"); // 开始 "Loading" slice。
- LoadCollectibles();
- LoadVehicles();
- LoadPlayers();
- TRACE_EVENT_END("io"); // 结束 "Loading" slice。
+  TRACE_EVENT_BEGIN("io", "Loading"); // 开始 "Loading" slice。
+  LoadCollectibles();
+  LoadVehicles();
+  LoadPlayers();
+  TRACE_EVENT_END("io"); // 结束 "Loading" slice。
 
- StartGame();
+  StartGame();
 }
 ```
 
@@ -102,8 +102,8 @@ NOTE: 下面的方法会将自定义 protobuf 消息直接添加到 Perfetto 仓
 
 ```protobuf
 message PlayerInfo {
- optional string name = 1;
- optional uint64 score = 2;
+  optional string name = 1;
+  optional uint64 score = 2;
 }
 ```
 
@@ -111,8 +111,8 @@ message PlayerInfo {
 
 ```json
 sources = [
- ...
- "player_info.proto"
+  ...
+  "player_info.proto"
 ]
 ```
 
@@ -124,9 +124,9 @@ import "protos/perfetto/trace/track_event/player_info.proto";
 ...
 
 message TrackEvent {
- ...
+  ...
  // 新参数类型放在这里。使用 TrackEvent 上方注释中的 "Next id"。
- optional PlayerInfo player_info = 58;
+  optional PlayerInfo player_info = 58;
 }
 ```
 
@@ -135,9 +135,9 @@ message TrackEvent {
 ```C++
 Player my_player;
 TRACE_EVENT("category", "MyEvent", [&](perfetto::EventContext ctx) {
- auto player = ctx.event()->set_player_info();
- player->set_name(my_player.name());
- player->set_score(my_player.score());
+  auto player = ctx.event()->set_player_info();
+  player->set_name(my_player.name());
+  player->set_score(my_player.score());
 });
 ```
 
@@ -162,8 +162,8 @@ TRACE_EVENT("rendering", ...); // "rendering" 类别中的事件。
 
 ```C++
 perfetto::Category("rendering.debug")
- .SetDescription("Debug events from the graphics subsystem")
- .SetTags("debug", "my_custom_tag")
+    .SetDescription("Debug events from the graphics subsystem")
+    .SetTags("debug", "my_custom_tag")
 ```
 
 单个 trace event 也可以属于多个类别：
@@ -192,10 +192,10 @@ Perfetto 的 `TraceConfig` 中的 `TrackEventConfig` 字段可用于选择为 tr
 ```protobuf
 message TrackEventConfig {
  // 每个列表项都是一个 glob。每个类别按照下面的说明与列表进行匹配。
- repeated string disabled_categories = 1; // 默认值：[]
- repeated string enabled_categories = 2; // 默认值：[]
- repeated string disabled_tags = 3; // 默认值：["slow", "debug"]
- repeated string enabled_tags = 4; // 默认值：[]
+  repeated string disabled_categories = 1; // 默认值：[]
+  repeated string enabled_categories = 2; // 默认值：[]
+  repeated string disabled_tags = 3; // 默认值：["slow", "debug"]
+  repeated string enabled_tags = 4; // 默认值：[]
 }
 ```
 
@@ -241,8 +241,8 @@ TIP: 也可以通过将 `nullptr` 作为名称传递并手动填充 `TrackEvent:
 
 ```C++
 PERFETTO_DEFINE_TEST_CATEGORY_PREFIXES(
- "test", // 适用于 test.*
- "dontship" // 适用于 dontship.*.
+   "test", // 适用于 test.*
+   "dontship" // 适用于 dontship.*.
 );
 ```
 
@@ -266,7 +266,7 @@ TRACE_EVENT_BEGIN("rendering", name); // 错误。事件名称不是静态的。
 1) 如果事件名称实际上是动态的（例如，std::string），使用 `perfetto::DynamicString` 编写它：
 
 ```C++
- TRACE_EVENT("category", perfetto::DynamicString{dynamic_name});
+  TRACE_EVENT("category", perfetto::DynamicString{dynamic_name});
 ```
 
 DANGER: `perfetto::DynamicString` 必须作为纯右值（临时对象）传递。
@@ -276,7 +276,7 @@ DANGER: `perfetto::DynamicString` 必须作为纯右值（临时对象）传递�
 
 ```C++
 TRACE_EVENT("category", nullptr, [&](perfetto::EventContext ctx) {
- ctx.event()->set_name(dynamic_name);
+  ctx.event()->set_name(dynamic_name);
 });
 ```
 
@@ -297,8 +297,8 @@ DANGER: 对内容动态变化的字符串使用 perfetto::StaticString 可能会
 
 ```C++
 TRACE_EVENT("cat", "name"[, track][, timestamp]
- (, "debug_name", debug_value |, TrackEvent::kFieldName, value)*
- [, lambda]);
+    (, "debug_name", debug_value |, TrackEvent::kFieldName, value)*
+    [, lambda]);
 ```
 
 有效组合的一些示例：
@@ -440,15 +440,15 @@ track 由 uuid 标识，uuid 在整个采集的 trace 中必须是唯一的。�
 ```C++
 void OnNewRequest(size_t request_id) {
  // 在请求进入时打开 slice。
- TRACE_EVENT_BEGIN("category", "HandleRequest", perfetto::Track(request_id));
+  TRACE_EVENT_BEGIN("category", "HandleRequest", perfetto::Track(request_id));
 
  // 启动线程来处理请求。
- std::thread worker_thread([=] {
+  std::thread worker_thread([=] {
  // ... 生成响应 ...
 
  // 现在关闭请求的 slice，因为我们完成了处理。
- TRACE_EVENT_END("category", perfetto::Track(request_id));
- });
+    TRACE_EVENT_END("category", perfetto::Track(request_id));
+  });
 ```
 
 track 还可以选择用元数据注解：
@@ -465,7 +465,7 @@ perfetto::TrackEvent::SetTrackDescriptor(track, desc);
 auto desc = perfetto::ProcessTrack::Current().Serialize();
 desc.mutable_process()->set_process_name("MyProcess");
 perfetto::TrackEvent::SetTrackDescriptor(
- perfetto::ProcessTrack::Current(), desc);
+    perfetto::ProcessTrack::Current(), desc);
 ```
 
 元数据在 tracing 会话之间保持有效。要释放 track 的数据，调用 EraseTrackDescriptor：
@@ -488,14 +488,14 @@ Flow 可用于链接两个（或更多）事件（slice 或 instant），将它�
 uint64_t request_id = GetRequestId();
 
 {
- TRACE_EVENT("rendering", "HandleRequestPhase1",
- perfetto::Flow::ProcessScoped(request_id));
+  TRACE_EVENT("rendering", "HandleRequestPhase1",
+              perfetto::Flow::ProcessScoped(request_id));
  //...
 }
 
 std::thread t1([&] {
- TRACE_EVENT("rendering", "HandleRequestPhase2",
- perfetto::TerminatingFlow::ProcessScoped(request_id));
+  TRACE_EVENT("rendering", "HandleRequestPhase2",
+              perfetto::TerminatingFlow::ProcessScoped(request_id));
  //...
 });
 ```
@@ -523,8 +523,8 @@ TRACE_COUNTER("category", perfetto::CounterTrack("Framerate", "fps"), 120);
 
 ```C++
 perfetto::CounterTrack memory_track = perfetto::CounterTrack("Memory")
- .set_unit_name("bytes")
- .set_unit_multiplier(1024);
+    .set_unit_name("bytes")
+    .set_unit_multiplier(1024);
 TRACE_COUNTER("category", memory_track, 4 /* = 4096 bytes */);
 ```
 
@@ -648,17 +648,17 @@ Interning 可用于避免在整个 trace 中重复相同的常量数据（例如
 
 ```C++
 struct MyInternedData
- : public perfetto::TrackEventInternedDataIndex<
- MyInternedData,
- perfetto::protos::pbzero::InternedData::kMyInternedDataFieldNumber,
- const char*> {
- static void Add(perfetto::protos::pbzero::InternedData* interned_data,
- size_t iid,
- const char* value) {
- auto my_data = interned_data->add_my_interned_data();
- my_data->set_iid(iid);
- my_data->set_value(value);
- }
+    : public perfetto::TrackEventInternedDataIndex<
+        MyInternedData,
+        perfetto::protos::pbzero::InternedData::kMyInternedDataFieldNumber,
+        const char*> {
+  static void Add(perfetto::protos::pbzero::InternedData* interned_data,
+                   size_t iid,
+                   const char* value) {
+    auto my_data = interned_data->add_my_interned_data();
+    my_data->set_iid(iid);
+    my_data->set_value(value);
+  }
 };
 ```
 
@@ -666,11 +666,11 @@ struct MyInternedData
 
 ```C++
 TRACE_EVENT(
- "category", "Event", [&](perfetto::EventContext ctx) {
- auto my_message = ctx.event()->set_my_message();
- size_t iid = MyInternedData::Get(&ctx, "Repeated data to be interned");
- my_message->set_iid(iid);
- });
+   "category", "Event", [&](perfetto::EventContext ctx) {
+     auto my_message = ctx.event()->set_my_message();
+     size_t iid = MyInternedData::Get(&ctx, "Repeated data to be interned");
+     my_message->set_iid(iid);
+   });
 ```
 
 请注意，interning 数据是强类型的，即每类 interning 数据使用标识符的单独命名空间。
@@ -681,21 +681,21 @@ TRACE_EVENT(
 
 ```C++
 class Observer : public perfetto::TrackEventSessionObserver {
- public:
- ~Observer() override = default;
+  public:
+  ~Observer() override = default;
 
- void OnSetup(const perfetto::DataSourceBase::SetupArgs&) override {
+  void OnSetup(const perfetto::DataSourceBase::SetupArgs&) override {
  // 配置 tracing 会话时调用。注意 tracing 尚未激活，
  // 所以这里发出的 Track events 不会被记录。
- }
+  }
 
- void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
  // 启动 tracing 会话时调用。可以从此回调发出 Track events。
- }
+  }
 
- void OnStop(const perfetto::DataSourceBase::StopArgs&) override {
+  void OnStop(const perfetto::DataSourceBase::StopArgs&) override {
  // 停止 tracing 会话时调用。仍然可以从此回调发出 Track events。
- }
+  }
 };
 ```
 
@@ -706,23 +706,23 @@ class Observer : public perfetto::TrackEventSessionObserver {
 ```C++
 class Observer : public perfetto::TrackEventSessionObserver {
  public:
- Observer() { perfetto::TrackEvent::AddSessionObserver(this); }
- ~Observer() { perfetto::TrackEvent::RemoveSessionObserver(this); }
+  Observer() { perfetto::TrackEvent::AddSessionObserver(this); }
+  ~Observer() { perfetto::TrackEvent::RemoveSessionObserver(this); }
 
- void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
- std::unique_lock<std::mutex> lock(mutex);
- cv.notify_one();
- }
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.notify_one();
+  }
 
- void WaitForTracingStart() {
- printf("Waiting for tracing to start...\n");
- std::unique_lock<std::mutex> lock(mutex);
- cv.wait(lock, [] { return perfetto::TrackEvent::IsEnabled(); });
- printf("Tracing started\n");
- }
+  void WaitForTracingStart() {
+    printf("Waiting for tracing to start...\n");
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.wait(lock, [] { return perfetto::TrackEvent::IsEnabled(); });
+    printf("Tracing started\n");
+  }
 
- std::mutex mutex;
- std::condition_variable cv;
+  std::mutex mutex;
+  std::condition_variable cv;
 };
 
 Observer observer;

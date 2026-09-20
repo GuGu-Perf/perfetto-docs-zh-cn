@@ -77,10 +77,10 @@ tools/ninja -C out/android
 
 # 或者,显式列出目标。
 tools/ninja -C out/android \
- traced \ # Tracing 服务。
- traced_probes \ # Ftrace 互操作和 /proc 轮询器。
- perfetto \ # 命令行客户端。
- trace_processor_shell # Trace 解析和转换。
+  traced \ # Tracing 服务。
+  traced_probes \ # Ftrace 互操作和 /proc 轮询器。
+  perfetto \ # 命令行客户端。
+  trace_processor_shell # Trace 解析和转换。
 ...
 ```
 
@@ -329,7 +329,7 @@ cxx="${CXX}"
 
 target_cpu = "x86" | "x64" | "arm" | "arm64"
 target_os = "linux" | "android"
-target_triplet = "arm-linux-gnueabi" | "x86_64-linux-gnu" | ...
+target_triplet =  "arm-linux-gnueabi" | "x86_64-linux-gnu" | ...
 ```
 
 与 GNU Makefile 交叉工具链构建环境集成时，相应环境变量的典型映射是：
@@ -393,26 +393,26 @@ tools/gn gen out/default --export-compile-commands
 
 ```json
 {
- "C_Cpp.clang_format_path": "${workspaceRoot}/buildtools/mac/clang-format",
- "C_Cpp.clang_format_sortIncludes": true,
- "files.exclude": {
- "out/*/obj": true,
- "out/*/gen": true
- },
- "clangd.arguments": [
- "--compile-commands-dir=${workspaceFolder}/out/mac_debug",
- "--completion-style=detailed",
- "--header-insertion=never"
- ],
- "eslint.workingDirectories": ["./ui"],
- "prettier.configPath": "ui/.prettierrc.yml",
- "typescript.preferences.importModuleSpecifier": "relative",
- "[typescript]": {
- "editor.defaultFormatter": "esbenp.prettier-vscode"
- },
- "[scss]": {
- "editor.defaultFormatter": "esbenp.prettier-vscode"
- }
+  "C_Cpp.clang_format_path": "${workspaceRoot}/buildtools/mac/clang-format",
+  "C_Cpp.clang_format_sortIncludes": true,
+  "files.exclude": {
+    "out/*/obj": true,
+    "out/*/gen": true
+  },
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}/out/mac_debug",
+    "--completion-style=detailed",
+    "--header-insertion=never"
+  ],
+  "eslint.workingDirectories": ["./ui"],
+  "prettier.configPath": "ui/.prettierrc.yml",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
 ```
 
@@ -424,20 +424,20 @@ tools/gn gen out/default --export-compile-commands
 
 ```json
 {
- "version": "0.2.0",
- "configurations": [
- {
- "request": "launch",
- "type": "cppdbg",
- "name": "Perfetto unittests",
- "program": "${workspaceRoot}/out/mac_debug/perfetto_unittests",
- "args": [
- "--gtest_filter=TracingServiceImplTest.StopTracingTriggerRingBuffer"
- ],
- "cwd": "${workspaceFolder}/out/mac_debug",
- "MIMode": "lldb"
- }
- ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "request": "launch",
+      "type": "cppdbg",
+      "name": "Perfetto unittests",
+      "program": "${workspaceRoot}/out/mac_debug/perfetto_unittests",
+      "args": [
+        "--gtest_filter=TracingServiceImplTest.StopTracingTriggerRingBuffer"
+      ],
+      "cwd": "${workspaceFolder}/out/mac_debug",
+      "MIMode": "lldb"
+    }
+  ]
 }
 ```
 

@@ -12,14 +12,14 @@ _**状态：** 已完成 **·** lalitm **·** 2025-09-30_
 
 ```mermaid
 graph LR
- A[pprof 文件] --> B[PprofTraceReader]
- B --> C[aggregate_profile 表]
- B --> D[aggregate_sample 表]
- B --> E[stack_profile_* 表]
- C --> F[UI: 范围/metrics 选择]
- D --> F
- E --> F
- F --> G[交互式火焰图]
+    A[pprof file] --> B[PprofTraceReader]
+    B --> C[aggregate_profile 表]
+    B --> D[aggregate_sample 表]
+    B --> E[stack_profile_* 表]
+    C --> F[UI: 范围/metrics 选择]
+    D --> F
+    E --> F
+    F --> G[交互式火焰图]
 ```
 
 实现建立在现有的 Perfetto 基础设施之上：
@@ -69,16 +69,16 @@ graph LR
 ```cpp
 class PprofTraceReader : public ChunkedTraceReader {
  public:
- explicit PprofTraceReader(TraceProcessorContext* context);
+  explicit PprofTraceReader(TraceProcessorContext* context);
 
- base::Status Parse(TraceBlobView blob) override;
- base::Status NotifyEndOfFile() override;
+  base::Status Parse(TraceBlobView blob) override;
+  base::Status NotifyEndOfFile() override;
 
  private:
- base::Status ParseProfile();
+  base::Status ParseProfile();
 
- TraceProcessorContext* context_;
- std::vector<uint8_t> buffer_;
+  TraceProcessorContext* context_;
+  std::vector<uint8_t> buffer_;
 };
 ```
 
@@ -93,19 +93,19 @@ class PprofTraceReader : public ChunkedTraceReader {
 ```sql
 -- 来自 pprof 文件的每个分析 metrics 的元数据
 CREATE TABLE aggregate_profile (
- id INTEGER PRIMARY KEY,
- scope TEXT, -- 文件标识符(例如 "cpu.pprof")
- name TEXT, -- 显示名称(例如 "pprof cpu")
- sample_type_type TEXT, -- pprof ValueType.type(例如 "cpu")
- sample_type_unit TEXT -- pprof ValueType.unit(例如 "nanoseconds")
+  id INTEGER PRIMARY KEY,
+  scope TEXT, -- 文件标识符(例如 "cpu.pprof")
+  name TEXT, -- 显示名称(例如 "pprof cpu")
+  sample_type_type TEXT, -- pprof ValueType.type(例如 "cpu")
+  sample_type_unit TEXT -- pprof ValueType.unit(例如 "nanoseconds")
 );
 
 -- 按调用站点聚合的样本值
 CREATE TABLE aggregate_sample (
- id INTEGER PRIMARY KEY,
- aggregate_profile_id INTEGER, -- FK 到 aggregate_profile
- callsite_id INTEGER, -- FK 到 stack_profile_callsite
- value REAL -- 样本计数/值
+  id INTEGER PRIMARY KEY,
+  aggregate_profile_id INTEGER, -- FK 到 aggregate_profile
+  callsite_id INTEGER, -- FK 到 stack_profile_callsite
+  value REAL -- 样本计数/值
 );
 ```
 
@@ -145,11 +145,11 @@ CREATE TABLE aggregate_sample (
 - 通过 `aggregate_sample` 表将样本链接到调用站点
 
 ```
-Pprof 样本 → 位置 ID [3,2,1] (叶优先)
- ↓
-Perfetto 调用站点层次结构: 1 → 2 → 3 (根到叶)
- ↓
-多个 aggregate_sample 条目(每个值类型一个)
+Pprof Sample → Location IDs [3,2,1] (leaf first)
+             ↓
+Perfetto Callsite hierarchy: 1 → 2 → 3 (root to leaf)
+                            ↓
+Multiple aggregate_sample entries (one per value type)
 ```
 
 ### UI 实现
@@ -169,14 +169,14 @@ UI 提供从主导航访问的 pprof 分析专用页面。页面自动发现可�
 ```typescript
 // 发现可用的 pprof 数据
 const scopesResult = await trace.engine.query(`
- SELECT DISTINCT scope FROM __intrinsic_aggregate_profile ORDER BY scope
+  SELECT DISTINCT scope FROM __intrinsic_aggregate_profile ORDER BY scope
 `);
 
 // 加载选定范围的 metrics
 const metricsResult = await trace.engine.query(`
- SELECT sample_type_type, sample_type_unit
- FROM __intrinsic_aggregate_profile
- WHERE scope = '${selectedScope}'
+  SELECT sample_type_type, sample_type_unit
+  FROM __intrinsic_aggregate_profile
+  WHERE scope = '${selectedScope}'
 `);
 ```
 
@@ -186,29 +186,29 @@ const metricsResult = await trace.engine.query(`
 
 ```typescript
 const flamegraphMetrics = metricsFromTableOrSubquery(
- `
- WITH metrics AS MATERIALIZED (
- SELECT
- callsite_id,
- sum(sample.value) AS self_value
- FROM __intrinsic_aggregate_sample sample
- JOIN __intrinsic_aggregate_profile profile
- ON sample.aggregate_profile_id = profile.id
- WHERE profile.scope = '${scope}'
- AND profile.sample_type_type = '${metric}'
- GROUP BY callsite_id
- )
- SELECT
- c.id,
- c.parent_id as parentId,
- c.name,
- c.mapping_name,
- coalesce(m.self_value, 0) AS self_value
- FROM _callstacks_for_stack_profile_samples!(metrics) AS c
- LEFT JOIN metrics AS m USING (callsite_id)
- `,
- [{ name: 'Pprof Samples', unit: unit, columnName: 'self_value' }],
- 'include perfetto module callstacks.stack_profile'
+  `
+    WITH metrics AS MATERIALIZED (
+      SELECT
+        callsite_id,
+        sum(sample.value) AS self_value
+      FROM __intrinsic_aggregate_sample sample
+      JOIN __intrinsic_aggregate_profile profile
+        ON sample.aggregate_profile_id = profile.id
+      WHERE profile.scope = '${scope}'
+        AND profile.sample_type_type = '${metric}'
+      GROUP BY callsite_id
+    )
+    SELECT
+      c.id,
+      c.parent_id as parentId,
+      c.name,
+      c.mapping_name,
+      coalesce(m.self_value, 0) AS self_value
+    FROM _callstacks_for_stack_profile_samples!(metrics) AS c
+    LEFT JOIN metrics AS m USING (callsite_id)
+  `,
+  [{ name: 'Pprof Samples', unit: unit, columnName: 'self_value' }],
+  'include perfetto module callstacks.stack_profile'
 );
 ```
 
@@ -224,11 +224,11 @@ $ trace_processor_shell profile.pprof
 
 # 查询可用 metrics
 > SELECT scope, sample_type_type, sample_type_unit
- FROM __intrinsic_aggregate_profile;
+  FROM __intrinsic_aggregate_profile;
 
 # 检查样本数据
 > SELECT COUNT(*) FROM __intrinsic_aggregate_sample
- WHERE aggregate_profile_id = 1;
+  WHERE aggregate_profile_id = 1;
 ```
 
 #### Web UI 分析

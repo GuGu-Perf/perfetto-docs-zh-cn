@@ -26,7 +26,7 @@ tp = TraceProcessor(trace='trace.perfetto-trace')
 
 qr_it = tp.query('SELECT name FROM slice')
 for row in qr_it:
- print(row.name)
+  print(row.name)
 ```
 
 **输出**
@@ -56,14 +56,14 @@ print(qr_df.to_string())
 **输出**
 
 ```
-ts name
+ts                   name
 -------------------- ---------------------------
- 261187017446933 eglSwapBuffersWithDamageKHR
- 261187017518340 onMessageReceived
- 261187020825163 queueBuffer
- 261187021345235 bufferLoad
- 261187121345235 query
- ...
+     261187017446933 eglSwapBuffersWithDamageKHR
+     261187017518340 onMessageReceived
+     261187020825163 queueBuffer
+     261187021345235 bufferLoad
+     261187121345235 query
+     ...
 ```
 
 ## 初始化
@@ -106,12 +106,12 @@ tp = TraceProcessor(trace='trace.perfetto-trace', addr='localhost:9001')
 from perfetto.trace_processor.api import TraceProcessor, TraceProcessorConfig, SqlPackage
 
 config = TraceProcessorConfig(
- bin_path='/path/to/trace_processor', # 自定义二进制文件的路径
- verbose=True,
- add_sql_packages=[
- '/path/to/my/sql/modules', # 使用目录名称作为包名称
- SqlPackage('/path/to/other', package='custom.pkg') # 自定义包名称
- ]
+    bin_path='/path/to/trace_processor', # 自定义二进制文件的路径
+    verbose=True,
+    add_sql_packages=[
+        '/path/to/my/sql/modules', # 使用目录名称作为包名称
+        SqlPackage('/path/to/other', package='custom.pkg') # 自定义包名称
+    ]
 )
 tp = TraceProcessor(trace='trace.perfetto-trace', config=config)
 ```
@@ -137,7 +137,7 @@ tp = TraceProcessor(trace='trace.perfetto-trace')
 
 qr_it = tp.query('SELECT ts, dur, name FROM slice')
 for row in qr_it:
- print(row.ts, row.dur, row.name)
+  print(row.ts, row.dur, row.name)
 ```
 
 **输出**
@@ -166,14 +166,14 @@ print(qr_df.to_string())
 **输出**
 
 ```
-ts dur name
+ts                   dur                  name
 -------------------- -------------------- ---------------------------
- 261187017446933 358594 eglSwapBuffersWithDamageKHR
- 261187017518340 357 onMessageReceived
- 261187020825163 9948 queueBuffer
- 261187021345235 642 bufferLoad
- 261187121345235 153 query
- ...
+     261187017446933               358594 eglSwapBuffersWithDamageKHR
+     261187017518340                  357 onMessageReceived
+     261187020825163                 9948 queueBuffer
+     261187021345235                  642 bufferLoad
+     261187121345235                  153 query
+     ...
 ```
 
 或者，可以将结果转换为 [Polars](https://pola.rs/) DataFrame，只需使用 `as_polars_dataframe()`。Polars 是一个可选依赖。
@@ -195,11 +195,12 @@ shape: (5, 3)
 │ ---                 ┆ ---    ┆ ---                         │
 │ i64                 ┆ i64    ┆ str                         │
 ╞═════════════════════╪════════╪═════════════════════════════╡
-│  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
-│  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
-│  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
-│  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
-│  261187016624358    ┆ 488669 ┆ android.graphics.SurfaceT…  │
+│ 261187017446933     ┆ 358594 ┆ eglSwapBuffersWithDamageKHR │
+│ 261187017518340     ┆    357 ┆ onMessageReceived           │
+│ 261187020825163     ┆   9948 ┆ queueBuffer                 │
+│ 261187021345235     ┆    642 ┆ bufferLoad                  │
+│ 261187121345235     ┆    153 ┆ query                       │
+│ …                   ┆ …      ┆ …                           │
 └─────────────────────┴────────┴─────────────────────────────┘
 ```
 
@@ -230,28 +231,28 @@ from perfetto.trace_processor import TraceProcessor
 
 spec = """
 metric_spec {
- id: "memory_per_process"
- dimensions: "process_name"
- value: "avg_rss_and_swap"
- query: {
- table: {
- table_name: "memory_rss_and_swap_per_process"
- module_name: "linux.memory.process"
- }
- group_by: {
- column_names: "process_name"
- aggregates: {
- column_name: "rss_and_swap"
- op: DURATION_WEIGHTED_MEAN
- result_column_name: "avg_rss_and_swap"
- }
- }
- }
+  id: "memory_per_process"
+  dimensions: "process_name"
+  value: "avg_rss_and_swap"
+  query: {
+    table: {
+      table_name: "memory_rss_and_swap_per_process"
+      module_name: "linux.memory.process"
+    }
+    group_by: {
+      column_names: "process_name"
+      aggregates: {
+        column_name: "rss_and_swap"
+        op: DURATION_WEIGHTED_MEAN
+        result_column_name: "avg_rss_and_swap"
+      }
+    }
+  }
 }
 """
 with TraceProcessor(trace='trace.perfetto-trace') as tp:
- summary = tp.trace_summary(specs=[spec])
- print(summary)
+    summary = tp.trace_summary(specs=[spec])
+    print(summary)
 ```
 
 ### Export
@@ -289,7 +290,7 @@ metatrace_bytes = tp.disable_and_read_metatrace()
 
 # 你现在可以将其加载到另一个 TraceProcessor 实例中
 with open('tp_metatrace.pftrace', 'wb') as f:
- f.write(metatrace_bytes)
+    f.write(metatrace_bytes)
 tp_meta = TraceProcessor(trace='tp_metatrace.pftrace')
 tp_meta.query('select * from slice')
 ```
@@ -312,64 +313,64 @@ print(ad_cpu_metrics)
 
 ```
 metrics {
- android_cpu {
- process_info {
- name: "/system/bin/init"
- threads {
- name: "init"
- core {
- id: 1
- metrics {
- mcycles: 1
- runtime_ns: 570365
- min_freq_khz: 1900800
- max_freq_khz: 1900800
- avg_freq_khz: 1902017
- }
- }
- core {
- id: 3
- metrics {
- mcycles: 0
- runtime_ns: 366406
- min_freq_khz: 1900800
- max_freq_khz: 1900800
- avg_freq_khz: 1902908
- }
- }
- ...
- }
- ...
- }
- process_info {
- name: "/system/bin/logd"
- threads {
- name: "logd.writer"
- core {
- id: 0
- metrics {
- mcycles: 8
- runtime_ns: 33842357
- min_freq_khz: 595200
- max_freq_khz: 1900800
- avg_freq_khz: 1891825
- }
- }
- core {
- id: 1
- metrics {
- mcycles: 9
- runtime_ns: 36019300
- min_freq_khz: 1171200
- max_freq_khz: 1900800
- avg_freq_khz: 1887969
- }
- }
- ...
- }
- ...
- }
- ...
- }
+  android_cpu {
+    process_info {
+      name: "/system/bin/init"
+      threads {
+        name: "init"
+        core {
+          id: 1
+          metrics {
+            mcycles: 1
+            runtime_ns: 570365
+            min_freq_khz: 1900800
+            max_freq_khz: 1900800
+            avg_freq_khz: 1902017
+          }
+        }
+        core {
+          id: 3
+          metrics {
+            mcycles: 0
+            runtime_ns: 366406
+            min_freq_khz: 1900800
+            max_freq_khz: 1900800
+            avg_freq_khz: 1902908
+          }
+        }
+        ...
+      }
+      ...
+    }
+    process_info {
+      name: "/system/bin/logd"
+      threads {
+        name: "logd.writer"
+        core {
+          id: 0
+          metrics {
+            mcycles: 8
+            runtime_ns: 33842357
+            min_freq_khz: 595200
+            max_freq_khz: 1900800
+            avg_freq_khz: 1891825
+          }
+        }
+        core {
+          id: 1
+          metrics {
+            mcycles: 9
+            runtime_ns: 36019300
+            min_freq_khz: 1171200
+            max_freq_khz: 1900800
+            avg_freq_khz: 1887969
+          }
+        }
+        ...
+      }
+      ...
+    }
+    ...
+  }
 }
 ```

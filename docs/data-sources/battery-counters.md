@@ -65,16 +65,16 @@ Config proto:
 
 ```protobuf
 data_sources: {
- config {
- name: "android.power"
- android_power_config {
- battery_poll_ms: 250
- battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
- battery_counters: BATTERY_COUNTER_CHARGE
- battery_counters: BATTERY_COUNTER_CURRENT
- battery_counters: BATTERY_COUNTER_VOLTAGE
- }
- }
+    config {
+        name: "android.power"
+        android_power_config {
+            battery_poll_ms: 250
+            battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
+            battery_counters: BATTERY_COUNTER_CHARGE
+            battery_counters: BATTERY_COUNTER_CURRENT
+            battery_counters: BATTERY_COUNTER_VOLTAGE
+        }
+    }
 }
 ```
 
@@ -82,9 +82,9 @@ data_sources: {
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.sysfs_power"
- }
+    config {
+        name: "linux.sysfs_power"
+    }
 }
 ```
 
@@ -118,14 +118,14 @@ Config proto:
 
 ```protobuf
 data_sources: {
- config {
- name: "android.power"
- android_power_config {
- battery_poll_ms: 250
- collect_power_rails: true
+    config {
+        name: "android.power"
+        android_power_config {
+            battery_poll_ms: 250
+            collect_power_rails: true
  # 注意:可以在此部分中同时指定轨和电池 Counter。
- }
- }
+        }
+    }
 }
 ```
 

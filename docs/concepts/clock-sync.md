@@ -29,13 +29,13 @@
 
 ```protobuf
 message TracePacket {
- optional uint64 timestamp = 8;
+  optional uint64 timestamp = 8;
 
  // 指定用于 TracePacket |timestamp| 的时钟 ID。可以是
  // ClockSnapshot::BuiltinClocks 中的内置类型之一，或
  // 生产者定义的时钟 id。
  // 如果未指定，默认为 BuiltinClocks::BOOTTIME。
- optional uint32 timestamp_clock_id = 58;
+  optional uint32 timestamp_clock_id = 58;
 
 ```
 
@@ -97,8 +97,8 @@ trace 导入器([Trace Processor](/docs/analysis/trace-processor.md)) 使用此�
 例如，假设 trace 包含 `CLOCK_BOOTTIME` 和 `CLOCK_MONOTONIC` 的 `ClockSnapshot`，如下所示：
 
 ```python
-CLOCK_MONOTONIC 1000 1100 1200 1900 ... 2000 2100
-CLOCK_BOOTTIME 2000 2100 2200 2900 ... 3500 3600
+CLOCK_MONOTONIC     1000    1100   1200   1900  ...  2000   2100
+CLOCK_BOOTTIME      2000    2100   2200   2900  ...  3500   3600
 ```
 
 在此示例中，`CLOCK_MONOTONIC` 比 `CLOCK_BOOTTIME` 领先 1000 ns，直到 T=2900。然后两个时钟失去同步（例如，设备被挂起），并且在下一个快照中，两个时钟相距 1500 ns。
@@ -122,9 +122,9 @@ CLOCK_BOOTTIME 2000 2100 2200 2900 ... 3500 3600
 这允许处理以下复杂场景：
 
 ```python
-CUSTOM_CLOCK 1000 3000
-CLOCK_MONOTONIC 1100 1200 3200 4000
-CLOCK_BOOTTIME 5200 9000
+CUSTOM_CLOCK        1000                 3000
+CLOCK_MONOTONIC     1100       1200      3200          4000
+CLOCK_BOOTTIME                 5200                    9000
 ```
 
 在上面的示例中，没有快照直接链接 `CUSTOM_CLOCK` 和 `CLOCK_BOOTTIME`。但是存在一个间接路径，允许通过 `CUSTOM_CLOCK -> CLOCK_MONOTONIC -> CLOCK_BOOTTIME` 进行转换。
@@ -134,12 +134,12 @@ CLOCK_BOOTTIME 5200 9000
 ```python
 # 步骤 1
 CUSTOM_CLOCK = 3503
-最近快照: {CUSTOM_CLOCK:3000, CLOCK_MONOTONIC:3200}
+Nearest snapshot: {CUSTOM_CLOCK:3000, CLOCK_MONOTONIC:3200}
 CLOCK_MONOTONIC = (3503 - 3000) + 3200 = 3703
 
 # 步骤 2
 CLOCK_MONOTONIC = 3703
-最近快照: {CLOCK_MONOTONIC:1200, CLOCK_BOOTTIME:5200}
+Nearest snapshot: {CLOCK_MONOTONIC:1200, CLOCK_BOOTTIME:5200}
 CLOCK_BOOTTIME = (3703 - 1200) + 5200 = 7703
 ```
 

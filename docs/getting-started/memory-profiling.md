@@ -75,9 +75,9 @@ TAB: Android (Command line)
 #### 说明
 
 ```bash
-:$ adb devices -l
+$ adb devices -l
 List of devices attached
-24121FDH20006S device usb:2-2.4.2 product:panther model:Pixel_7 device:panther transport_id:1
+24121FDH20006S         device usb:2-2.4.2 product:panther model:Pixel_7 device:panther transport_id:1
 ```
 
 如果报告了多个设备或模拟器，你必须预先选择一个，如下所示：
@@ -206,25 +206,25 @@ INCLUDE PERFETTO MODULE android.memory.heap_profile.summary_tree;
 
 SELECT
  -- 调用栈的 id。在此上下文中,调用栈是直到根的唯一帧集。
- id,
+  id,
  -- 此调用栈的父调用栈的 id。
- parent_id,
+  parent_id,
  -- 此调用栈的帧的函数名称。
- name,
+  name,
  -- 包含帧的映射的名称。这可以是 native 二进制文件、库、JAR 或 APK。
- mapping_name,
+  mapping_name,
  -- 包含函数的文件的名称。
- source_file,
+  source_file,
  -- 文件中函数所在的行号。
- line_number,
+  line_number,
  -- 以此函数为叶帧分配且*未释放*的内存量。
- self_size,
+  self_size,
  -- 以此函数出现在调用栈上任何位置分配且*未释放*的内存量。
- cumulative_size,
+  cumulative_size,
  -- 以此函数为叶帧分配的内存量。这可能包括后来被释放的内存。
- self_alloc_size,
+  self_alloc_size,
  -- 以此函数出现在调用栈上任何位置分配的内存量。这可能包括后来被释放的内存。
- cumulative_alloc_size
+  cumulative_alloc_size
 FROM android_heap_profile_summary_tree;
 ```
 
@@ -278,9 +278,9 @@ TAB: Android (Command line)
 #### 说明
 
 ```bash
-:$ adb devices -l
+$ adb devices -l
 List of devices attached
-24121FDH20006S device usb:2-2.4.2 product:panther model:Pixel_7 device:panther transport_id:1
+24121FDH20006S         device usb:2-2.4.2 product:panther model:Pixel_7 device:panther transport_id:1
 ```
 
 如果报告了多个设备或模拟器，你必须预先选择一个，如下所示：
@@ -343,19 +343,19 @@ INCLUDE PERFETTO MODULE android.memory.heap_graph.heap_graph_class_aggregation;
 
 SELECT
  -- 类名(如果可用,则去混淆)
- type_name,
+  type_name,
  -- 类实例计数
- obj_count,
+  obj_count,
  -- 类实例大小
- size_bytes,
+  size_bytes,
  -- 类实例的 native 大小
- native_size_bytes,
+  native_size_bytes,
  -- 可访问类实例计数
- reachable_obj_count,
+  reachable_obj_count,
  -- 可访问类实例大小
- reachable_size_bytes,
+  reachable_size_bytes,
  -- 可访问类实例的 native 大小
- reachable_native_size_bytes
+  reachable_native_size_bytes
 FROM android_heap_graph_class_aggregation;
 ```
 

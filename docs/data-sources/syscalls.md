@@ -36,12 +36,12 @@ where s.name like 'sys_%'
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "raw_syscalls/sys_enter"
- ftrace_events: "raw_syscalls/sys_exit"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "raw_syscalls/sys_enter"
+            ftrace_events: "raw_syscalls/sys_exit"
+        }
+    }
 }
 ```

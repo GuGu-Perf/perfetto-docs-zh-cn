@@ -49,18 +49,18 @@ docker run worker ...
 
 [worker] # From /infra/ci/worker/Dockerfile
 ┗━ /infra/ci/worker/worker_entrypoint.sh
- ┗━ supervisord
- ┗━ [N] /infra/ci/worker/sandbox_runner.py
- ┗━ docker run sandbox-N ...
+  ┗━ supervisord
+    ┗━ [N] /infra/ci/worker/sandbox_runner.py
+      ┗━ docker run sandbox-N ...
 
 [sandbox-X] # From /infra/ci/sandbox/Dockerfile
 ┗━ /infra/ci/sandbox/sandbox_entrypoint.sh
- ┗━ github-action-runner/run.sh
- ┗━ .github/workflows/analyze.yml
- ┣━ .github/workflows/linux-tests.yml
- ┣━ .github/workflows/ui-tests.yml
- ...
- ┗━ .github/workflows/android-tests.yml
+  ┗━ github-action-runner/run.sh
+    ┗━ .github/workflows/analyze.yml
+      ┣━ .github/workflows/linux-tests.yml
+      ┣━ .github/workflows/ui-tests.yml
+         ...
+      ┗━ .github/workflows/android-tests.yml
 ```
 
 ## 操作手册

@@ -52,50 +52,50 @@
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 8008
+    TRUSTED_PACKET_SEQUENCE_ID = 8008
 
  # --- 定义 OS 进程 ---
- PROCESS_ID = 1234
- PROCESS_NAME = "MyDatabaseService"
+    PROCESS_ID = 1234
+    PROCESS_NAME = "MyDatabaseService"
 
  # 为进程 Track 定义 UUID
- process_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    process_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
  # 1. 定义进程 Track
  # 此数据包在 trace 中建立 "MyDatabaseService (1234)"。
- packet = builder.add_packet()
+    packet = builder.add_packet()
  # 最好将描述符的时间戳设置在第一个事件之前。
- packet.timestamp = 9999
- desc = packet.track_descriptor
- desc.uuid = process_track_uuid
- desc.process.pid = PROCESS_ID
- desc.process.process_name = PROCESS_NAME
+    packet.timestamp = 9999
+    desc = packet.track_descriptor
+    desc.uuid = process_track_uuid
+    desc.process.pid = PROCESS_ID
+    desc.process.process_name = PROCESS_NAME
  # 此 Track 本身通常没有事件，它作为父项。
 
  # --- 定义父化到进程的自定义 Counter Track ---
- db_connections_counter_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    db_connections_counter_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = db_connections_counter_track_uuid
- desc.parent_uuid = process_track_uuid # 链接到进程 Track
- desc.name = "活动数据库连接"
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = db_connections_counter_track_uuid
+    desc.parent_uuid = process_track_uuid # 链接到进程 Track
+    desc.name = "Active DB Connections"
  # 将此 Track 标记为 Counter Track
     desc.counter.unit_name = "connections" # 可选:指定单位
 
     # 添加 Counter 事件的辅助函数
- def add_counter_event(ts, value, counter_track_uuid):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = TrackEvent.TYPE_COUNTER
- packet.track_event.track_uuid = counter_track_uuid
- packet.track_event.counter_value = value
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def add_counter_event(ts, value, counter_track_uuid):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = TrackEvent.TYPE_COUNTER
+        packet.track_event.track_uuid = counter_track_uuid
+        packet.track_event.counter_value = value
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # 3. 在自定义 Counter Track 上发出 Counter 值
- add_counter_event(ts=10000, value=5, counter_track_uuid=db_connections_counter_track_uuid)
- add_counter_event(ts=10100, value=7, counter_track_uuid=db_connections_counter_track_uuid)
- add_counter_event(ts=10200, value=6, counter_track_uuid=db_connections_counter_track_uuid)
+    add_counter_event(ts=10000, value=5, counter_track_uuid=db_connections_counter_track_uuid)
+    add_counter_event(ts=10100, value=7, counter_track_uuid=db_connections_counter_track_uuid)
+    add_counter_event(ts=10200, value=6, counter_track_uuid=db_connections_counter_track_uuid)
 ```
 
 </details>
@@ -146,65 +146,65 @@ WHERE process.pid = 1234;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 8009
+    TRUSTED_PACKET_SEQUENCE_ID = 8009
 
  # --- 定义 OS 进程和线程 ID 和名称 ---
- APP_PROCESS_ID = 1234
- APP_PROCESS_NAME = "MyApplication"
- MAIN_THREAD_ID = 5678
- MAIN_THREAD_NAME = "MainWorkLoop"
+    APP_PROCESS_ID = 1234
+    APP_PROCESS_NAME = "MyApplication"
+    MAIN_THREAD_ID = 5678
+    MAIN_THREAD_NAME = "MainWorkLoop"
 
  # --- 定义 Track 的 UUID ---
  # 虽然不严格要求将线程 Track 父化到进程 Track
  # 以便 UI 按 PID 分组它们,但如果你想明确命名进程或稍后附加进程范围的 Track,定义进程 Track 可能是一个好习惯。
- app_process_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- main_thread_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    app_process_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    main_thread_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
  # 1. 定义进程 Track(可选,但对命名进程很有用)
- packet = builder.add_packet()
- packet.timestamp = 14998
- desc = packet.track_descriptor
- desc.uuid = app_process_track_uuid
- desc.process.pid = APP_PROCESS_ID
- desc.process.process_name = APP_PROCESS_NAME
+    packet = builder.add_packet()
+    packet.timestamp = 14998
+    desc = packet.track_descriptor
+    desc.uuid = app_process_track_uuid
+    desc.process.pid = APP_PROCESS_ID
+    desc.process.process_name = APP_PROCESS_NAME
 
  # 2. 定义线程 Track
  # .thread.pid 字段将其与进程关联。
  # 此处未设置 parent_uuid;UI 将按 PID 分组。
- packet = builder.add_packet()
- packet.timestamp = 14999
- desc = packet.track_descriptor
- desc.uuid = main_thread_track_uuid
+    packet = builder.add_packet()
+    packet.timestamp = 14999
+    desc = packet.track_descriptor
+    desc.uuid = main_thread_track_uuid
  # desc.parent_uuid = app_process_track_uuid # 不使用此行
- desc.thread.pid = APP_PROCESS_ID
- desc.thread.tid = MAIN_THREAD_ID
- desc.thread.thread_name = MAIN_THREAD_NAME
+    desc.thread.pid = APP_PROCESS_ID
+    desc.thread.tid = MAIN_THREAD_ID
+    desc.thread.thread_name = MAIN_THREAD_NAME
 
  # 将 Slice 事件添加到特定 Track 的辅助函数
- def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def add_slice_event(ts, event_type, event_track_uuid, name=None):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = event_track_uuid
+        if name:
+            packet.track_event.name = name
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # 3. 在 main_thread_track_uuid 上发出 Slice
- add_slice_event(ts=15000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
- event_track_uuid=main_thread_track_uuid, name="ProcessInputEvent")
+    add_slice_event(ts=15000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
+                    event_track_uuid=main_thread_track_uuid, name="ProcessInputEvent")
  # 嵌套切片
- add_slice_event(ts=15050, event_type=TrackEvent.TYPE_SLICE_BEGIN,
- event_track_uuid=main_thread_track_uuid, name="UpdateState")
- add_slice_event(ts=15150, event_type=TrackEvent.TYPE_SLICE_END, # 结束 UpdateState
- event_track_uuid=main_thread_track_uuid)
- add_slice_event(ts=15200, event_type=TrackEvent.TYPE_SLICE_END, # 结束 ProcessInputEvent
- event_track_uuid=main_thread_track_uuid)
+    add_slice_event(ts=15050, event_type=TrackEvent.TYPE_SLICE_BEGIN,
+                    event_track_uuid=main_thread_track_uuid, name="UpdateState")
+    add_slice_event(ts=15150, event_type=TrackEvent.TYPE_SLICE_END, # 结束 UpdateState
+                    event_track_uuid=main_thread_track_uuid)
+    add_slice_event(ts=15200, event_type=TrackEvent.TYPE_SLICE_END, # 结束 ProcessInputEvent
+                    event_track_uuid=main_thread_track_uuid)
 
- add_slice_event(ts=16000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
- event_track_uuid=main_thread_track_uuid, name="RenderFrame")
- add_slice_event(ts=16500, event_type=TrackEvent.TYPE_SLICE_END,
- event_track_uuid=main_thread_track_uuid)
+    add_slice_event(ts=16000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
+                    event_track_uuid=main_thread_track_uuid, name="RenderFrame")
+    add_slice_event(ts=16500, event_type=TrackEvent.TYPE_SLICE_END,
+                    event_track_uuid=main_thread_track_uuid)
 ```
 
 </details>
@@ -281,132 +281,132 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9000
+    TRUSTED_PACKET_SEQUENCE_ID = 9000
 
  # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name, parent_track_uuid=None, child_ordering_mode=None, order_rank=None):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- if parent_track_uuid:
- desc.parent_uuid = parent_track_uuid
- if child_ordering_mode:
- desc.child_ordering = child_ordering_mode
- if order_rank is not None:
- desc.sibling_order_rank = order_rank
+    def define_custom_track(track_uuid, name, parent_track_uuid=None, child_ordering_mode=None, order_rank=None):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
+        if parent_track_uuid:
+            desc.parent_uuid = parent_track_uuid
+        if child_ordering_mode:
+            desc.child_ordering = child_ordering_mode
+        if order_rank is not None:
+            desc.sibling_order_rank = order_rank
 
  # 添加简单瞬时事件的辅助函数
- def add_instant_event(ts, track_uuid, event_name):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = TrackEvent.TYPE_INSTANT
- packet.track_event.track_uuid = track_uuid
- packet.track_event.name = event_name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def add_instant_event(ts, track_uuid, event_name):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = TrackEvent.TYPE_INSTANT
+        packet.track_event.track_uuid = track_uuid
+        packet.track_event.name = event_name
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # --- 1. 字典排序示例 ---
- parent_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- define_custom_track(parent_lex_uuid, "字典排序父级",
- child_ordering_mode=TrackDescriptor.LEXICOGRAPHIC)
+    parent_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    define_custom_track(parent_lex_uuid, "Lexicographic Parent",
+                        child_ordering_mode=TrackDescriptor.LEXICOGRAPHIC)
 
- child_c_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_a_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_b_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_c_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_a_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_b_lex_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
- define_custom_track(child_c_lex_uuid, "C-项(字典)", parent_track_uuid=parent_lex_uuid)
- define_custom_track(child_a_lex_uuid, "A-项(字典)", parent_track_uuid=parent_lex_uuid)
- define_custom_track(child_b_lex_uuid, "B-项(字典)", parent_track_uuid=parent_lex_uuid)
+    define_custom_track(child_c_lex_uuid, "C-Item (Lex)", parent_track_uuid=parent_lex_uuid)
+    define_custom_track(child_a_lex_uuid, "A-Item (Lex)", parent_track_uuid=parent_lex_uuid)
+    define_custom_track(child_b_lex_uuid, "B-Item (Lex)", parent_track_uuid=parent_lex_uuid)
 
- add_instant_event(ts=100, track_uuid=child_c_lex_uuid, event_name="事件 C")
- add_instant_event(ts=100, track_uuid=child_a_lex_uuid, event_name="事件 A")
- add_instant_event(ts=100, track_uuid=child_b_lex_uuid, event_name="事件 B")
+    add_instant_event(ts=100, track_uuid=child_c_lex_uuid, event_name="Event C")
+    add_instant_event(ts=100, track_uuid=child_a_lex_uuid, event_name="Event A")
+    add_instant_event(ts=100, track_uuid=child_b_lex_uuid, event_name="Event B")
  # "字典排序父级"下的预期 UI 顺序:A-项、B-项、C-项
 
  # --- 2. 按时间排序示例 ---
- parent_chrono_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- define_custom_track(parent_chrono_uuid, "按时间排序父级",
- child_ordering_mode=TrackDescriptor.CHRONOLOGICAL)
+    parent_chrono_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    define_custom_track(parent_chrono_uuid, "Chronological Parent",
+                        child_ordering_mode=TrackDescriptor.CHRONOLOGICAL)
 
- child_late_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_early_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_middle_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_late_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_early_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_middle_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
- define_custom_track(child_late_uuid, "晚事件 Track", parent_track_uuid=parent_chrono_uuid)
- define_custom_track(child_early_uuid, "早事件 Track", parent_track_uuid=parent_chrono_uuid)
- define_custom_track(child_middle_uuid, "中事件 Track", parent_track_uuid=parent_chrono_uuid)
+    define_custom_track(child_late_uuid, "Late Event Track", parent_track_uuid=parent_chrono_uuid)
+    define_custom_track(child_early_uuid, "Early Event Track", parent_track_uuid=parent_chrono_uuid)
+    define_custom_track(child_middle_uuid, "Middle Event Track", parent_track_uuid=parent_chrono_uuid)
 
- add_instant_event(ts=2000, track_uuid=child_late_uuid, event_name="晚事件")
- add_instant_event(ts=1000, track_uuid=child_early_uuid, event_name="早事件")
- add_instant_event(ts=1500, track_uuid=child_middle_uuid, event_name="中事件")
+    add_instant_event(ts=2000, track_uuid=child_late_uuid, event_name="Late Event")
+    add_instant_event(ts=1000, track_uuid=child_early_uuid, event_name="Early Event")
+    add_instant_event(ts=1500, track_uuid=child_middle_uuid, event_name="Middle Event")
  # "按时间排序父级"下的预期 UI 顺序:早事件 Track、中事件 Track、晚事件 Track
 
  # --- 3. 显式排序示例 ---
- parent_explicit_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- define_custom_track(parent_explicit_uuid, "显式排序父级",
- child_ordering_mode=TrackDescriptor.EXPLICIT)
+    parent_explicit_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    define_custom_track(parent_explicit_uuid, "Explicit Parent",
+                        child_ordering_mode=TrackDescriptor.EXPLICIT)
 
- child_rank10_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_rank_neg5_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- child_rank0_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_rank10_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_rank_neg5_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    child_rank0_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
- define_custom_track(child_rank10_uuid, "显式排名 10",
- parent_track_uuid=parent_explicit_uuid, order_rank=10)
- define_custom_track(child_rank_neg5_uuid, "显式排名 -5",
- parent_track_uuid=parent_explicit_uuid, order_rank=-5)
- define_custom_track(child_rank0_uuid, "显式排名 0",
- parent_track_uuid=parent_explicit_uuid, order_rank=0)
+    define_custom_track(child_rank10_uuid, "Explicit Rank 10",
+                        parent_track_uuid=parent_explicit_uuid, order_rank=10)
+    define_custom_track(child_rank_neg5_uuid, "Explicit Rank -5",
+                        parent_track_uuid=parent_explicit_uuid, order_rank=-5)
+    define_custom_track(child_rank0_uuid, "Explicit Rank 0",
+                        parent_track_uuid=parent_explicit_uuid, order_rank=0)
 
- add_instant_event(ts=3000, track_uuid=child_rank10_uuid, event_name="事件排名 10")
- add_instant_event(ts=3000, track_uuid=child_rank_neg5_uuid, event_name="事件排名 -5")
- add_instant_event(ts=3000, track_uuid=child_rank0_uuid, event_name="事件排名 0")
+    add_instant_event(ts=3000, track_uuid=child_rank10_uuid, event_name="Event Rank 10")
+    add_instant_event(ts=3000, track_uuid=child_rank_neg5_uuid, event_name="Event Rank -5")
+    add_instant_event(ts=3000, track_uuid=child_rank0_uuid, event_name="Event Rank 0")
  # "显式排序父级"下的预期 UI 顺序:排名 -5、排名 0、排名 10
 
  # --- 4. 进程和线程显式排序示例 ---
  # 配置根 Track（uuid = 0）以启用显式进程和线程排序
- packet = builder.add_packet()
- root_desc = packet.track_descriptor
- root_desc.uuid = 0
- root_desc.process_ordering = TrackDescriptor.PROCESS_ORDERING_EXPLICIT
- root_desc.thread_ordering = TrackDescriptor.THREAD_ORDERING_EXPLICIT
+    packet = builder.add_packet()
+    root_desc = packet.track_descriptor
+    root_desc.uuid = 0
+    root_desc.process_ordering = TrackDescriptor.PROCESS_ORDERING_EXPLICIT
+    root_desc.thread_ordering = TrackDescriptor.THREAD_ORDERING_EXPLICIT
 
  # 定义进程 A，排名为 5
- process_a_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = process_a_uuid
- desc.process.pid = 100
- desc.process.process_name = "进程 A (排名 5)"
- desc.sibling_order_rank = 5
+    process_a_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = process_a_uuid
+    desc.process.pid = 100
+    desc.process.process_name = "Process A (Rank 5)"
+    desc.sibling_order_rank = 5
 
  # 定义进程 B，排名为 2（应出现在进程 A 之前）
- process_b_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = process_b_uuid
- desc.process.pid = 200
- desc.process.process_name = "进程 B (排名 2)"
- desc.sibling_order_rank = 2
+    process_b_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = process_b_uuid
+    desc.process.pid = 200
+    desc.process.process_name = "Process B (Rank 2)"
+    desc.sibling_order_rank = 2
 
  # 在进程 A 下定义线程 A1，排名为 42
- thread_a1_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = thread_a1_uuid
- desc.thread.pid = 100
- desc.thread.tid = 101
- desc.thread.thread_name = "线程 A1 (排名 42)"
- desc.sibling_order_rank = 42
+    thread_a1_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = thread_a1_uuid
+    desc.thread.pid = 100
+    desc.thread.tid = 101
+    desc.thread.thread_name = "Thread A1 (Rank 42)"
+    desc.sibling_order_rank = 42
 
  # 在进程 A 下定义线程 A2，排名为 10（应出现在线程 A1 之前）
- thread_a2_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = thread_a2_uuid
- desc.thread.pid = 100
- desc.thread.tid = 102
- desc.thread.thread_name = "线程 A2 (排名 10)"
- desc.sibling_order_rank = 10
+    thread_a2_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = thread_a2_uuid
+    desc.thread.pid = 100
+    desc.thread.tid = 102
+    desc.thread.thread_name = "Thread A2 (Rank 10)"
+    desc.sibling_order_rank = 10
 ```
 
 </details>
@@ -546,40 +546,40 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9005
+    TRUSTED_PACKET_SEQUENCE_ID = 9005
 
  # --- 定义 Track UUID ---
- counter1_uuid = 1
- counter2_uuid = 2
+    counter1_uuid = 1
+    counter2_uuid = 2
 
  # 定义 Counter Track TrackDescriptor 的辅助函数
- def define_counter_track(track_uuid, name, share_key=None):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
- if share_key:
- desc.counter.y_axis_share_key = share_key
+    def define_counter_track(track_uuid, name, share_key=None):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
+        if share_key:
+            desc.counter.y_axis_share_key = share_key
 
  # 1. 定义具有相同共享密钥的 Counter Track
- define_counter_track(counter1_uuid, "Counter 1", "group1")
- define_counter_track(counter2_uuid, "Counter 2", "group1")
+    define_counter_track(counter1_uuid, "Counter 1", "group1")
+    define_counter_track(counter2_uuid, "Counter 2", "group1")
 
  # 添加 Counter 事件的辅助函数
- def add_counter_event(ts, value, counter_track_uuid):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = TrackEvent.TYPE_COUNTER
- packet.track_event.track_uuid = counter_track_uuid
- packet.track_event.counter_value = value
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def add_counter_event(ts, value, counter_track_uuid):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = TrackEvent.TYPE_COUNTER
+        packet.track_event.track_uuid = counter_track_uuid
+        packet.track_event.counter_value = value
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # 2. 向 Track 添加事件
- add_counter_event(ts=1000, value=100, counter_track_uuid=counter1_uuid)
- add_counter_event(ts=2000, value=200, counter_track_uuid=counter1_uuid)
+    add_counter_event(ts=1000, value=100, counter_track_uuid=counter1_uuid)
+    add_counter_event(ts=2000, value=200, counter_track_uuid=counter1_uuid)
 
- add_counter_event(ts=1000, value=300, counter_track_uuid=counter2_uuid)
- add_counter_event(ts=2000, value=400, counter_track_uuid=counter2_uuid)
+    add_counter_event(ts=1000, value=300, counter_track_uuid=counter2_uuid)
+    add_counter_event(ts=2000, value=400, counter_track_uuid=counter2_uuid)
 ```
 
 </details>
@@ -602,49 +602,49 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9005
+    TRUSTED_PACKET_SEQUENCE_ID = 9005
 
  # --- 定义 Track UUID ---
- described_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- undescribed_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    described_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    undescribed_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
  # --- 1. 定义两个 Track,一个有描述,一个没有 ---
  # 带描述的 Track
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = described_track_uuid
- desc.name = "带描述的 Track"
- desc.description = "此 Track 显示传入用户请求的处理阶段。单击 (?) 图标查看此文本。"
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = described_track_uuid
+    desc.name = "Track With Description"
+    desc.description = "This track shows the processing stages for incoming user requests. Click the (?) icon to see this text."
 
  # 不带描述的 Track
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = undescribed_track_uuid
- desc.name = "不带描述的 Track"
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = undescribed_track_uuid
+    desc.name = "Track Without Description"
  # 'description' 字段只是未设置。
 
  # 将 Slice 事件添加到 Track 的辅助函数
- def add_slice_event(ts, event_type, event_track_uuid, name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = event_track_uuid
- if name:
- packet.track_event.name = name
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def add_slice_event(ts, event_type, event_track_uuid, name=None):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = event_track_uuid
+        if name:
+            packet.track_event.name = name
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # --- 2. 在两个 Track 上发出一些事件 ---
  # 带描述 Track 的事件
- add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
- event_track_uuid=described_track_uuid, name="请求 #123")
- add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_END,
- event_track_uuid=described_track_uuid)
+    add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
+                    event_track_uuid=described_track_uuid, name="Request #123")
+    add_slice_event(ts=1200, event_type=TrackEvent.TYPE_SLICE_END,
+                    event_track_uuid=described_track_uuid)
 
  # 不带描述 Track 的事件
- add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_BEGIN,
- event_track_uuid=undescribed_track_uuid, name="其他一些任务")
- add_slice_event(ts=1500, event_type=TrackEvent.TYPE_SLICE_END,
- event_track_uuid=undescribed_track_uuid)
+    add_slice_event(ts=1300, event_type=TrackEvent.TYPE_SLICE_BEGIN,
+                    event_track_uuid=undescribed_track_uuid, name="Some Other Task")
+    add_slice_event(ts=1500, event_type=TrackEvent.TYPE_SLICE_END,
+                    event_track_uuid=undescribed_track_uuid)
 ```
 
 </details>
@@ -682,84 +682,84 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9002
+    TRUSTED_PACKET_SEQUENCE_ID = 9002
 
  # --- 定义 Track UUID ---
- interning_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    interning_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
  # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
+    def define_custom_track(track_uuid, name):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
 
  # 1. 定义 Track
- define_custom_track(interning_track_uuid, "驻留演示 Track")
+    define_custom_track(interning_track_uuid, "Interning Demo Track")
 
  # --- 定义驻留事件名称 ---
- INTERNED_EVENT_NAME_IID = 1 # 选择唯一的 iid(非零)
- VERY_LONG_EVENT_NAME = "MyFrequentlyRepeatedLongEventNameThatTakesUpSpace"
+    INTERNED_EVENT_NAME_IID = 1 # 选择唯一的 iid(非零)
+    VERY_LONG_EVENT_NAME = "MyFrequentlyRepeatedLongEventNameThatTakesUpSpace"
 
  # 添加 TrackEvent 数据包的辅助函数，管理驻留和序列标志
- def add_slice_with_interning(ts, event_type, name_iid=None, name_literal=None, define_new_internment=False, new_intern_iid=None, new_intern_name=None):
- packet = builder.add_packet()
- packet.timestamp = ts
- tev = packet.track_event
- tev.type = event_type
- tev.track_uuid = interning_track_uuid
+    def add_slice_with_interning(ts, event_type, name_iid=None, name_literal=None, define_new_internment=False, new_intern_iid=None, new_intern_name=None):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        tev = packet.track_event
+        tev.type = event_type
+        tev.track_uuid = interning_track_uuid
 
- if name_iid:
- tev.name_iid = name_iid
- elif name_literal and event_type != TrackEvent.TYPE_SLICE_END:
- tev.name = name_literal
+        if name_iid:
+            tev.name_iid = name_iid
+        elif name_literal and event_type != TrackEvent.TYPE_SLICE_END:
+            tev.name = name_literal
 
- if define_new_internment:
+        if define_new_internment:
  # 此数据包定义新的驻留数据。
  # 我们还将清除此序列的任何先前状态。
- if new_intern_iid and new_intern_name:
- entry = packet.interned_data.event_names.add()
- entry.iid = new_intern_iid
- entry.name = new_intern_name
- packet.sequence_flags = TracePacket.SEQ_INCREMENTAL_STATE_CLEARED | TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
- else:
+            if new_intern_iid and new_intern_name:
+                entry = packet.interned_data.event_names.add()
+                entry.iid = new_intern_iid
+                entry.name = new_intern_name
+            packet.sequence_flags = TracePacket.SEQ_INCREMENTAL_STATE_CLEARED | TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
+        else:
  # 此数据包使用现有的驻留数据(或没有驻留字段)
  # 但是依赖增量状态的序列的一部分。
- packet.sequence_flags = TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
+            packet.sequence_flags = TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
 
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- return packet
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        return packet
 
  # --- 数据包 1:定义驻留名称并使用它开始 Slice ---
- add_slice_with_interning(
- ts=1000,
- event_type=TrackEvent.TYPE_SLICE_BEGIN,
- name_iid=INTERNED_EVENT_NAME_IID,
- define_new_internment=True, # 此数据包定义/重置驻留
- new_intern_iid=INTERNED_EVENT_NAME_IID,
- new_intern_name=VERY_LONG_EVENT_NAME
- )
+    add_slice_with_interning(
+        ts=1000,
+        event_type=TrackEvent.TYPE_SLICE_BEGIN,
+        name_iid=INTERNED_EVENT_NAME_IID,
+        define_new_internment=True, # 此数据包定义/重置驻留
+        new_intern_iid=INTERNED_EVENT_NAME_IID,
+        new_intern_name=VERY_LONG_EVENT_NAME
+    )
 
  # 结束第一个切片
- add_slice_with_interning(
- ts=1100,
- event_type=TrackEvent.TYPE_SLICE_END
+    add_slice_with_interning(
+        ts=1100,
+        event_type=TrackEvent.TYPE_SLICE_END
  # 结束不需要 name_iid,使用现有的驻留状态上下文
- )
+    )
 
  # --- 数据包 2:再次使用驻留事件名称 ---
- add_slice_with_interning(
- ts=1200,
- event_type=TrackEvent.TYPE_SLICE_BEGIN,
- name_iid=INTERNED_EVENT_NAME_IID # 重复使用 iid
+    add_slice_with_interning(
+        ts=1200,
+        event_type=TrackEvent.TYPE_SLICE_BEGIN,
+        name_iid=INTERNED_EVENT_NAME_IID # 重复使用 iid
  # define_new_internment 默认为 False,因此这使用现有状态
- )
+    )
 
  # 结束第二个切片
- add_slice_with_interning(
- ts=1300,
- event_type=TrackEvent.TYPE_SLICE_END
- )
+    add_slice_with_interning(
+        ts=1300,
+        event_type=TrackEvent.TYPE_SLICE_END
+    )
 ```
 
 </details>
@@ -789,182 +789,182 @@ WHERE tid = 5678;
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import TracePacket
- TRUSTED_PACKET_SEQUENCE_ID = 9001
+    from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import TracePacket
+    TRUSTED_PACKET_SEQUENCE_ID = 9001
 
  # --- 定义 Track UUID ---
- interned_callstack_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    interned_callstack_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
- def add_function_name(entry, iid, name):
- item = entry.function_names.add()
- item.iid = iid
- item.str = name.encode()
+    def add_function_name(entry, iid, name):
+        item = entry.function_names.add()
+        item.iid = iid
+        item.str = name.encode()
 
- def add_mapping(entry, iid, build_id, start, end, path_id):
- mapping_entry = entry.mappings.add()
- mapping_entry.iid = iid
- mapping_entry.build_id = build_id
- mapping_entry.exact_offset = 0
- mapping_entry.start = start
- mapping_entry.end = end
- mapping_entry.load_bias = 0
- mapping_entry.path_string_ids.append(path_id)
+    def add_mapping(entry, iid, build_id, start, end, path_id):
+        mapping_entry = entry.mappings.add()
+        mapping_entry.iid = iid
+        mapping_entry.build_id = build_id
+        mapping_entry.exact_offset = 0
+        mapping_entry.start = start
+        mapping_entry.end = end
+        mapping_entry.load_bias = 0
+        mapping_entry.path_string_ids.append(path_id)
 
- def add_frame(entry, iid, function_name_id, mapping_id=None, rel_pc=None):
- frame_entry = entry.frames.add()
- frame_entry.iid = iid
- frame_entry.function_name_id = function_name_id
- if mapping_id is not None:
- frame_entry.mapping_id = mapping_id
- if rel_pc is not None:
- frame_entry.rel_pc = rel_pc
+    def add_frame(entry, iid, function_name_id, mapping_id=None, rel_pc=None):
+        frame_entry = entry.frames.add()
+        frame_entry.iid = iid
+        frame_entry.function_name_id = function_name_id
+        if mapping_id is not None:
+            frame_entry.mapping_id = mapping_id
+        if rel_pc is not None:
+            frame_entry.rel_pc = rel_pc
 
- def add_callstack(entry, iid, frame_ids):
- callstack_entry = entry.callstacks.add()
- callstack_entry.iid = iid
- callstack_entry.frame_ids.extend(frame_ids)
+    def add_callstack(entry, iid, frame_ids):
+        callstack_entry = entry.callstacks.add()
+        callstack_entry.iid = iid
+        callstack_entry.frame_ids.extend(frame_ids)
 
- def emit_track_event(
- ts,
- event_type,
- name,
- callstack_iid,
- ):
- packet = builder.add_packet()
- packet.timestamp = ts
- packet.track_event.type = event_type
- packet.track_event.track_uuid = interned_callstack_track_uuid
- if name is not None:
- packet.track_event.name = name
- if callstack_iid is not None:
- packet.track_event.callstack_iid = callstack_iid
- packet.sequence_flags = TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    def emit_track_event(
+        ts,
+        event_type,
+        name,
+        callstack_iid,
+    ):
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.track_event.type = event_type
+        packet.track_event.track_uuid = interned_callstack_track_uuid
+        if name is not None:
+            packet.track_event.name = name
+        if callstack_iid is not None:
+            packet.track_event.callstack_iid = callstack_iid
+        packet.sequence_flags = TracePacket.SEQ_NEEDS_INCREMENTAL_STATE
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # 1. 定义 Track
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = interned_callstack_track_uuid
- desc.name = "驻留调用堆栈演示"
+    packet = builder.add_packet()
+    desc = packet.track_descriptor
+    desc.uuid = interned_callstack_track_uuid
+    desc.name = "Interned Callstack Demo"
 
  # 2. 定义驻留数据(映射、帧、调用堆栈)
  # 我们将在单个数据包中创建它，以初始化驻留状态
 
- packet = builder.add_packet()
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- packet.sequence_flags = (TracePacket.SEQ_INCREMENTAL_STATE_CLEARED |
- TracePacket.SEQ_NEEDS_INCREMENTAL_STATE)
+    packet = builder.add_packet()
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    packet.sequence_flags = (TracePacket.SEQ_INCREMENTAL_STATE_CLEARED |
+                            TracePacket.SEQ_NEEDS_INCREMENTAL_STATE)
 
  # 定义构建 ID
- BUILD_ID_APP = 1
- BUILD_ID_LIBC = 2
+    BUILD_ID_APP = 1
+    BUILD_ID_LIBC = 2
 
- build_id_entry = packet.interned_data.build_ids.add()
- build_id_entry.iid = BUILD_ID_APP
- build_id_entry.str = b"a1b2c3d4e5f67890" # 十六进制编码的构建 ID
+    build_id_entry = packet.interned_data.build_ids.add()
+    build_id_entry.iid = BUILD_ID_APP
+    build_id_entry.str = b"a1b2c3d4e5f67890" # 十六进制编码的构建 ID
 
- build_id_entry = packet.interned_data.build_ids.add()
- build_id_entry.iid = BUILD_ID_LIBC
- build_id_entry.str = b"1234567890abcdef"
+    build_id_entry = packet.interned_data.build_ids.add()
+    build_id_entry.iid = BUILD_ID_LIBC
+    build_id_entry.str = b"1234567890abcdef"
 
  # 定义映射路径
- PATH_APP = 1
- PATH_LIBC = 2
+    PATH_APP = 1
+    PATH_LIBC = 2
 
- path_entry = packet.interned_data.mapping_paths.add()
- path_entry.iid = PATH_APP
- path_entry.str = b"/usr/bin/myapp"
+    path_entry = packet.interned_data.mapping_paths.add()
+    path_entry.iid = PATH_APP
+    path_entry.str = b"/usr/bin/myapp"
 
- path_entry = packet.interned_data.mapping_paths.add()
- path_entry.iid = PATH_LIBC
- path_entry.str = b"/lib/x86_64-linux-gnu/libc.so.6"
+    path_entry = packet.interned_data.mapping_paths.add()
+    path_entry.iid = PATH_LIBC
+    path_entry.str = b"/lib/x86_64-linux-gnu/libc.so.6"
 
  # 定义映射
- MAPPING_APP = 1
- MAPPING_LIBC = 2
+    MAPPING_APP = 1
+    MAPPING_LIBC = 2
 
- add_mapping(packet.interned_data, MAPPING_APP, BUILD_ID_APP, 0x400000, 0x500000, PATH_APP)
- add_mapping(packet.interned_data, MAPPING_LIBC, BUILD_ID_LIBC, 0x7F0000000000, 0x7F0000200000, PATH_LIBC)
+    add_mapping(packet.interned_data, MAPPING_APP, BUILD_ID_APP, 0x400000, 0x500000, PATH_APP)
+    add_mapping(packet.interned_data, MAPPING_LIBC, BUILD_ID_LIBC, 0x7F0000000000, 0x7F0000200000, PATH_LIBC)
 
  # 定义帧
- FUNC_MAIN = 1
- FUNC_PROCESS_REQUESTS = 2
- FUNC_HANDLE_REQUEST = 3
- FUNC_MALLOC = 4
+    FUNC_MAIN = 1
+    FUNC_PROCESS_REQUESTS = 2
+    FUNC_HANDLE_REQUEST = 3
+    FUNC_MALLOC = 4
 
- add_function_name(packet.interned_data, FUNC_MAIN, "main")
- add_function_name(packet.interned_data, FUNC_PROCESS_REQUESTS, "ProcessRequests")
- add_function_name(packet.interned_data, FUNC_HANDLE_REQUEST, "HandleRequest")
- add_function_name(packet.interned_data, FUNC_MALLOC, "malloc")
+    add_function_name(packet.interned_data, FUNC_MAIN, "main")
+    add_function_name(packet.interned_data, FUNC_PROCESS_REQUESTS, "ProcessRequests")
+    add_function_name(packet.interned_data, FUNC_HANDLE_REQUEST, "HandleRequest")
+    add_function_name(packet.interned_data, FUNC_MALLOC, "malloc")
 
- FRAME_MAIN = 1
- FRAME_PROCESS_REQUESTS = 2
- FRAME_HANDLE_REQUEST = 3
- FRAME_MALLOC = 4
+    FRAME_MAIN = 1
+    FRAME_PROCESS_REQUESTS = 2
+    FRAME_HANDLE_REQUEST = 3
+    FRAME_MALLOC = 4
 
- add_frame(packet.interned_data, FRAME_MAIN, FUNC_MAIN, MAPPING_APP, 0x1234)
- add_frame(packet.interned_data, FRAME_PROCESS_REQUESTS, FUNC_PROCESS_REQUESTS, MAPPING_APP, 0x2345)
- add_frame(packet.interned_data, FRAME_HANDLE_REQUEST, FUNC_HANDLE_REQUEST, MAPPING_APP, 0x3456)
- add_frame(packet.interned_data, FRAME_MALLOC, FUNC_MALLOC, MAPPING_LIBC, 0x8765)
+    add_frame(packet.interned_data, FRAME_MAIN, FUNC_MAIN, MAPPING_APP, 0x1234)
+    add_frame(packet.interned_data, FRAME_PROCESS_REQUESTS, FUNC_PROCESS_REQUESTS, MAPPING_APP, 0x2345)
+    add_frame(packet.interned_data, FRAME_HANDLE_REQUEST, FUNC_HANDLE_REQUEST, MAPPING_APP, 0x3456)
+    add_frame(packet.interned_data, FRAME_MALLOC, FUNC_MALLOC, MAPPING_LIBC, 0x8765)
 
  # 定义调用堆栈
  # 调用堆栈 1: main -> ProcessRequests -> HandleRequest
- CALLSTACK_1 = 1
- add_callstack(packet.interned_data, CALLSTACK_1, [FRAME_MAIN, FRAME_PROCESS_REQUESTS, FRAME_HANDLE_REQUEST])
+    CALLSTACK_1 = 1
+    add_callstack(packet.interned_data, CALLSTACK_1, [FRAME_MAIN, FRAME_PROCESS_REQUESTS, FRAME_HANDLE_REQUEST])
 
  # 调用堆栈 2: main -> ProcessRequests -> HandleRequest -> malloc
- CALLSTACK_2 = 2
- add_callstack(
- packet.interned_data,
- CALLSTACK_2,
- [FRAME_MAIN, FRAME_PROCESS_REQUESTS, FRAME_HANDLE_REQUEST, FRAME_MALLOC],
- )
+    CALLSTACK_2 = 2
+    add_callstack(
+        packet.interned_data,
+        CALLSTACK_2,
+        [FRAME_MAIN, FRAME_PROCESS_REQUESTS, FRAME_HANDLE_REQUEST, FRAME_MALLOC],
+    )
 
  # 3. 创建引用驻留调用堆栈的事件
  # 事件 1: 引用 CALLSTACK_1
- emit_track_event(
- ts=5000,
- event_type=TrackEvent.TYPE_SLICE_BEGIN,
- name="HandleRequest",
- callstack_iid=CALLSTACK_1,
- )
+    emit_track_event(
+        ts=5000,
+        event_type=TrackEvent.TYPE_SLICE_BEGIN,
+        name="HandleRequest",
+        callstack_iid=CALLSTACK_1,
+    )
 
- emit_track_event(
- ts=5300,
- event_type=TrackEvent.TYPE_SLICE_END,
- name=None,
- callstack_iid=None,
- )
+    emit_track_event(
+        ts=5300,
+        event_type=TrackEvent.TYPE_SLICE_END,
+        name=None,
+        callstack_iid=None,
+    )
 
  # 事件 2: 引用 CALLSTACK_2
- emit_track_event(
- ts=5100,
- event_type=TrackEvent.TYPE_SLICE_BEGIN,
- name="AllocateMemory",
- callstack_iid=CALLSTACK_2,
- )
+    emit_track_event(
+        ts=5100,
+        event_type=TrackEvent.TYPE_SLICE_BEGIN,
+        name="AllocateMemory",
+        callstack_iid=CALLSTACK_2,
+    )
 
- emit_track_event(
- ts=5200,
- event_type=TrackEvent.TYPE_SLICE_END,
- name=None,
- callstack_iid=None,
- )
+    emit_track_event(
+        ts=5200,
+        event_type=TrackEvent.TYPE_SLICE_END,
+        name=None,
+        callstack_iid=None,
+    )
 
  # 事件 3: 另一个具有 CALLSTACK_1 的事件(重用驻留数据)
- emit_track_event(
- ts=6000,
- event_type=TrackEvent.TYPE_SLICE_BEGIN,
- name="HandleRequest",
- callstack_iid=CALLSTACK_1,
- )
+    emit_track_event(
+        ts=6000,
+        event_type=TrackEvent.TYPE_SLICE_BEGIN,
+        name="HandleRequest",
+        callstack_iid=CALLSTACK_1,
+    )
 
- emit_track_event(
- ts=6400,
- event_type=TrackEvent.TYPE_SLICE_END,
- name=None,
- callstack_iid=None,
- )
+    emit_track_event(
+        ts=6400,
+        event_type=TrackEvent.TYPE_SLICE_END,
+        name=None,
+        callstack_iid=None,
+    )
 ```
 
 </details>
@@ -1069,7 +1069,7 @@ protoc -I. --include_imports \
         return bytes(out)
 
     def set_alloc_stats(track_event, latency_us):
-        """将 alloc_stats 扩展字段（wire type 2）附加到事件上。"""
+        """Attach the alloc_stats extension field (wire type 2) to an event."""
         stats = AcmeAllocStats(latency_us=latency_us)
         tag = (ALLOC_STATS_FIELD_NUMBER << 3) | 2
         payload = stats.SerializeToString()
@@ -1186,56 +1186,56 @@ Perfetto 支持三种类型的关联标识符：
 <summary><b>单击展开/折叠 Python 代码</b></summary>
 
 ```python
- TRUSTED_PACKET_SEQUENCE_ID = 9010
+    TRUSTED_PACKET_SEQUENCE_ID = 9010
 
  # --- 定义 Track UUID ---
- frontend_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- auth_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- database_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
- cache_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    frontend_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    auth_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    database_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    cache_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
 
  # 定义 TrackDescriptor 的辅助函数
- def define_custom_track(track_uuid, name):
- packet = builder.add_packet()
- desc = packet.track_descriptor
- desc.uuid = track_uuid
- desc.name = name
+    def define_custom_track(track_uuid, name):
+        packet = builder.add_packet()
+        desc = packet.track_descriptor
+        desc.uuid = track_uuid
+        desc.name = name
 
  # 1. 定义 Track
- define_custom_track(frontend_track_uuid, "前端服务")
- define_custom_track(auth_track_uuid, "认证服务")
- define_custom_track(database_track_uuid, "数据库服务")
- define_custom_track(cache_track_uuid, "缓存服务")
+    define_custom_track(frontend_track_uuid, "Frontend Service")
+    define_custom_track(auth_track_uuid, "Auth Service")
+    define_custom_track(database_track_uuid, "Database Service")
+    define_custom_track(cache_track_uuid, "Cache Service")
 
  # 添加带有关联 ID 的 Slice 的辅助函数
- def add_correlated_slice(ts_start, ts_end, track_uuid, slice_name, correlation_id):
+    def add_correlated_slice(ts_start, ts_end, track_uuid, slice_name, correlation_id):
  # 开始切片
- packet = builder.add_packet()
- packet.timestamp = ts_start
- packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
- packet.track_event.track_uuid = track_uuid
- packet.track_event.name = slice_name
- packet.track_event.correlation_id = correlation_id
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        packet = builder.add_packet()
+        packet.timestamp = ts_start
+        packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
+        packet.track_event.track_uuid = track_uuid
+        packet.track_event.name = slice_name
+        packet.track_event.correlation_id = correlation_id
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # 结束切片
- packet = builder.add_packet()
- packet.timestamp = ts_end
- packet.track_event.type = TrackEvent.TYPE_SLICE_END
- packet.track_event.track_uuid = track_uuid
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        packet = builder.add_packet()
+        packet.timestamp = ts_end
+        packet.track_event.type = TrackEvent.TYPE_SLICE_END
+        packet.track_event.track_uuid = track_uuid
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
  # --- 请求 #42: 所有具有 correlation_id = 42 的 Slice ---
- REQUEST_42_ID = 42
- add_correlated_slice(1000, 1200, frontend_track_uuid, "处理请求 #42", REQUEST_42_ID)
- add_correlated_slice(1100, 1400, auth_track_uuid, "认证请求 #42", REQUEST_42_ID)
- add_correlated_slice(1350, 1600, database_track_uuid, "查询请求 #42", REQUEST_42_ID)
+    REQUEST_42_ID = 42
+    add_correlated_slice(1000, 1200, frontend_track_uuid, "Handle Request #42", REQUEST_42_ID)
+    add_correlated_slice(1100, 1400, auth_track_uuid, "Authenticate Request #42", REQUEST_42_ID)
+    add_correlated_slice(1350, 1600, database_track_uuid, "Query for Request #42", REQUEST_42_ID)
 
  # --- 请求 #123: 所有具有 correlation_id = 123 的 Slice ---
- REQUEST_123_ID = 123
- add_correlated_slice(2000, 2300, frontend_track_uuid, "处理请求 #123", REQUEST_123_ID)
- add_correlated_slice(2100, 2500, database_track_uuid, "查询请求 #123", REQUEST_123_ID)
- add_correlated_slice(2400, 2600, cache_track_uuid, "缓存请求 #123", REQUEST_123_ID)
+    REQUEST_123_ID = 123
+    add_correlated_slice(2000, 2300, frontend_track_uuid, "Handle Request #123", REQUEST_123_ID)
+    add_correlated_slice(2100, 2500, database_track_uuid, "Query for Request #123", REQUEST_123_ID)
+    add_correlated_slice(2400, 2600, cache_track_uuid, "Cache Request #123", REQUEST_123_ID)
 ```
 
 </details>
@@ -1322,7 +1322,7 @@ protoc -I. --include_imports \
         return bytes(out)
 
     def set_request_metadata(track_event, meta):
-        """将消息类型的扩展字段（线类型 2）附加到 TrackEvent 上。"""
+        """Attach a message-typed extension field (wire type 2) onto a TrackEvent."""
         tag = (REQUEST_METADATA_FIELD_NUMBER << 3) | 2
         payload = meta.SerializeToString()
         wire = _varint(tag) + _varint(len(payload)) + payload
@@ -1412,81 +1412,81 @@ from perfetto.trace_builder.proto_builder import StreamingTraceProtoBuilder
 from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import TrackEvent
 
 def populate_packets(builder: StreamingTraceProtoBuilder):
- """
- 此函数定义并将 TracePackets 写入流中。
+    """
+    This function defines and writes TracePackets to the stream.
 
- 参数:
- builder: StreamingTraceProtoBuilder 的实例。
- """
+    Args:
+        builder: An instance of StreamingTraceProtoBuilder.
+    """
  # 为此数据包序列定义唯一 ID
- TRUSTED_PACKET_SEQUENCE_ID = 1001
+    TRUSTED_PACKET_SEQUENCE_ID = 1001
 
  # 为你的自定义 Track 定义唯一 UUID
- CUSTOM_TRACK_UUID = 12345678
+    CUSTOM_TRACK_UUID = 12345678
 
  # 1. 定义自定义 Track
- packet = builder.create_packet()
- packet.track_descriptor.uuid = CUSTOM_TRACK_UUID
- packet.track_descriptor.name = "我的自定义数据 Timeline"
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.track_descriptor.uuid = CUSTOM_TRACK_UUID
+    packet.track_descriptor.name = "My Custom Data Timeline"
+    builder.write_packet(packet)
 
  # 2. 为此自定义 Track 发出事件
  # 示例事件 1:"任务 A"
- packet = builder.create_packet()
- packet.timestamp = 1000
- packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
- packet.track_event.track_uuid = CUSTOM_TRACK_UUID
- packet.track_event.name = "任务 A"
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.timestamp = 1000
+    packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
+    packet.track_event.track_uuid = CUSTOM_TRACK_UUID
+    packet.track_event.name = "Task A"
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    builder.write_packet(packet)
 
- packet = builder.create_packet()
- packet.timestamp = 1500
- packet.track_event.type = TrackEvent.TYPE_SLICE_END
- packet.track_event.track_uuid = CUSTOM_TRACK_UUID
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.timestamp = 1500
+    packet.track_event.type = TrackEvent.TYPE_SLICE_END
+    packet.track_event.track_uuid = CUSTOM_TRACK_UUID
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    builder.write_packet(packet)
 
  # 示例事件 2:"任务 B"
- packet = builder.create_packet()
- packet.timestamp = 1600
- packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
- packet.track_event.track_uuid = CUSTOM_TRACK_UUID
- packet.track_event.name = "任务 B"
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.timestamp = 1600
+    packet.track_event.type = TrackEvent.TYPE_SLICE_BEGIN
+    packet.track_event.track_uuid = CUSTOM_TRACK_UUID
+    packet.track_event.name = "Task B"
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    builder.write_packet(packet)
 
- packet = builder.create_packet()
- packet.timestamp = 1800
- packet.track_event.type = TrackEvent.TYPE_SLICE_END
- packet.track_event.track_uuid = CUSTOM_TRACK_UUID
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.timestamp = 1800
+    packet.track_event.type = TrackEvent.TYPE_SLICE_END
+    packet.track_event.track_uuid = CUSTOM_TRACK_UUID
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    builder.write_packet(packet)
 
  # 示例事件 3:一个瞬时事件
- packet = builder.create_packet()
- packet.timestamp = 1900
- packet.track_event.type = TrackEvent.TYPE_INSTANT
- packet.track_event.track_uuid = CUSTOM_TRACK_UUID
- packet.track_event.name = "里程碑 Y"
- packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
- builder.write_packet(packet)
+    packet = builder.create_packet()
+    packet.timestamp = 1900
+    packet.track_event.type = TrackEvent.TYPE_INSTANT
+    packet.track_event.track_uuid = CUSTOM_TRACK_UUID
+    packet.track_event.name = "Milestone Y"
+    packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+    builder.write_packet(packet)
 
 def main():
- """
- 初始化 StreamingTraceProtoBuilder 并调用 populate_packets
- 将 trace 写入文件。
- """
- output_filename = "my_streamed_trace.pftrace"
- with open(output_filename, 'wb') as f:
- builder = StreamingTraceProtoBuilder(f)
- populate_packets(builder)
+    """
+    Initializes the StreamingTraceProtoBuilder and calls populate_packets
+    to write the trace to a file.
+    """
+    output_filename = "my_streamed_trace.pftrace"
+    with open(output_filename, 'wb') as f:
+        builder = StreamingTraceProtoBuilder(f)
+        populate_packets(builder)
 
- print(f"trace 已写入 {output_filename}")
- print(f"使用 [https://ui.perfetto.dev](https://ui.perfetto.dev) 打开。")
+    print(f"Trace written to {output_filename}")
+    print(f"Open with [https://ui.perfetto.dev](https://ui.perfetto.dev).")
 
 if __name__ == "__main__":
- main()
+    main()
 ```
 
 </details>

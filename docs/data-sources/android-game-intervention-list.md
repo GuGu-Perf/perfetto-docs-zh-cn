@@ -39,12 +39,12 @@ Android 游戏干预列表通过 trace 配置的 [AndroidGameInterventionListCon
 
 ```protobuf
 data_sources: {
- config {
- name: "android.game_interventions"
- android_game_intervention_list_config {
- package_name_filter: "com.my.game1"
- package_name_filter: "com.my.game2"
- }
- }
+    config {
+        name: "android.game_interventions"
+        android_game_intervention_list_config {
+            package_name_filter: "com.my.game1"
+            package_name_filter: "com.my.game2"
+        }
+    }
 }
 ```

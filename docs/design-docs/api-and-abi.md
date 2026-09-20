@@ -59,10 +59,10 @@ Tracing 协议 ABI 包括以下二进制接口，允许操作系统中的各种�
 
 两个 socket 使用相同的线路协议，即 `IPCFrame` 消息，该消息定义于 [wire_protocol.proto](/protos/perfetto/ipc/wire_protocol.proto)。线路协议简单基于以下形式的长度前缀消息序列：
 ```
-< 4 字节 len little-endian > < proto 编码的 IPCFrame >
+< 4 bytes len little-endian > < proto-encoded IPCFrame >
 
-04 00 00 00 A0 A1 A2 A3 05 00 00 00 B0 B1 B2 B3 B4 ...
-{ len: 4 } [ Frame 1 ] { len: 5 } [ Frame 2 ]
+04 00 00 00 A0 A1 A2 A3   05 00 00 00 B0 B1 B2 B3 B4  ...
+{ len: 4  } [ Frame 1 ]   { len: 5  } [   Frame 2  ]
 ```
 
 `IPCFrame` proto 消息定义了与 [protobuf 服务语法][proto_rpc] 兼容的请求/响应协议。`IPCFrame` 定义以下帧类型：
@@ -85,37 +85,37 @@ Tracing 协议 ABI 包括以下二进制接口，允许操作系统中的各种�
 ```
 # [Prd > Svc] 绑定到名为 "producer_port" 的远程服务的请求
 request_id: 1
-msg_bind_service { service_name: "producer_port" }
+msg_bind_service { service_name: "producer_port" }
 
 # [Svc > Prd] 服务回复。
 request_id: 1
 msg_bind_service_reply: {
- success: true
- service_id: 42
- methods: {id: 2; name: "InitializeConnection" }
- methods: {id: 5; name: "RegisterDataSource" }
- methods: {id: 3; name: "UnregisterDataSource" }
- ...
+  success:    true
+  service_id: 42
+  methods:    {id: 2; name: "InitializeConnection" }
+  methods:    {id: 5; name: "RegisterDataSource" }
+  methods:    {id: 3; name: "UnregisterDataSource" }
+  ...
 }
 
 # [Prd > Svc] 方法调用(RegisterDataSource)
 request_id: 2
 msg_invoke_method: {
- service_id: 42 # "producer_port"
- method_id: 5 # "RegisterDataSource"
+  service_id: 42 # "producer_port"
+  method_id:  5 # "RegisterDataSource"
 
  # RegisterDataSourceRequest 消息的 proto 编码字节。
- args_proto: [XX XX XX XX]
+  args_proto: [XX XX XX XX]
 }
 
 # [Svc > Prd] RegisterDataSource 方法调用的结果。
 request_id: 2
 msg_invoke_method_reply: {
- success: true
- has_more: false # 此请求的 EOF
+  success:     true
+  has_more:    false # 此请求的 EOF
 
  # RegisterDataSourceResponse 消息的 proto 编码字节。
- reply_proto: [XX XX XX XX]
+  reply_proto: [XX XX XX XX]
 }
 ```
 

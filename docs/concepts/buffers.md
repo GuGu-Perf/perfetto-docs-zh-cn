@@ -81,11 +81,11 @@ WARNING: 如果数据源在单个批次中写入非常大的 trace 数据包，�
 例如，考虑一个每 10 秒发出 2MB 屏幕截图的数据源。其（简化）代码如下所示：
 ```c++
 for (;;) {
- ScreenshotDataSource::Trace([](ScreenshotDataSource::TraceContext ctx) {
- auto packet = ctx.NewTracePacket();
- packet.set_bitmap(Grab2MBScreenshot());
- });
- std::this_thread::sleep_for(std::chrono::seconds(10));
+  ScreenshotDataSource::Trace([](ScreenshotDataSource::TraceContext ctx) {
+    auto packet = ctx.NewTracePacket();
+    packet.set_bitmap(Grab2MBScreenshot());
+  });
+  std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 ```
 
@@ -100,8 +100,8 @@ for (;;) {
 ```c++
 class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
  public:
- constexpr static BufferExhaustedPolicy kBufferExhaustedPolicy =
- BufferExhaustedPolicy::kStall;
+  constexpr static BufferExhaustedPolicy kBufferExhaustedPolicy =
+      BufferExhaustedPolicy::kStall;
  ...
 };
 ```
@@ -120,16 +120,16 @@ class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
 
 ```sql
 > select * from stats where name like 'ftrace_cpu_overrun_end'
-name idx severity source value
+name                 idx                  severity             source value
 -------------------- -------------------- -------------------- ------ ------
-ftrace_cpu_overrun_e 0 info trace 0
-ftrace_cpu_overrun_e 1 info trace 0
-ftrace_cpu_overrun_e 2 info trace 0
-ftrace_cpu_overrun_e 3 info trace 0
-ftrace_cpu_overrun_e 4 info trace 0
-ftrace_cpu_overrun_e 5 info trace 0
-ftrace_cpu_overrun_e 6 info trace 0
-ftrace_cpu_overrun_e 7 info trace 0
+ftrace_cpu_overrun_e                    0 info                 trace       0
+ftrace_cpu_overrun_e                    1 info                 trace       0
+ftrace_cpu_overrun_e                    2 info                 trace       0
+ftrace_cpu_overrun_e                    3 info                 trace       0
+ftrace_cpu_overrun_e                    4 info                 trace       0
+ftrace_cpu_overrun_e                    5 info                 trace       0
+ftrace_cpu_overrun_e                    6 info                 trace       0
+ftrace_cpu_overrun_e                    7 info                 trace       0
 ```
 
 这些丢失可以通过增加[`TraceConfig.FtraceConfig.buffer_size_kb`][FtraceConfig]或减少[`TraceConfig.FtraceConfig.drain_period_ms`][FtraceConfig]来缓解
@@ -147,9 +147,9 @@ ftrace_cpu_overrun_e 7 info trace 0
 在 TraceProcessor SQL 级别，此数据在 `stats` 表中可用：
 ```sql
 > select * from stats where name = 'traced_buf_trace_writer_packet_loss'
-name idx severity source value
+name                 idx                  severity             source    value
 -------------------- -------------------- -------------------- --------- -----
-traced_buf_trace_wri 0 data_loss trace 0
+traced_buf_trace_wri                    0 data_loss            trace         0
 ```
 
 #### 中央缓冲区丢失
@@ -166,10 +166,10 @@ traced_buf_trace_wri 0 data_loss trace 0
 
 ```sql
 > select * from stats where name = 'traced_buf_chunks_overwritten' or name = 'traced_buf_chunks_discarded'
-name idx severity source value
+name                 idx                  severity             source  value
 -------------------- -------------------- -------------------- ------- -----
-traced_buf_chunks_di 0 info trace 0
-traced_buf_chunks_ov 0 info trace 0
+traced_buf_chunks_di                    0 info                 trace       0
+traced_buf_chunks_ov                    0 info                 trace       0
 ```
 
 当使用[流模式]时，覆盖也是一种数据丢失：被覆盖的数据永远不会写入文件，因此 trace 中会出现空隙。这些数据可以在 `stats` 表中查到，每个受影响的中央缓冲区对应一个条目，其中 `idx` 是缓冲区编号，`value` 是其覆盖的字节数：

@@ -48,19 +48,19 @@ Config proto:
 
 ```protobuf
 data_sources: {
- config {
- name: "android.log"
- android_log_config {
- min_prio: PRIO_VERBOSE
- filter_tags: "perfetto"
- filter_tags: "my_tag_2"
- log_ids: LID_DEFAULT
- log_ids: LID_RADIO
- log_ids: LID_EVENTS
- log_ids: LID_SYSTEM
- log_ids: LID_CRASH
- log_ids: LID_KERNEL
- }
- }
+    config {
+        name: "android.log"
+        android_log_config {
+            min_prio: PRIO_VERBOSE
+            filter_tags: "perfetto"
+            filter_tags: "my_tag_2"
+            log_ids: LID_DEFAULT
+            log_ids: LID_RADIO
+            log_ids: LID_EVENTS
+            log_ids: LID_SYSTEM
+            log_ids: LID_CRASH
+            log_ids: LID_KERNEL
+        }
+    }
 }
 ```

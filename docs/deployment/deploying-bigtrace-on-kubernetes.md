@@ -119,10 +119,10 @@ image: [ZONE]-docker.pkg.dev/[PROJECT_NAME]/[REPO_NAME]/bigtrace_orchestrator
 
 ```yaml
 resources:
- requests:
- cpu: [VCPUS_PER_MACHINE]
- limits:
- cpu: [VCPUS_PER_MACHINE]
+    requests:
+      cpu: [VCPUS_PER_MACHINE]
+    limits:
+      cpu: [VCPUS_PER_MACHINE]
 ```
 
 然后要部署 Orchestrator，你需要应用 orchestrator-deployment.yaml 和 orchestrator-ilb.yaml，分别用于部署和内部负载均衡服务。
@@ -157,8 +157,8 @@ replicas: [DESIRED_REPLICA_COUNT]
 ...
 
 resources:
- requests:
- cpu: [VCPUS_PER_MACHINE]
+  requests:
+    cpu: [VCPUS_PER_MACHINE]
 ```
 
 然后按如下方式部署部署和服务：
@@ -202,11 +202,11 @@ env 变量 BIGTRACE_ORCHESTRATOR_ADDRESS 也必须更改为 GKE 给出的 Orches
 
 ```
  containers:
-  - name: clickhouse
- image: # [ZONE]-docker.pkg.dev/[PROJECT_NAME]/[REPO_NAME]/clickhouse
- env:
-  - name: BIGTRACE_ORCHESTRATOR_ADDRESS
- value: # Address of Orchestrator service
+      - name: clickhouse
+        image: # [ZONE]-docker.pkg.dev/[PROJECT_NAME]/[REPO_NAME]/clickhouse
+        env:
+        - name: BIGTRACE_ORCHESTRATOR_ADDRESS
+          value: # Address of Orchestrator service
 ```
 
 如果要验证部署是否成功，可以运行：
@@ -218,10 +218,10 @@ kubectl get deployments
 这应该生成类似以下的输出：
 
 ```
-NAME READY UP-TO-DATE AVAILABLE AGE
-clickhouse 0/1 1 0 106s
-orchestrator 0/1 1 0 48m
-worker 0/5 5 0 27m
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+clickhouse     0/1     1            0           106s
+orchestrator   0/1     1            0           48m
+worker         0/5     5            0           27m
 ```
 
 这意味着 orchestrator、workers 和 clickhouse 已成功部署。

@@ -7,7 +7,7 @@ Interceptor 通过子类化 `perfetto::Interceptor` 模板来定义：
 ```C++
 class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
  public:
- ~MyInterceptor() override = default;
+  ~MyInterceptor() override = default;
 
  // 此函数为每个拦截的 Trace packet 调用。|context|
  // 包含有关 Trace packet 的信息以及由 interceptor
@@ -18,11 +18,11 @@ class MyInterceptor : public perfetto::Interceptor<MyInterceptor> {
  //
  // 警告：此函数可以在任何时候在任何线程上调用。请参阅
  // 下文了解如何从此处安全地访问共享 interceptor 数据。
- static void OnTracePacket(InterceptorContext context) {
- perfetto::protos::pbzero::TracePacket::Decoder packet(
- context.packet_data.data, context.packet_data.size);
+  static void OnTracePacket(InterceptorContext context) {
+    perfetto::protos::pbzero::TracePacket::Decoder packet(
+        context.packet_data.data, context.packet_data.size);
  // ... 将 |packet| 写入所需目标 ...
- }
+  }
 };
 ```
 

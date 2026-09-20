@@ -92,21 +92,21 @@ _**更新：** 2020-04-20_
 ```
 class StackMemory : public unwindstack::MemoryRemote {
  public:
- ...
- size_t Read(uint64_t addr, void* dst, size_t size) override {
- if (addr >= sp_ && addr + size <= stack_end_ && addr + size > sp_) {
- size_t offset = static_cast<size_t>(addr - sp_);
- memcpy(dst, stack_ + offset, size);
- return size;
- }
+  ...
+  size_t Read(uint64_t addr, void* dst, size_t size) override {
+    if (addr >= sp_ && addr + size <= stack_end_ && addr + size > sp_) {
+      size_t offset = static_cast<size_t>(addr - sp_);
+      memcpy(dst, stack_ + offset, size);
+      return size;
+    }
 
- return mem_->Read(addr, dst, size);
- }
+    return mem_->Read(addr, dst, size);
+  }
 
  private:
- uint64_t sp_;
- uint8_t* stack_;
- size_t size;
+  uint64_t sp_;
+  uint8_t* stack_;
+  size_t size_;
 };
 ```
 

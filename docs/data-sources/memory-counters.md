@@ -39,13 +39,13 @@ where t.name like 'mem.%'
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.process_stats"
- process_stats_config {
- scan_all_processes_on_start: true
- proc_stats_poll_ms: 1000
- }
- }
+    config {
+        name: "linux.process_stats"
+        process_stats_config {
+            scan_all_processes_on_start: true
+            proc_stats_poll_ms: 1000
+        }
+    }
 }
 ```
 
@@ -116,20 +116,20 @@ where t.name like 'mem.%'
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "kmem/rss_stat"
- ftrace_events: "mm_event/mm_event_record"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "kmem/rss_stat"
+            ftrace_events: "mm_event/mm_event_record"
+        }
+    }
 }
 
 # 这是获取线程<>进程关联和完整进程名称。
 data_sources: {
- config {
- name: "linux.process_stats"
- }
+    config {
+        name: "linux.process_stats"
+    }
 }
 ```
 
@@ -170,25 +170,25 @@ select c.ts, t.name, c.value / 1024 as value_kb from counters as c left join cou
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.sys_stats"
- sys_stats_config {
- meminfo_period_ms: 1000
- meminfo_counters: MEMINFO_MEM_TOTAL
- meminfo_counters: MEMINFO_MEM_FREE
- meminfo_counters: MEMINFO_MEM_AVAILABLE
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_MEM_AVAILABLE
 
- vmstat_period_ms: 1000
- vmstat_counters: VMSTAT_NR_FREE_PAGES
- vmstat_counters: VMSTAT_NR_ALLOC_BATCH
- vmstat_counters: VMSTAT_NR_INACTIVE_ANON
- vmstat_counters: VMSTAT_NR_ACTIVE_ANON
+            vmstat_period_ms: 1000
+            vmstat_counters: VMSTAT_NR_FREE_PAGES
+            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
+            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
+            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
 
- stat_period_ms: 1000
- stat_counters: STAT_CPU_TIMES
- stat_counters: STAT_FORK_COUNT
- }
- }
+            stat_period_ms: 1000
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+        }
+    }
 }
 ```
 
@@ -256,20 +256,20 @@ WHERE instant.name = 'mem.lmk'
 
 ```protobuf
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
  # 对于旧内核事件。
- ftrace_events: "lowmemorykiller/lowmemory_kill"
+            ftrace_events: "lowmemorykiller/lowmemory_kill"
 
  # 对于新的用户空间 lmkds。
- atrace_apps: "lmkd"
+            atrace_apps: "lmkd"
 
  # 这不是严格要求的,但很有用,可以知道进程
  # 的状态（FG、缓存...）在它被终止之前。
- ftrace_events: "oom/oom_score_adj_update"
- }
- }
+            ftrace_events: "oom/oom_score_adj_update"
+        }
+    }
 }
 ```
 

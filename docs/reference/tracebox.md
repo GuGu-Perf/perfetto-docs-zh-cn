@@ -50,16 +50,16 @@ tracebox -t 10s -o trace_file.perfetto-trace sched/sched_switch
 cat <<EOF > config.pbtx
 duration_ms: 5000
 buffers {
- size_kb: 1024
- fill_policy: RING_BUFFER
+  size_kb: 1024
+  fill_policy: RING_BUFFER
 }
 data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched/sched_switch"
- }
- }
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "sched/sched_switch"
+    }
+  }
 }
 EOF
 

@@ -25,25 +25,25 @@ metrics 子系统是[trace processor](/docs/analysis/trace-processor.md)的一�
 ```python
 > ./trace_processor --run-metrics android_cpu <trace>
 android_cpu {
- process_info {
- name: "/system/bin/init"
- threads {
- name: "init"
- core {
- id: 1
- metrics {
- mcycles: 1
- runtime_ns: 570365
- min_freq_khz: 1900800
- max_freq_khz: 1900800
- avg_freq_khz: 1902017
- }
- }
- ...
- }
- ...
- }
- ...
+  process_info {
+    name: "/system/bin/init"
+    threads {
+      name: "init"
+      core {
+        id: 1
+        metrics {
+          mcycles: 1
+          runtime_ns: 570365
+          min_freq_khz: 1900800
+          max_freq_khz: 1900800
+          avg_freq_khz: 1902017
+        }
+      }
+      ...
+    }
+    ...
+  }
+  ...
 }
 ```
 
@@ -64,9 +64,9 @@ android_cpu {
  --run-metrics android_startup \
  --metric-extension src/trace_processor/metrics@/ \
  --dev \
- <trace>
+  <trace>
 android_startup {
- <startup metrics 的内容>
+  <contents of startup metric>
 }
 
 # 现在对与启动 metrics 相关的 SQL 文件进行你想要的任何更改。
@@ -78,7 +78,7 @@ android_startup {
 # 我们可以使用 `.run-metrics` 重新运行更改后的 metrics
 > .run-metrics
 android_startup {
- <更改后的启动 metrics 的内容>
+  <contents of changed startup metric>
 }
 ```
 
@@ -89,7 +89,7 @@ NOTE: 下面将看到为什么此命令需要 `--dev`。
 ```python
 > ./tools/trace_processor -i --run-metrics /tmp/my_custom_metric.sql <trace>
 my_custom_metric {
- <my_custom_metric 的内容>
+  <contents of my_custom_metric>
 }
 
 # 像以前一样更改 SQL 文件。
@@ -97,7 +97,7 @@ my_custom_metric {
 > .load-metrics-sql
 > .run-metrics
 my_custom_metric {
- <更改后的 my_custom_metric 的内容>
+  <contents of changed my_custom_metric>
 }
 ```
 
@@ -116,7 +116,7 @@ WARNING: 从 `--metric-extension` 文件夹中删除的文件*不会*被删除�
  --run-metrics android_cpu \
  --metric-extension src/trace_processor/metrics@/
  --dev
- <trace>
+  <trace>
 ```
 
 这将使用 repo 中的实时 SQL 运行 CPU metrics *而不是*内置到二进制文件中的 SQL 定义。
@@ -172,9 +172,9 @@ WHERE slice.name = '{{slice_name}}';
 
 ```sql
 SELECT RUN_METRIC(
- 'android/slice_template.sql',
- 'view_name', 'choreographer_slices',
- 'slice_name', 'Chroeographer#doFrame'
+  'android/slice_template.sql',
+  'view_name', 'choreographer_slices',
+  'slice_name', 'Chroeographer#doFrame'
 );
 
 CREATE VIEW long_choreographer_slices AS
@@ -225,9 +225,9 @@ NOTE: 请参阅此 [GitHub gist][gist] 以查看演练结束时代码的外观�
 
 ```protobuf
 message ProcessInfo {
- optional string process_name = 1;
- optional uint64 cpu_time_ms = 2;
- optional uint32 num_threads = 3;
+  optional string process_name = 1;
+  optional uint64 cpu_time_ms = 2;
+  optional uint32 num_threads = 3;
 }
 ```
 
@@ -235,7 +235,7 @@ message ProcessInfo {
 
 ```protobuf
 message TopProcesses {
- repeated ProcessInfo process_info = 1;
+  repeated ProcessInfo process_info = 1;
 }
 ```
 
@@ -243,7 +243,7 @@ message TopProcesses {
 
 ```protobuf
 extend TraceMetrics {
- optional TopProcesses top_five_processes = 450;
+  optional TopProcesses top_five_processes = 450;
 }
 ```
 
@@ -264,17 +264,17 @@ package perfetto.protos;
 import "protos/perfetto/metrics/metrics.proto";
 
 message ProcessInfo {
- optional string process_name = 1;
- optional int64 cpu_time_ms = 2;
- optional uint32 num_threads = 3;
+  optional string process_name = 1;
+  optional int64 cpu_time_ms = 2;
+  optional uint32 num_threads = 3;
 }
 
 message TopProcesses {
- repeated ProcessInfo process_info = 1;
+  repeated ProcessInfo process_info = 1;
 }
 
 extend TraceMetrics {
- optional TopProcesses top_five_processes = 450;
+  optional TopProcesses top_five_processes = 450;
 }
 ```
 
@@ -287,9 +287,9 @@ extend TraceMetrics {
 ```sql
 CREATE VIEW top_five_processes_by_cpu AS
 SELECT
- process.name as process_name,
- CAST(SUM(sched.dur) / 1e6 as INT64) as cpu_time_ms,
- COUNT(DISTINCT utid) as num_threads
+  process.name as process_name,
+  CAST(SUM(sched.dur) / 1e6 as INT64) as cpu_time_ms,
+  COUNT(DISTINCT utid) as num_threads
 FROM sched
 INNER JOIN thread USING(utid)
 INNER JOIN process USING(upid)
@@ -315,16 +315,16 @@ LIMIT 5;
 ```sql
 CREATE VIEW top_five_processes_output AS
 SELECT TopProcesses(
- 'process_info', (
- SELECT RepeatedField(
- ProcessInfo(
- 'process_name', process_name,
- 'cpu_time_ms', cpu_time_ms,
- 'num_threads', num_threads
- )
- )
- FROM top_five_processes_by_cpu
- )
+  'process_info', (
+    SELECT RepeatedField(
+      ProcessInfo(
+        'process_name', process_name,
+        'cpu_time_ms', cpu_time_ms,
+        'num_threads', num_threads
+      )
+    )
+    FROM top_five_processes_by_cpu
+  )
 );
 ```
 
@@ -353,9 +353,9 @@ NOTE: 重要的是视图命名为 {TraceMetrics 扩展字段的名称}\_output�
 ```sql
 CREATE VIEW top_five_processes_by_cpu AS
 SELECT
- process.name as process_name,
- CAST(SUM(sched.dur) / 1e6 as INT64) as cpu_time_ms,
- COUNT(DISTINCT utid) as num_threads
+  process.name as process_name,
+  CAST(SUM(sched.dur) / 1e6 as INT64) as cpu_time_ms,
+  COUNT(DISTINCT utid) as num_threads
 FROM sched
 INNER JOIN thread USING(utid)
 INNER JOIN process USING(upid)
@@ -365,16 +365,16 @@ LIMIT 5;
 
 CREATE VIEW top_five_processes_output AS
 SELECT TopProcesses(
- 'process_info', (
- SELECT RepeatedField(
- ProcessInfo(
- 'process_name', process_name,
- 'cpu_time_ms', cpu_time_ms,
- 'num_threads', num_threads
- )
- )
- FROM top_five_processes_by_cpu
- )
+  'process_info', (
+    SELECT RepeatedField(
+      ProcessInfo(
+        'process_name', process_name,
+        'cpu_time_ms', cpu_time_ms,
+        'num_threads', num_threads
+      )
+    )
+    FROM top_five_processes_by_cpu
+  )
 );
 ```
 
@@ -400,31 +400,31 @@ _说明：_
 
 ```
 [perfetto.protos.top_five_processes] {
- process_info {
- process_name: "com.google.android.GoogleCamera"
- cpu_time_ms: 15154
- num_threads: 125
- }
- process_info {
- process_name: "sugov:4"
- cpu_time_ms: 6846
- num_threads: 1
- }
- process_info {
- process_name: "system_server"
- cpu_time_ms: 6809
- num_threads: 66
- }
- process_info {
- process_name: "cds_ol_rx_threa"
- cpu_time_ms: 6684
- num_threads: 1
- }
- process_info {
- process_name: "com.android.chrome"
- cpu_time_ms: 5125
- num_threads: 49
- }
+  process_info {
+    process_name: "com.google.android.GoogleCamera"
+    cpu_time_ms: 15154
+    num_threads: 125
+  }
+  process_info {
+    process_name: "sugov:4"
+    cpu_time_ms: 6846
+    num_threads: 1
+  }
+  process_info {
+    process_name: "system_server"
+    cpu_time_ms: 6809
+    num_threads: 66
+  }
+  process_info {
+    process_name: "cds_ol_rx_threa"
+    cpu_time_ms: 6684
+    num_threads: 1
+  }
+  process_info {
+    process_name: "com.android.chrome"
+    cpu_time_ms: 5125
+    num_threads: 49
+  }
 }
 ```
 

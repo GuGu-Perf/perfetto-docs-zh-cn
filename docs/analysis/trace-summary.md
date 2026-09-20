@@ -70,7 +70,7 @@ with TraceProcessor(trace='my_trace.pftrace') as tp:
 TAB: Command-line shell
 
 ```bash
-trace_processor summarize \
+trace_processor_shell summarize \
   --metrics-v2 memory_per_process \
   my_trace.pftrace spec.textproto
 ```
@@ -153,7 +153,7 @@ with TraceProcessor(trace='my_trace.pftrace') as tp:
 TAB: Command-line shell
 
 ```bash
-trace_processor summarize \
+trace_processor_shell summarize \
   --metrics-v2 memory_per_process_min_rss_and_swap,memory_per_process_max_rss_and_swap,memory_per_process_avg_rss_and_swap \
   my_trace.pftrace spec.textproto
 ```
@@ -316,7 +316,7 @@ TAB: Command-line shell
 使用全局 `--add-sql-package` 标志。你可以显式列出 Metric 或使用 `all` 关键字。
 
 ```bash
-trace_processor summarize \
+trace_processor_shell summarize \
   --add-sql-package ./my_sql_modules \
   --metrics-v2 game_frame_min_duration_ns,game_frame_max_duration_ns,game_frame_avg_duration_ns \
   my_trace.pftrace spec.textproto
@@ -375,25 +375,25 @@ query: {
 // 在 id 为 "bar_cpu_time_during_baz_cujs" 的 metric_spec 中
 query: {
   interval_intersect: {
-    base: {
+     base: {
       // 基础数据是每个线程的 CPU 调度 slice。
-      table: {
-        table_name: "sched_with_thread_process"
-      }
-      referenced_modules: "sched.with_context"
-      filters: {
-        column_name: "thread_name"
-        op: EQUAL
-        string_rhs: "bar"
-      }
-    }
-    interval_intersect: {
+       table: {
+         table_name: "sched_with_thread_process"
+       }
+       referenced_modules: "sched.with_context"
+       filters: {
+         column_name: "thread_name"
+         op: EQUAL
+         string_rhs: "bar"
+       }
+     }
+     interval_intersect: {
       // 间隔是 "baz_*" Slice。
-      simple_slices: {
-        slice_name_glob: "baz_*"
-        process_name_glob: "system_server"
-      }
-    }
+       simple_slices: {
+         slice_name_glob: "baz_*"
+         process_name_glob: "system_server"
+       }
+     }
   }
   group_by: {
     // 我们对相交间隔的 CPU 时间求和。
@@ -489,7 +489,7 @@ TAB: Command-line shell
 使用 `--metrics-v2` 和 `--metadata-query`:
 
 ```bash
-trace_processor summarize \
+trace_processor_shell summarize \\
   --metrics-v2 game_frame_avg_duration_ns \
   --metadata-query device_info_query \
   my_trace.pftrace spec.textproto

@@ -38,17 +38,17 @@ reserve_mem=20M:2M:trace trace_instance=boot_mapped^traceoff@trace
 
 ```
 buffers {
- size_kb: 65536
- fill_policy: DISCARD
+  size_kb: 65536
+  fill_policy: DISCARD
 }
 
 data_sources {
  config {
- name: "linux.frozen_ftrace"
- frozen_ftrace_config {
- instance_name: "boot_mapped"
- }
- }
+   name: "linux.frozen_ftrace"
+   frozen_ftrace_config {
+     instance_name: "boot_mapped"
+    }
+  }
 }
 
 duration_ms: 5000

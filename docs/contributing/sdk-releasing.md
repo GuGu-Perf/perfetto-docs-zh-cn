@@ -68,12 +68,12 @@ v${maj}.${min} 版本。
 
 ```txt
 v16.1 - 2021-06-08:
- Tracing service and probes:
-  - Cherry-pick of r.android.com/1716718 which missed to v16 branch ... .
+  Tracing service and probes:
+    * Cherry-pick of r.android.com/1716718 which missed the v16 branch ... .
 
 
 v16.0 - 2021-06-01:
- ...
+  ...
 ```
 
 ## {#tagging-the-release} 构建和标记发布

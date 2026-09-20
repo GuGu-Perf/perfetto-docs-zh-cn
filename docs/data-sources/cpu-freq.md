@@ -69,31 +69,31 @@ ts | name | cpu | value
 ```protobuf
 # 频率和空闲状态更改的事件驱动记录。
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "power/cpu_frequency"
- ftrace_events: "power/cpu_idle"
- ftrace_events: "power/suspend_resume"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "power/cpu_frequency"
+            ftrace_events: "power/cpu_idle"
+            ftrace_events: "power/suspend_resume"
+        }
+    }
 }
 
 # 轮询当前 cpu 频率。
 data_sources: {
- config {
- name: "linux.sys_stats"
- sys_stats_config {
- cpufreq_period_ms: 500
- }
- }
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            cpufreq_period_ms: 500
+        }
+    }
 }
 
 # 报告每个 CPU 的可用频率列表。
 data_sources {
- config {
- name: "linux.system_info"
- }
+    config {
+        name: "linux.system_info"
+    }
 }
 ```
 

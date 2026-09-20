@@ -14,7 +14,7 @@ Perfetto 是一个大型项目，对于新手来说，了解文档的哪些部�
 
 ```mermaid
 graph TD
-    A[从这里开始] --> B{你的角色是什么？};
+    A[Start here] --> B{你的角色是什么？};
     B --> C["<a href='#android-developers'>Android 应用/平台开发者</a>"];
     B --> D["<a href='#linux-kernel-developers'>Linux 内核开发者</a>"];
     B --> E["<a href='#c-cpp-developers'>C/C++ 开发者（非 Android）</a>"];
@@ -28,7 +28,7 @@ graph TD
 
 ```mermaid
 graph TD
-    A[Android 应用和平台开发者] --> B{你的目标是什么？};
+    A[Android App & Platform Developers] --> B{你的目标是什么？};
     B --> C["<a href='#android-understanding-system-behavior'>理解系统行为 / 调试功能问题</a>"];
     B --> D["<a href='#android-optimizing-performance'>优化性能 / 解决延迟问题</a>"];
     B --> E["<a href='#android-diagnosing-memory-issues'>诊断内存问题</a>"];

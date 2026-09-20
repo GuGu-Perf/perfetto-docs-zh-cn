@@ -107,7 +107,7 @@ V2 不会尝试对读回过于聪明，一旦到达 buffer 的末尾就简单地
 Packet fragmentation 是 TraceBuffer 大部分设计复杂性的原因。
 
 ```
-简单的 Fragmentation 示例：
+Simple Fragmentation Example:
 Chunk A (ChunkID=100)      Chunk B (ChunkID=101)      Chunk C (ChunkID=102)
 ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────────┐
 │[Packet1: Complete]  │    │[Packet2: Begin]     │    │[Packet2: Continue]  │
@@ -116,7 +116,7 @@ Chunk A (ChunkID=100)      Chunk B (ChunkID=101)      Chunk C (ChunkID=102)
 └─────────────────────┘                               │[Packet3: Complete]  │
                                                       └─────────────────────┘
 
-Fragmentation 链：Packet2 = [Begin] → [Continue] → [End]
+Fragmentation Chain: Packet2 = [Begin] → [Continue] → [End]
 ```
 
 **关键的 Fragmentation 挑战**：

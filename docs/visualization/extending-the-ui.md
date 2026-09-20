@@ -6,64 +6,64 @@ Perfetto 提供了几种扩展和自定义 UI 的方法。正确的选择取决�
 
 ```mermaid
 graph TD
- Start["如何扩展 Perfetto UI?"]
- Q1{"你想要简单的事情吗?<br>(查询、固定 Track,<br>选择事件等)"}
+    Start["How do I extend the Perfetto UI?"]
+    Q1{"Do you want simple things?<br>(queries, pinning tracks,<br>selecting events, etc.)"}
 
- Start --> Q1
+    Start --> Q1
 
- Q2{"给自己还是<br>与他人分享?"}
- Q3{"你是否可以贡献<br>更改到上游?"}
+    Q2{"For yourself or<br>to share with others?"}
+    Q3{"Are you OK contributing<br>your changes upstream?"}
 
- Q1 -->|是| Q2
- Q1 -->|否| Q3
+    Q1 -->|是| Q2
+    Q1 -->|否| Q3
 
- Out1["使用宏 +<br>启动命令"]
- Out2["使用扩展服务器"]
+    Out1["Use Macros +<br>Startup Commands"]
+    Out2["Use Extension Servers"]
 
- Q2 -->|给自己| Out1
- Q2 -->|分享| Out2
+    Q2 -->|给自己| Out1
+    Q2 -->|分享| Out2
 
- Out3["向上游贡献<br>UI 插件"]
- Q4{"你在<br>Google 工作吗?"}
+    Out3["Contribute a<br>UI Plugin Upstream"]
+    Q4{"Do you work<br>at Google?"}
 
- Q3 -->|是| Out3
- Q3 -->|否| Q4
+    Q3 -->|是| Out3
+    Q3 -->|否| Q4
 
- Out4["请与我们联系"]
- Out5["Fork Perfetto &<br>维护你自己的实例"]
+    Out4["Please speak to us"]
+    Out5["Fork Perfetto &<br>maintain your own instance"]
 
- Q4 -->|是| Out4
- Q4 -->|否| Out5
+    Q4 -->|是| Out4
+    Q4 -->|否| Out5
 
- Out6["使用插件进行<br>影响 UI 的更改"]
- Out7["使用 Embedder 进行<br>中央基础设施<br>(分析、品牌等)"]
+    Out6["Use Plugins for<br>UI-affecting changes"]
+    Out7["Use Embedder for<br>central infra<br>(analytics, branding, etc.)"]
 
- Out5 --> Out6
- Out5 --> Out7
+    Out5 --> Out6
+    Out5 --> Out7
 
- click Out1 "/docs/visualization/ui-automation" "命令和宏"
- click Out2 "/docs/visualization/extension-servers" "扩展服务器设置"
- click Out3 "/docs/contributing/ui-plugins" "UI 插件"
- click Out4 "https://github.com/google/perfetto/issues" "打开问题"
- click Out6 "/docs/contributing/ui-plugins" "UI 插件"
+    click Out1 "/docs/visualization/ui-automation" "Commands and Macros"
+    click Out2 "/docs/visualization/extension-servers" "Extension Server Setup"
+    click Out3 "/docs/contributing/ui-plugins" "UI Plugins"
+    click Out4 "https://github.com/google/perfetto/issues" "Open an issue"
+    click Out6 "/docs/contributing/ui-plugins" "UI Plugins"
 
- %% 样式
- style Start fill:#6b9ae8,color:#fff,stroke:none
+    %% Styling
+    style Start fill:#6b9ae8,color:#fff,stroke:none
 
- style Q1 fill:#ece5ff,stroke:#d0c4eb,color:#333
- style Q2 fill:#ece5ff,stroke:#d0c4eb,color:#333
- style Q3 fill:#ece5ff,stroke:#d0c4eb,color:#333
- style Q4 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Q1 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Q2 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Q3 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Q4 fill:#ece5ff,stroke:#d0c4eb,color:#333
 
- style Out1 fill:#36a265,color:#fff,stroke:none
- style Out2 fill:#36a265,color:#fff,stroke:none
- style Out3 fill:#36a265,color:#fff,stroke:none
+    style Out1 fill:#36a265,color:#fff,stroke:none
+    style Out2 fill:#36a265,color:#fff,stroke:none
+    style Out3 fill:#36a265,color:#fff,stroke:none
 
- style Out4 fill:#ece5ff,stroke:#d0c4eb,color:#333
- style Out5 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Out4 fill:#ece5ff,stroke:#d0c4eb,color:#333
+    style Out5 fill:#ece5ff,stroke:#d0c4eb,color:#333
 
- style Out6 fill:#ef991c,color:#fff,stroke:none
- style Out7 fill:#ef991c,color:#fff,stroke:none
+    style Out6 fill:#ef991c,color:#fff,stroke:none
+    style Out7 fill:#ef991c,color:#fff,stroke:none
 ```
 
 ## 命令、启动命令和宏

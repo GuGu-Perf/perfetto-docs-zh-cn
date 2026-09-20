@@ -57,13 +57,20 @@ import uuid
 from perfetto.trace_builder.proto_builder import TraceProtoBuilder
 from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import TrackEvent, TrackDescriptor, ProcessDescriptor, ThreadDescriptor
 
+# 为此数据包序列定义唯一 ID（每个 trace 生产者生成一次）
+TRUSTED_PACKET_SEQUENCE_ID = 1001 # 选择任意唯一整数
+
+def get_uuid() -> int:
+    return uuid.uuid4().int & ((1 << 63) - 1)
+
 def populate_packets(builder: TraceProtoBuilder):
     """
-    在这里，你将定义并将 TracePackets 添加到 trace。
-    以下部分中的示例将提供要在此处插入的特定代码。
+    This function is where you will define and add your TracePackets
+    to the trace. The examples in the following sections will provide
+    the specific code to insert here.
 
-    参数:
-        builder: 一个 TraceProtoBuilder 实例，用于添加 packets。
+    Args:
+        builder: An instance of TraceProtoBuilder to add packets to.
     """
     # ======== 在此处开始你的数据包创建代码 ========
     # 示例(稍后将由特定示例替换)：
@@ -84,16 +91,11 @@ def populate_packets(builder: TraceProtoBuilder):
     # 添加代码时删除此 'pass'
     pass
 
-# 为此数据包序列定义唯一 ID（每个 trace 生产者生成一次）
-TRUSTED_PACKET_SEQUENCE_ID = 1001  # 选择任意唯一整数
-
-def get_uuid() -> int:
-    return uuid.uuid4().int & ((1 << 63) - 1)
 
 def main():
     """
-    初始化 TraceProtoBuilder，调用 populate_packets 填充它，
-    然后将生成的 trace 写入文件。
+    Initializes the TraceProtoBuilder, calls populate_packets to fill it,
+    and then writes the resulting trace to a file.
     """
     builder = TraceProtoBuilder()
     populate_packets(builder)
@@ -102,8 +104,8 @@ def main():
     with open(output_filename, 'wb') as f:
       f.write(builder.serialize())
 
-    print(f"Trace 已写入 {output_filename}")
-    print("使用 [https://ui.perfetto.dev](https://ui.perfetto.dev) 打开。")
+    print(f"Trace written to {output_filename}")
+    print("Open with [https://ui.perfetto.dev](https://ui.perfetto.dev).")
 
 if __name__ == "__main__":
     main()
@@ -392,9 +394,8 @@ Counters 可以表示的常见示例包括：
 <summary><b>点击展开/折叠 Python 代码</b></summary>
 
 ```python
-    TRUSTED_PACKET_SEQUENCE_ID = 4004
     # Counter track 的 UUID
-    OUTSTANDING_REQUESTS_TRACK_UUID = uuid.uuid4().int & ((1 << 63) - 1)
+    OUTSTANDING_REQUESTS_TRACK_UUID = get_uuid()
 
     # 1. 定义 Counter Track
     packet = builder.add_packet()
@@ -470,11 +471,9 @@ Perfetto UI 将绘制箭头连接共享共同 `flow_id` 的 slices，使依赖�
 <summary><b>点击展开/折叠 Python 代码</b></summary>
 
 ```python
-    TRUSTED_PACKET_SEQUENCE_ID = 5005
-
     # --- 定义自定义 Tracks ---
-    REQUEST_HANDLER_TRACK_UUID = uuid.uuid4().int & ((1 << 63) - 1)
-    DATA_PROCESSOR_TRACK_UUID = uuid.uuid4().int & ((1 << 63) - 1)
+    REQUEST_HANDLER_TRACK_UUID = get_uuid()
+    DATA_PROCESSOR_TRACK_UUID = get_uuid()
 
     # Request Handler Track
     packet = builder.add_packet()
@@ -500,8 +499,8 @@ Perfetto UI 将绘制箭头连接共享共同 `flow_id` 的 slices，使依赖�
         packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
 
     # --- 为因果链接定义唯一的 flow IDs ---
-    DISPATCH_TO_PROCESS_FLOW_ID = uuid.uuid4().int & ((1<<63)-1)
-    PROCESS_COMPLETION_FLOW_ID = uuid.uuid4().int & ((1<<63)-1)
+    DISPATCH_TO_PROCESS_FLOW_ID = get_uuid()
+    PROCESS_COMPLETION_FLOW_ID = get_uuid()
 
     # 1. Request Handler：调度数据处理(第一个 flow 的起点)
     add_slice_event(ts=1000, event_type=TrackEvent.TYPE_SLICE_BEGIN,
@@ -573,13 +572,11 @@ Perfetto UI 通常会将这些渲染为可展开的树。
 <summary><b>点击展开/折叠 Python 代码</b></summary>
 
 ```python
-    TRUSTED_PACKET_SEQUENCE_ID = 6006
-
     # --- 定义 Track UUIDs ---
-    main_system_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
-    subsystem_a_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
-    subsystem_b_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
-    detail_a1_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    main_system_track_uuid = get_uuid()
+    subsystem_a_track_uuid = get_uuid()
+    subsystem_b_track_uuid = get_uuid()
+    detail_a1_track_uuid = get_uuid()
 
     # 定义 TrackDescriptor 的帮助函数
     def define_custom_track(track_uuid, name, parent_track_uuid=None):
@@ -669,14 +666,12 @@ Track 层次结构的另一个强大用途是可视化复杂操作或请求的�
 <summary><b>点击展开/折叠 Python 代码</b></summary>
 
 ```python
-    TRUSTED_PACKET_SEQUENCE_ID = 7007
-
     # --- 定义 Track UUIDs ---
-    root_request_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
-    auth_service_call_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
-    data_service_call_track_uuid = uuid.uuid4().int & ((1 << 63) - 1)
+    root_request_track_uuid = get_uuid()
+    auth_service_call_track_uuid = get_uuid()
+    data_service_call_track_uuid = get_uuid()
     # data_service_call 中的内部步骤的 UUID
-    data_service_internal_step_track_uuid = uuid.uuid4().int & ((1<<63)-1)
+    data_service_internal_step_track_uuid = get_uuid()
 
     # 定义 TrackDescriptor 的帮助函数
     def define_custom_track(track_uuid, name, parent_track_uuid=None):
@@ -778,9 +773,6 @@ ORDER BY slice.ts;
 <summary><b>点击展开/折叠 Python 代码</b></summary>
 
 ```python
-    # 定义此 packets 序列的唯一 ID
-    TRUSTED_PACKET_SEQUENCE_ID = 6001
-
     # 为你的自定义 track 定义唯一的 UUID
     DEBUG_TRACK_UUID = 87654321
 
@@ -980,7 +972,7 @@ WHERE track.name = 'Nested Debug Annotations';
         name=None,
         frames=None,
     ):
-        """用于写入带有可选内联调用栈的 TrackEvent 的帮助函数。"""
+        """Helper to write a TrackEvent with an optional inline callstack."""
         packet = builder.add_packet()
         packet.timestamp = ts
         packet.track_event.type = event_type

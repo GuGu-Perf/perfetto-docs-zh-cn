@@ -1004,7 +1004,7 @@ trace.sidebar.addMenuItem({
 ```ts
 trace.sidebar.addMenuItem({
   section: 'settings',
-  text: '插件',
+  text: 'Plugins',
   href: '#!/plugins',
 });
 ```
@@ -1055,7 +1055,7 @@ Pages 是可以通过 URL 参数路由的实体，其内容占据 sidebar 右侧
 例如：
 
 ```
-http://ui.perfetto.dev/#!/viewer <-- 'viewer' 是当前页面。
+http://ui.perfetto.dev/#!/viewer <-- 'viewer' is the current page.
 ```
 
 Pages 通过调用 `pages.registerPage` 函数从插件添加。

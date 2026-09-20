@@ -96,7 +96,7 @@ git checkout -b first-contribution
 
 ```sh
 git add .
-git commit -m "我的第一次贡献"
+git commit -m "My first contribution"
 gh pr create # 需要 cli.github.com
 ```
 

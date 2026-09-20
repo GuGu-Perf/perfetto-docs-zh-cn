@@ -60,13 +60,13 @@ var handle = window.open('https://ui.perfetto.dev');
 
 ```js
 {
- 'perfetto': {
- buffer: ArrayBuffer;
- title: string;
- fileName?: string; // Optional
- url?: string; // Optional
- appStateHash?: string // Optional
- }
+  'perfetto': {
+    buffer: ArrayBuffer;
+    title: string;
+    fileName?: string; // Optional
+    url?: string; // Optional
+    appStateHash?: string // Optional
+  }
 }
 ```
 
@@ -178,18 +178,18 @@ NOTE: 我们有意不支持通过 slice ID 链接，因为 slice ID 在 Perfetto
 ```js
 // 示例：固定 CPU Track 并创建调试 Track
 const commands = [
- {id: 'dev.perfetto.PinTracksByRegex', args: ['.*CPU [0-3].*']},
- {
- id: 'dev.perfetto.AddDebugSliceTrack',
- args: [
- "SELECT ts, dur, name FROM slice WHERE name LIKE '%render%'",
- 'Render Operations',
- ],
- },
+  {id: 'dev.perfetto.PinTracksByRegex', args: ['.*CPU [0-3].*']},
+  {
+    id: 'dev.perfetto.AddDebugSliceTrack',
+    args: [
+      "SELECT ts, dur, name FROM slice WHERE name LIKE '%render%'",
+      'Render Operations',
+    ],
+  },
 ];
 
 const url = `https://ui.perfetto.dev/#!/?startupCommands=${encodeURIComponent(
- JSON.stringify(commands),
+  JSON.stringify(commands),
 )}`;
 ```
 

@@ -9,8 +9,8 @@ Trace processor 是一个摄取各种格式的 trace 文件、解析其内容、
 ## 核心数据管道
 
 ```
-原始 Trace → ForwardingTraceParser → 格式特定的 ChunkedTraceReader →
-TraceSorter → TraceStorage → SQL 查询引擎
+Raw Trace → ForwardingTraceParser → Format-Specific ChunkedTraceReader →
+TraceSorter → TraceStorage → SQL Query Engine
 ```
 
 ## 格式检测和委托

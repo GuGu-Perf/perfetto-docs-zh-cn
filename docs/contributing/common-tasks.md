@@ -48,28 +48,28 @@ NOTE: 导入描述外的换行将被忽略。
 -- 计算每个进程的 Binder 事务。
 CREATE PERFETTO VIEW android_binder_metrics_by_process(
  -- 启动 binder 事务的进程名称。
- process_name STRING,
+  process_name STRING,
  -- 启动 binder 事务的进程的 PID。
- pid INT,
+  pid INT,
  -- 带有 binder 事务的 slice 名称。
- slice_name STRING,
+  slice_name STRING,
  -- slice 中进程内的 binder 事务数。
- event_count INT
+  event_count INT
 ) AS
 SELECT
- process.name AS process_name,
- process.pid AS pid,
- slice.name AS slice_name,
- COUNT(*) AS event_count
+  process.name AS process_name,
+  process.pid AS pid,
+  slice.name AS slice_name,
+  COUNT(*) AS event_count
 FROM slice
 JOIN thread_track ON slice.track_id = thread_track.id
 JOIN thread ON thread.utid = thread_track.utid
 JOIN process ON thread.upid = process.upid
 WHERE
- slice.name GLOB 'binder*'
+  slice.name GLOB 'binder*'
 GROUP BY
- process_name,
- slice_name;
+  process_name,
+  slice_name;
 ```
 
 模块 `android` 中的表函数示例：
@@ -78,29 +78,29 @@ GROUP BY
 -- 给定启动 ID 和 slice 名称的 GLOB,返回匹配 slice 的列。
 CREATE PERFETTO FUNCTION ANDROID_SLICES_FOR_LAUNCH_AND_SLICE_NAME(
  -- 启动的 ID。
- launch_id INT,
+  launch_id INT,
  -- 带有启动的 slice 名称。
- slice_name STRING
+  slice_name STRING
 )
 RETURNS TABLE(
  -- 带有启动的 slice 名称。
- slice_name STRING,
+  slice_name STRING,
  -- slice 开始的时间戳。
- slice_ts TIMESTAMP,
+  slice_ts TIMESTAMP,
  -- slice 的持续时间。
- slice_dur DURATION,
+  slice_dur DURATION,
  -- 带有 slice 的线程名称。
- thread_name STRING,
+  thread_name STRING,
  -- 参数集 ID。
- arg_set_id ARGSETID
+  arg_set_id ARGSETID
 )
 AS
 SELECT
- slice_name,
- slice_ts,
- slice_dur,
- thread_name,
- arg_set_id
+  slice_name,
+  slice_ts,
+  slice_dur,
+  thread_name,
+  arg_set_id
 FROM thread_slices_for_all_launches
 WHERE launch_id = $launch_id AND slice_name GLOB $slice_name;
 ```

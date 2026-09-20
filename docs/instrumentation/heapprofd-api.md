@@ -56,12 +56,12 @@ git rev-parse HEAD > perfetto-version.txt
 
 ```
 void* my_malloc(size_t size) {
- void* ptr = [代码以某种方式分配 size 字节];
- return ptr;
+  void* ptr = [code to somehow allocate get size bytes];
+  return ptr;
 }
 
 void my_free(void* ptr) {
- [代码以某种方式释放 ptr]
+  [code to somehow free ptr]
 }
 ```
 
@@ -71,16 +71,16 @@ void my_free(void* ptr) {
 #include "path/to/heap_profile.h"
 
 static uint32_t g_heap_id = AHeapProfile_registerHeap(
- AHeapInfo_create("invalid.example"));
+  AHeapInfo_create("invalid.example"));
 void* my_malloc(size_t size) {
- void* ptr = [代码以某种方式分配 size 字节];
- AHeapProfile_reportAllocation(g_heap_id, static_cast<uintptr_t>(ptr), size);
- return ptr;
+  void* ptr = [code to somehow allocate get size bytes];
+  AHeapProfile_reportAllocation(g_heap_id, static_cast<uintptr_t>(ptr), size);
+  return ptr;
 }
 
 void my_free(void* ptr) {
- AHeapProfile_reportFree(g_heap_id, static_cast<uintptr_t>(ptr));
- [代码以某种方式释放 ptr]
+  AHeapProfile_reportFree(g_heap_id, static_cast<uintptr_t>(ptr));
+  [code to somehow free ptr]
 }
 ```
 

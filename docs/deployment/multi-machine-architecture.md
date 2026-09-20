@@ -17,20 +17,20 @@ Perfetto 可以记录跨越多个操作系统镜像的单一 Trace——例如�
 配置中只有一台机器运行 `traced`（"host"）。其余每台机器运行 `traced_relay`，将 Producer 端 IPC 转发到 host：
 
 ```
-   远程机器                               Host 机器
+   Remote machine                            Host machine
   ┌────────────────────────┐               ┌────────────────────────────┐
   │ traced_probes          │               │  traced --enable-relay-    │
-  │ + 其他 Producer        │               │          endpoint          │
+  │ + other producers      │               │          endpoint          │
   │        │               │               │           ▲                │
-  │        ▼ (本地 IPC)    │   TCP/vsock   │           │ (本地 IPC)     │
-  │  traced_relay  ────────┼──────────────►│  relay 端点               │
+  │        ▼ (local IPC)   │   TCP/vsock   │           │ (local IPC)    │
+  │  traced_relay  ────────┼──────────────►│  relay endpoint            │
   └────────────────────────┘               │           ▲                │
                                            │           │                │
-                                           │   traced_probes / 其他     │
-                                           │   本地 Producer            │
+                                           │   traced_probes / other    │
+                                           │   local producers          │
                                            │           ▲                │
-                                           │           │ (Consumer IPC) │
-                                           │      perfetto 命令行       │
+                                           │           │ (consumer IPC) │
+                                           │      perfetto cmdline      │
                                            └────────────────────────────┘
 ```
 

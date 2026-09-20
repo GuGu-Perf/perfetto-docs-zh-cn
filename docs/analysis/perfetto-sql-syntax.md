@@ -82,9 +82,9 @@ CREATE PERFETTO FUNCTION constant_tab_fn()
 RETURNS TABLE(ts LONG, dur LONG) AS
 SELECT column1 as ts, column2 as dur
 FROM (
- VALUES
- (100, 10),
- (200, 20)
+  VALUES
+  (100, 10),
+  (200, 20)
 );
 
 -- 创建一个接受一个参数的表函数
@@ -109,9 +109,9 @@ WHERE utid = $utid;
 CREATE PERFETTO TABLE constant_table AS
 SELECT column1 as ts, column2 as dur
 FROM (
- VALUES
- (100, 10),
- (200, 20)
+  VALUES
+  (100, 10),
+  (200, 20)
 );
 
 -- 使用对另一个表的查询创建 Perfetto 表。
@@ -248,7 +248,7 @@ SELECT constant_macro!() + single_arg_macro!(100);
 CREATE PERFETTO MACRO multi_arg_macro(x TableOrSubquery, y Expr)
 RETURNS TableOrSubquery AS
 (
- SELECT input_tab.input_col + $y
- FROM $x AS input_tab;
+  SELECT input_tab.input_col + $y
+  FROM $x AS input_tab;
 )
 ```

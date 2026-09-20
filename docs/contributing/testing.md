@@ -28,7 +28,7 @@ out/default/perfetto_unittests --gtest_help
 读取/写入 ftrace debugfs 目录：
 
 ```bash
-sudo chown -R $USER /sys/kernel/debug/tracing
+sudo chown  -R $USER /sys/kernel/debug/tracing
 ```
 
 ### 在 Android 上

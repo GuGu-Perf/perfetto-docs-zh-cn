@@ -51,27 +51,27 @@ ts | dur | cpu | end_state | priority | process.name, | thread.name
 ```protobuf
 # 来自内核的调度数据。
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- compact_sched: {
- enabled: true
- }
- ftrace_events: "sched/sched_switch"
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      compact_sched: {
+        enabled: true
+      }
+      ftrace_events: "sched/sched_switch"
  # 可选:精确的线程生命周期跟踪:
- ftrace_events: "sched/sched_process_exit"
- ftrace_events: "sched/sched_process_free"
- ftrace_events: "task/task_newtask"
- ftrace_events: "task/task_rename"
- }
- }
+      ftrace_events: "sched/sched_process_exit"
+      ftrace_events: "sched/sched_process_free"
+      ftrace_events: "task/task_newtask"
+      ftrace_events: "task/task_rename"
+    }
+  }
 }
 
 # 添加完整的进程名称和线程<>进程关系:
 data_sources: {
- config {
- name: "linux.process_stats"
- }
+  config {
+    name: "linux.process_stats"
+  }
 }
 ```
 
@@ -80,8 +80,8 @@ data_sources: {
 通过在 TraceConfig 中进一步启用以下内容，ftrace 数据源还将记录调度唤醒事件：
 
 ```protobuf
- ftrace_events: "sched/sched_wakeup_new"
- ftrace_events: "sched/sched_waking"
+  ftrace_events: "sched/sched_wakeup_new"
+  ftrace_events: "sched/sched_waking"
 ```
 
 虽然 `sched_switch` 事件仅在线程处于 `R(unnable)` 状态并且在 CPU 运行队列上运行时发出，但在任何事件导致线程状态更改时都会发出 `sched_waking` 事件。
@@ -89,10 +89,10 @@ data_sources: {
 考虑以下示例：
 
 ```
-线程 A
+Thread A
 condition_variable.wait()
- 线程 B
- condition_variable.notify()
+                                     Thread B
+                                     condition_variable.notify()
 ```
 
 当线程 A 在 wait() 上挂起时，它将进入状态 `S(sleeping)` 并从 CPU 运行队列中移除。当线程 B 通知变量时，内核将线程 A 转换为 `R(unnable)` 状态。此时线程 A 有资格放回运行队列。但是，这可能不会立即发生，因为，例如：

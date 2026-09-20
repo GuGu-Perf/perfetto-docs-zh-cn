@@ -61,31 +61,31 @@ data_sources: {
 ```protobuf
 # 启用几个 Linux 数据源的 trace 配置示例。
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched/sched_switch"
- ftrace_events: "power/cpu_idle"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+          ftrace_events: "sched/sched_switch"
+          ftrace_events: "power/cpu_idle"
+        }
+    }
 }
 data_sources: {
- config {
- name: "linux.process_stats"
- process_stats_config {
- scan_all_processes_on_start: true
- proc_stats_poll_ms: 1000
- }
- }
+    config {
+        name: "linux.process_stats"
+        process_stats_config {
+          scan_all_processes_on_start: true
+          proc_stats_poll_ms: 1000
+        }
+    }
 }
 data_sources: {
- config {
- name: "linux.sys_stats"
- sys_stats_config {
- meminfo_period_ms: 1000
- vmstat_period_ms: 1000
- }
- }
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+          meminfo_period_ms: 1000
+          vmstat_period_ms: 1000
+        }
+    }
 }
 ```
 
@@ -227,28 +227,28 @@ data_sources: {
 ```protobuf
 # 启用几个 Android 数据源的 trace 配置示例。
 data_sources: {
- config {
- name: "android.power"
- android_power_config {
- battery_poll_ms: 1000
- battery_counters: BATTERY_COUNTER_CHARGE
- collect_power_rails: true
- }
- }
+    config {
+        name: "android.power"
+        android_power_config {
+          battery_poll_ms: 1000
+          battery_counters: BATTERY_COUNTER_CHARGE
+          collect_power_rails: true
+        }
+    }
 }
 data_sources: {
- config {
- name: "android.log"
- android_log_config {
- log_ids: LID_DEFAULT
- log_ids: LID_SYSTEM
- }
- }
+    config {
+        name: "android.log"
+        android_log_config {
+          log_ids: LID_DEFAULT
+          log_ids: LID_SYSTEM
+        }
+    }
 }
 data_sources: {
- config {
- name: "android.packages_list"
- }
+    config {
+        name: "android.packages_list"
+    }
 }
 ```
 

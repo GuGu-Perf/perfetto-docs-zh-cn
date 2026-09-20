@@ -9,8 +9,8 @@ Data Explorer 是一个可视化查询构建器，允许用户通过在有向无
 ## 核心数据流
 
 ```
-用户交互 → 节点图 → 结构化查询生成 →
-查询分析(验证) → 查询物化 → 结果显示
+User Interaction → Node Graph → Structured Query Generation →
+Query Analysis (Validation) → Query Materialization → Result Display
 ```
 
 ## 节点图结构
@@ -38,11 +38,11 @@ Data Explorer 是一个可视化查询构建器，允许用户通过在有向无
 **核心节点** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/core_nodes.ts`)
 ```typescript
 registerCoreNodes() {
- nodeRegistry.register('table', {...});
- nodeRegistry.register('slice', {...});
- nodeRegistry.register('sql', {...});
- nodeRegistry.register('filter', {...});
- nodeRegistry.register('aggregation', {...});
+  nodeRegistry.register('table', {...});
+  nodeRegistry.register('slice', {...});
+  nodeRegistry.register('sql', {...});
+  nodeRegistry.register('filter', {...});
+  nodeRegistry.register('aggregation', {...});
  // ... 更多节点
 }
 ```
@@ -114,8 +114,8 @@ registerCoreNodes() {
 
 **阶段 1：分析(验证)**
 ```
-节点图 → 结构化查询 Protobuf → Engine.updateSummarizerSpec() + querySummarizer() →
-查询 {sql, textproto, columns} | Error
+Node Graph → Structured Query Protobuf → Engine.updateSummarizerSpec() + querySummarizer() →
+Query {sql, textproto, columns} | Error
 ```
 - 通过 `createSummarizer(summarizerId)` 创建 summarizer(每个会话一次)
 - 通过 `updateSummarizerSpec(summarizerId, spec)` 向 TP 注册查询
@@ -151,11 +151,11 @@ UI 按需查询 TP 而不是缓存：
 ```typescript
 // 需要从 TP 获取表名时（例如，用于"复制表名"或导出）
 async getTableName(nodeId: string): Promise<string | undefined> {
- const result = await engine.querySummarizer(DATA_EXPLORER_SUMMARIZER_ID, nodeId);
- if (result.exists !== true || result.error) {
- return undefined;
- }
- return result.tableName;
+  const result = await engine.querySummarizer(DATA_EXPLORER_SUMMARIZER_ID, nodeId);
+  if (result.exists !== true || result.error) {
+    return undefined;
+  }
+  return result.tableName;
 }
 ```
 
@@ -172,11 +172,11 @@ async getTableName(nodeId: string): Promise<string | undefined> {
 ```typescript
 // AsyncLimiter 行为:
 while ((task = taskQueue.shift())) {
- if (taskQueue.length > 0) {
- task.deferred.resolve(); // 跳过 - 更新的任务在等待
- } else {
- await task.work(); // 运行 - 这是最新的
- }
+  if (taskQueue.length > 0) {
+    task.deferred.resolve(); // 跳过 - 更新的任务在等待
+  } else {
+    await task.work(); // 运行 - 这是最新的
+  }
 }
 ```
 
@@ -193,14 +193,14 @@ while ((task = taskQueue.shift())) {
 // 与 TP 同步所有查询,然后获取目标节点的结果
 async processNode(node: QueryNode): Promise<void> {
  // 1. 确保 summarizer 存在(每个会话创建一次)
- await engine.createSummarizer(DATA_EXPLORER_SUMMARIZER_ID);
+  await engine.createSummarizer(DATA_EXPLORER_SUMMARIZER_ID);
 
  // 2. 向 TP 注册所有查询(处理更改检测)
- const spec = buildTraceSummarySpec(allNodes);
- await engine.updateSummarizerSpec(DATA_EXPLORER_SUMMARIZER_ID, spec);
+  const spec = buildTraceSummarySpec(allNodes);
+  await engine.updateSummarizerSpec(DATA_EXPLORER_SUMMARIZER_ID, spec);
 
  // 3. 获取结果 - 触发延迟物化
- const result = await engine.querySummarizer(DATA_EXPLORER_SUMMARIZER_ID, node.nodeId);
+  const result = await engine.querySummarizer(DATA_EXPLORER_SUMMARIZER_ID, node.nodeId);
  // 返回:tableName, rowCount, columns, durationMs, sql, textproto
 }
 ```
@@ -221,15 +221,15 @@ async processNode(node: QueryNode): Promise<void> {
 **DataExplorerState** (`ui/src/plugins/dev.perfetto.DataExplorer/data_explorer.ts`)
 ```typescript
 interface DataExplorerState {
- rootNodes: QueryNode[]; // 没有父节点的节点(起点)
- selectedNodes: ReadonlySet<string>; // 选定节点 ID 的集合(多选)
- nodeLayouts: Map<string, {x, y}>; // 可视化位置
- labels: Array<{...}>; // 注释
- isExplorerCollapsed?: boolean;
- sidebarWidth?: number;
- loadGeneration?: number; // 内容加载时递增
- clipboardNodes?: ClipboardEntry[]; // 多节点复制/粘贴
- clipboardConnections?: ClipboardConnection[];
+  rootNodes: QueryNode[]; // 没有父节点的节点(起点)
+  selectedNodes: ReadonlySet<string>; // 选定节点 ID 的集合(多选)
+  nodeLayouts: Map<string, {x, y}>; // 可视化位置
+  labels: Array<{...}>; // 注释
+  isExplorerCollapsed?: boolean;
+  sidebarWidth?: number;
+  loadGeneration?: number; // 内容加载时递增
+  clipboardNodes?: ClipboardEntry[]; // 多节点复制/粘贴
+  clipboardConnections?: ClipboardConnection[];
 }
 ```
 
@@ -242,19 +242,19 @@ Builder 维护 `this.query` 作为查询状态的单一事实来源：
 
 查询状态流：
 ```
-自动执行(autoExecute=true):
- NodePanel.updateQuery() → processNode({ manual: false })
- → onAnalysisComplete → 设置 NodePanel.currentQuery
- → onAnalysisComplete → 调用 onQueryAnalyzed 回调 → 设置 Builder.query
- → Builder 将 query 作为 prop 传递给 NodePanel
- → NodePanel.renderContent() 使用 attrs.query ?? this.currentQuery
+Automatic execution (autoExecute=true):
+  NodePanel.updateQuery() → processNode({ manual: false })
+  → onAnalysisComplete → sets NodePanel.currentQuery
+  → onAnalysisComplete → calls onQueryAnalyzed callback → sets Builder.query
+  → Builder passes query as prop to NodePanel
+  → NodePanel.renderContent() uses attrs.query ?? this.currentQuery
 
-手动执行(autoExecute=false):
- 用户单击"运行查询" → Builder 调用 processNode({ manual: true })
- → onAnalysisComplete → 设置 Builder.query
- → onAnalysisComplete → 调用 onNodeQueryAnalyzed 回调 → 设置 Builder.query
- → Builder 将 query 作为 prop 传递给 NodePanel
- → NodePanel.renderContent() 使用 attrs.query(this.currentQuery 可能未定义)
+Manual execution (autoExecute=false):
+  User clicks "Run Query" → Builder calls processNode({ manual: true })
+  → onAnalysisComplete → sets Builder.query
+  → onAnalysisComplete → calls onNodeQueryAnalyzed callback → sets Builder.query
+  → Builder passes query as prop to NodePanel
+  → NodePanel.renderContent() uses attrs.query (this.currentQuery may be undefined)
 ```
 
 这确保了 SQL/Proto 选项卡在自动和手动执行模式下都能正确显示。
@@ -266,9 +266,9 @@ Builder 维护 `this.query` 作为查询状态的单一事实来源：
 const callbackNode = selectedNode;
 this.onNodeQueryAnalyzed = (query) => {
  // 仅当仍在同一节点上时才更新
- if (callbackNode === this.previousSelectedNode) {
- this.query = query;
- }
+  if (callbackNode === this.previousSelectedNode) {
+    this.query = query;
+  }
 };
 ```
 
@@ -291,20 +291,20 @@ this.onNodeQueryAnalyzed = (query) => {
 ```typescript
 // 源节点
 addSourceNode(deps, state, id) {
- const descriptor = nodeRegistry.get(id);
- const initialState = await descriptor.preCreate?.(); // 可选模态框
- const newNode = descriptor.factory(initialState);
- rootNodes.push(newNode);
+  const descriptor = nodeRegistry.get(id);
+  const initialState = await descriptor.preCreate?.(); // 可选模态框
+  const newNode = descriptor.factory(initialState);
+  rootNodes.push(newNode);
 }
 
 // 操作节点
 addOperationNode(deps, state, parentNode, id) {
- const newNode = descriptor.factory(initialState);
- if (singleNodeOperation(newNode.type)) {
- insertNodeBetween(parentNode, newNode); // A → C 变为 A → B → C
- } else {
- addConnection(parentNode, newNode); // 多输入:只需连接
- }
+  const newNode = descriptor.factory(initialState);
+  if (singleNodeOperation(newNode.type)) {
+    insertNodeBetween(parentNode, newNode); // A → C 变为 A → B → C
+  } else {
+    addConnection(parentNode, newNode); // 多输入:只需连接
+  }
 }
 ```
 
@@ -312,15 +312,15 @@ addOperationNode(deps, state, parentNode, id) {
 ```typescript
 // 复杂的重连接逻辑保留数据流
 deleteNode(deps, state, node) {
- 1. await cleanupManager.cleanupNode(node); // 删除 SQL 表
- 2. 捕获图结构(父节点、子节点、端口连接)
- 3. disconnectNodeFromGraph(node)
- 4. 将主父节点重新连接到子节点(绕过已删除的节点)
-  - 仅主连接(portIndex === undefined)
-  - 删除次连接(特定于已删除的节点)
- 5. 更新根节点(添加孤立节点)
- 6. 将布局转移到停靠的子节点
- 7. 通过 onPrevNodesUpdated() 通知受影响的节点
+  1. await cleanupManager.cleanupNode(node); // 删除 SQL 表
+  2. Capture graph structure (parent, children, port connections)
+  3. disconnectNodeFromGraph(node)
+  4. Reconnect primary parent to children (bypass deleted node)
+     - Only primary connections (portIndex === undefined)
+     - Secondary connections dropped (specific to deleted node)
+  5. Update root nodes (add orphaned nodes)
+  6. Transfer layouts to docked children
+  7. Notify affected nodes via onPrevNodesUpdated()
 }
 ```
 
@@ -384,26 +384,26 @@ const result = await engine.querySummarizer(DATA_EXPLORER_SUMMARIZER_ID, nodeId)
 **查询构建** (`ui/src/plugins/dev.perfetto.DataExplorer/query_builder/query_builder_utils.ts`)
 ```typescript
 getStructuredQueries(finalNode) {
- const queries: PerfettoSqlStructuredQuery[] = [];
- let currentNode = finalNode;
+  const queries: PerfettoSqlStructuredQuery[] = [];
+  let currentNode = finalNode;
 
  // 从叶到根遍历图
- while (currentNode) {
- queries.push(currentNode.getStructuredQuery());
- currentNode = currentNode.primaryInput; // 遵循主输入链
- }
+  while (currentNode) {
+    queries.push(currentNode.getStructuredQuery());
+    currentNode = currentNode.primaryInput; // 遵循主输入链
+  }
 
- return queries.reverse(); // 根 → 叶顺序
+  return queries.reverse(); // 根 → 叶顺序
 }
 
 analyzeNode(node, engine) {
- const structuredQueries = getStructuredQueries(node);
- const spec = new TraceSummarySpec();
- spec.query = structuredQueries;
- await engine.createSummarizer(ANALYZE_NODE_SUMMARIZER_ID); // 确保 summarizer 存在
- await engine.updateSummarizerSpec(ANALYZE_NODE_SUMMARIZER_ID, spec); // 向 TP 注册
- const result = await engine.querySummarizer(ANALYZE_NODE_SUMMARIZER_ID, node.nodeId); // 获取结果
- return {sql: result.sql, textproto: result.textproto};
+  const structuredQueries = getStructuredQueries(node);
+  const spec = new TraceSummarySpec();
+  spec.query = structuredQueries;
+  await engine.createSummarizer(ANALYZE_NODE_SUMMARIZER_ID); // 确保 summarizer 存在
+  await engine.updateSummarizerSpec(ANALYZE_NODE_SUMMARIZER_ID, spec); // 向 TP 注册
+  const result = await engine.querySummarizer(ANALYZE_NODE_SUMMARIZER_ID, node.nodeId); // 获取结果
+  return {sql: result.sql, textproto: result.textproto};
 }
 ```
 

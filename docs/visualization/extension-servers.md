@@ -265,9 +265,9 @@ server。
 Extension server 是一组 JSON 端点。最少你需要：
 
 ```
-https://your-server.example.com/manifest          → 服务器元数据
-https://your-server.example.com/modules/default/macros      → macros（可选）
-https://your-server.example.com/modules/default/sql_modules → SQL 模块（可选）
+https://your-server.example.com/manifest          → server metadata
+https://your-server.example.com/modules/default/macros      → macros (optional)
+https://your-server.example.com/modules/default/sql_modules → SQL modules (optional)
 ```
 
 你可以将这些作为静态文件（nginx、GCS、S3）或从动态服务器

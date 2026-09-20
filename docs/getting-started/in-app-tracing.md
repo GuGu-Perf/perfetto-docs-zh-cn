@@ -90,18 +90,18 @@ TAB: C++
 #include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
- perfetto::Category("rendering")
- .SetDescription("Events from the graphics subsystem"),
- perfetto::Category("network")
- .SetDescription("Network upload and download statistics"));
+    perfetto::Category("rendering")
+        .SetDescription("Events from the graphics subsystem"),
+    perfetto::Category("network")
+        .SetDescription("Network upload and download statistics"));
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 int main(int argc, char** argv) {
- perfetto::TracingInitArgs args;
- args.backends |= perfetto::kInProcessBackend;
- perfetto::Tracing::Initialize(args);
- perfetto::TrackEvent::Register();
+  perfetto::TracingInitArgs args;
+  args.backends |= perfetto::kInProcessBackend;
+  perfetto::Tracing::Initialize(args);
+  perfetto::TrackEvent::Register();
  //...
 }
 ```
@@ -122,18 +122,18 @@ TAB: C++
 
 ```
 void DrawPlayer(int player_number) {
- TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
+  TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
  // ...
 }
 
 void DrawGame() {
- TRACE_EVENT_BEGIN("rendering", "DrawGame");
- DrawPlayer(1);
- DrawPlayer(2);
- TRACE_EVENT_END("rendering");
+  TRACE_EVENT_BEGIN("rendering", "DrawGame");
+  DrawPlayer(1);
+  DrawPlayer(2);
+  TRACE_EVENT_END("rendering");
 
  // ...
- TRACE_COUNTER("rendering", "Framerate", 120);
+  TRACE_COUNTER("rendering", "Framerate", 120);
 }
 ```
 
@@ -149,30 +149,30 @@ TAB: C++
 
 ```
  // 创建一个 trace 配置对象。这用于定义缓冲区、数据源和 trace 的其他设置。
- perfetto::TraceConfig cfg;
+  perfetto::TraceConfig cfg;
 
  // 向配置添加一个缓冲区。Trace 被写入内存中的此缓冲区。
- cfg.add_buffers()->set_size_kb(1024); // 1 MB
+  cfg.add_buffers()->set_size_kb(1024); // 1 MB
 
  // 向配置添加一个数据源。这指定要收集的数据类型。在这种情况下，我们正在收集 track events。
- auto* ds_cfg = cfg.add_data_sources()->mutable_config();
- ds_cfg->set_name("track_event");
+  auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+  ds_cfg->set_name("track_event");
 
  // 配置 track event 数据源。我们可以指定要启用或禁用哪些 categories 的事件。
- perfetto::protos::gen::TrackEventConfig te_cfg;
- te_cfg.add_disabled_categories("*"); // 默认禁用所有 categories。
- te_cfg.add_enabled_categories("rendering"); // 启用我们的"rendering" category。
- ds_cfg->set_track_event_config_raw(te_cfg.SerializeAsString());
+  perfetto::protos::gen::TrackEventConfig te_cfg;
+  te_cfg.add_disabled_categories("*"); // 默认禁用所有 categories。
+  te_cfg.add_enabled_categories("rendering"); // 启用我们的"rendering" category。
+  ds_cfg->set_track_event_config_raw(te_cfg.SerializeAsString());
 
  // 创建一个新的 tracing session。
- std::unique_ptr<perfetto::TracingSession> tracing_session =
- perfetto::Tracing::NewTrace();
+  std::unique_ptr<perfetto::TracingSession> tracing_session =
+      perfetto::Tracing::NewTrace();
 
  // 使用配置设置 tracing session。
- tracing_session->Setup(cfg);
+  tracing_session->Setup(cfg);
 
  // 开始 tracing。这将阻塞直到 trace 停止。
- tracing_session->StartBlocking();
+  tracing_session->StartBlocking();
 
  // tracing_session 对象必须在 trace 期间保持活动状态。
 
@@ -189,16 +189,16 @@ TAB: C++
 
 ```
  // 停止 tracing session。这将阻塞直到所有 trace 数据都被刷新。
- tracing_session->StopBlocking();
+  tracing_session->StopBlocking();
 
  // 从 session 读取 trace 数据。
- std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
+  std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
 
  // 将 trace 数据写入文件。
- std::ofstream output;
- output.open("example.pftrace", std::ios::out | std::ios::binary);
- output.write(trace_data.data(), std::streamsize(trace_data.size()));
- output.close();
+  std::ofstream output;
+  output.open("example.pftrace", std::ios::out | std::ios::binary);
+  output.write(trace_data.data(), std::streamsize(trace_data.size()));
+  output.close();
 ```
 
 </tabs?>
@@ -229,8 +229,8 @@ TAB: C++
 
 ```
 SELECT
- dur AS duration_ns,
- EXTRACT_ARG(slice.arg_set_id, 'debug.player_number') AS player_number
+  dur AS duration_ns,
+  EXTRACT_ARG(slice.arg_set_id, 'debug.player_number') AS player_number
 FROM slice
 WHERE slice.name = 'DrawPlayer';
 ```

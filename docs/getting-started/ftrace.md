@@ -369,13 +369,13 @@ WHERE ct.type = 'ticker'
 
 ```ts
 // ui/src/plugins/dev.perfetto.TraceProcessorTrack/counter_tracks.ts
-~~ 省略 ~~
+~~ snip ~~
   {
     type: 'ticker',
     topLevelGroup: 'SYSTEM',
     group: undefined,
   },
-~~ 省略 ~~
+~~ snip ~~
 ```
 
 重建本地 UI(`ui/run-dev-server`)。打开重新采集的 trace(使用具有事件编译时知识的 tracebox)。你现在应该看到一个专用 UI track 显示你事件的数据。

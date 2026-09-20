@@ -119,7 +119,7 @@ __普通模式__
 ```
  adb shell perfetto [ --time TIMESPEC ] [ --buffer SIZE ] [ --size SIZE ]
      [ --app APP_NAME ]
- [ ATRACE_CAT | FTRACE_GROUP/FTRACE_NAME]...
+    [ ATRACE_CAT | FTRACE_GROUP/FTRACE_NAME]...
 ```
 
 以下列出了 `perfetto` 在*简单模式*下的可用选项。

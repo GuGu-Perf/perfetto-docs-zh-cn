@@ -14,17 +14,17 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 有关数据源的更多详细信息，请参阅[采集 traces](/docs/data-sources/native-heap-profiler.md)。
 
 ```
-用法: heap_profile [-h] [common options] {android,host} ...
+usage: heap_profile [-h] [common options] {android,host} ...
 
-位置参数:
+positional arguments:
   {android,host}
-    android   通过 adb 对连接的 Android 设备上的进程进行 profile
-              （默认）。
-    host      通过 LD_PRELOAD 对本地 Linux 进程进行 profile。
+    android   Profile a process on a connected Android device via adb
+              (default).
+    host      Profile a local Linux process via LD_PRELOAD.
 ```
 
 ```
-用法: heap_profile android [-h] [-i INTERVAL] [-d DURATION] [--no-start]
+usage: heap_profile android [-h] [-i INTERVAL] [-d DURATION] [--no-start]
                             [-p PIDS] [-n NAMES] [-c CONTINUOUS_DUMP]
                             [--heaps HEAPS] [--all-heaps]
                             [--no-android-tree-symbolization]
@@ -40,7 +40,7 @@ heap_profile - 在 Android 或本地 Linux 上记录 heap profile
 ```
 
 ```
-用法: heap_profile host [-h] [-i INTERVAL] [-d DURATION] [--no-start]
+usage: heap_profile host [-h] [-i INTERVAL] [-d DURATION] [--no-start]
                          [-n NAMES] [-c CONTINUOUS_DUMP]
                          [--heaps HEAPS] [--all-heaps]
                          [--shmem-size SHMEM_SIZE] [--block-client]

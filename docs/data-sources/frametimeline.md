@@ -184,8 +184,8 @@ Datasource:
 
 ```protobuf
 data_sources {
- config {
- name: "android.surfaceflinger.frametimeline"
- }
+    config {
+        name: "android.surfaceflinger.frametimeline"
+    }
 }
 ```

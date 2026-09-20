@@ -237,7 +237,7 @@ chmod +x tracebox
 ```bash
 sudo chown -R $USER /sys/kernel/tracing
 echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
-echo 0 | sudo tee /proc/sys/kernel/kptr_restrict
+echo 0  | sudo tee /proc/sys/kernel/kptr_restrict
 ```
 
 **或者**，在后续步骤中以 root 身份（使用 sudo）运行 `tracebox`。

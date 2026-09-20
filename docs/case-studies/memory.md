@@ -26,13 +26,13 @@ Applications Memory Usage (in Kilobytes):
 Uptime: 2030149 Realtime: 2030149
 
 ** MEMINFO in pid 1974 [com.android.systemui] **
- Pss Private Private SwapPss Rss Heap Heap Heap
- Total Dirty Clean Dirty Total Size Alloc Free
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
  ------ ------ ------ ------ ------ ------ ------ ------
- Native Heap 16840 16804 0 6764 19428 34024 25037 5553
- Dalvik Heap 9110 9032 0 136 13164 36444 9111 27333
+  Native Heap    16840    16804        0     6764    19428    34024    25037     5553
+  Dalvik Heap     9110     9032        0      136    13164    36444     9111    27333
 
-[更多内容...]
+[more stuff...]
 ```
 
 查看 Dalvik Heap (= Java Heap) 和 Native Heap 的 "Private Dirty" 列，我们可以看到 SystemUI 在 Java heap 上的内存使用是 9M，在 native heap 上是 17M。
@@ -94,12 +94,12 @@ _共享_ 内存可以映射到多个进程中。这意味着不同进程中的 V
 ```bash
 $ adb shell cat '/proc/$(pidof com.android.systemui)/status'
 [...]
-VmHWM: 256972 kB
-VmRSS: 195272 kB
-RssAnon: 30184 kB
-RssFile: 164420 kB
+VmHWM:    256972 kB
+VmRSS:    195272 kB
+RssAnon:  30184 kB
+RssFile:  164420 kB
 RssShmem: 668 kB
-VmSwap: 43960 kB
+VmSwap:   43960 kB
 [...]
 ```
 
@@ -111,37 +111,37 @@ NOTE: 有关 memory trace points 的详细说明，请参阅 [Data sources > Mem
 
 ```bash
 $ adb shell perfetto \
- -c - --txt \
- -o /data/misc/perfetto-traces/trace \
+  -c - --txt \
+  -o /data/misc/perfetto-traces/trace \
 <<EOF
 
 buffers: {
- size_kb: 8960
- fill_policy: DISCARD
+    size_kb: 8960
+    fill_policy: DISCARD
 }
 buffers: {
- size_kb: 1280
- fill_policy: DISCARD
+    size_kb: 1280
+    fill_policy: DISCARD
 }
 data_sources: {
- config {
- name: "linux.process_stats"
- target_buffer: 1
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
 }
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "mm_event/mm_event_record"
- ftrace_events: "kmem/rss_stat"
- ftrace_events: "kmem/ion_heap_grow"
- ftrace_events: "kmem/ion_heap_shrink"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "mm_event/mm_event_record"
+            ftrace_events: "kmem/rss_stat"
+            ftrace_events: "kmem/ion_heap_grow"
+            ftrace_events: "kmem/ion_heap_shrink"
+        }
+    }
 }
 duration_ms: 30000
 
@@ -174,37 +174,37 @@ Android 上的应用程序在切换离开时不会被杀死。相反，即使用
 
 ```protobuf
 $ adb shell perfetto \
- -c - --txt \
- -o /data/misc/perfetto-traces/trace \
+  -c - --txt \
+  -o /data/misc/perfetto-traces/trace \
 <<EOF
 
 buffers: {
- size_kb: 8960
- fill_policy: DISCARD
+    size_kb: 8960
+    fill_policy: DISCARD
 }
 buffers: {
- size_kb: 1280
- fill_policy: DISCARD
+    size_kb: 1280
+    fill_policy: DISCARD
 }
 data_sources: {
- config {
- name: "linux.process_stats"
- target_buffer: 1
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
 }
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "lowmemorykiller/lowmemory_kill"
- ftrace_events: "oom/oom_score_adj_update"
- ftrace_events: "ftrace/print"
- atrace_apps: "lmkd"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "lowmemorykiller/lowmemory_kill"
+            ftrace_events: "oom/oom_score_adj_update"
+            ftrace_events: "ftrace/print"
+            atrace_apps: "lmkd"
+        }
+    }
 }
 duration_ms: 60000
 
@@ -287,45 +287,45 @@ The raw-trace and heap_dump.* (pprof) files can be visualized with https://ui.pe
 
 ```protobuf
 buffers: {
- size_kb: 63488
- fill_policy: RING_BUFFER
+    size_kb: 63488
+    fill_policy: RING_BUFFER
 }
 
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
  # 使用 syscall 名称;Perfetto 处理 ID 映射。
  # 需要 Android 14+
- syscall_events: "sys_mmap"
- syscall_events: "sys_munmap"
- syscall_events: "sys_madvise"
+        syscall_events: "sys_mmap"
+        syscall_events: "sys_munmap"
+        syscall_events: "sys_madvise"
 
  # 可选: 捕获调度以查看哪个线程正在调用 mmap
- ftrace_events: "sched/sched_switch"
- }
- }
+        ftrace_events: "sched/sched_switch"
+    }
+  }
 }
 
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- period: 1 # 捕获每个发生，无采样！
- tracepoint {
- name: "raw_syscalls:sys_enter"
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        period: 1 # 捕获每个发生，无采样！
+        tracepoint {
+          name: "raw_syscalls:sys_enter"
  # 过滤器: 222 是 arm64 上的 mmap。在 x86_64 上使用 9。
- filter: "id == 222" 
- }
- }
- callstack_sampling {
+          filter: "id == 222" 
+        }
+      }
+      callstack_sampling {
  # 可选: 将范围限定到特定目标
  # scope { target_cmdline: "your.app.package" }
- kernel_frames: true
- }
- }
- }
+        kernel_frames: true
+      }
+    }
+  }
 }
 duration_ms: 10000
 ```

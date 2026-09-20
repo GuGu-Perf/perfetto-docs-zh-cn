@@ -101,43 +101,43 @@ Linux - 以及许多其他操作系统 - 上的 callstack 采样要强大得多�
 # 第 1 部分
 
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- period: 1
- tracepoint {
- name: "sched/sched_switch"
- }
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- callstack_sampling {
- kernel_frames: true
- }
- ring_buffer_pages: 2048 # 8MB
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        period: 1
+        tracepoint {
+          name: "sched/sched_switch"
+        }
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      callstack_sampling {
+        kernel_frames: true
+      }
+      ring_buffer_pages: 2048 # 8MB
+    }
+  }
 }
 
 # 第 2 部分
 
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- period: 1
- tracepoint {
- name: "sched/sched_waking"
- }
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- callstack_sampling {
- kernel_frames: true
- }
- ring_buffer_pages: 2048 # 8MB
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        period: 1
+        tracepoint {
+          name: "sched/sched_waking"
+        }
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      callstack_sampling {
+        kernel_frames: true
+      }
+      ring_buffer_pages: 2048 # 8MB
+    }
+  }
 }
 ```
 
@@ -165,15 +165,15 @@ data_sources {
 
 ```protobuf
 ...
- tracepoint {
- name: "sched/sched_switch"
- filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\""
- }
+  tracepoint {
+    name: "sched/sched_switch"
+    filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\""
+  }
 ...
- tracepoint {
- name: "sched/sched_waking"
- filter: "comm ~ \"*systemui*\""
- }
+  tracepoint {
+    name: "sched/sched_waking"
+    filter: "comm ~ \"*systemui*\""
+  }
 ...
 ```
 
@@ -244,10 +244,10 @@ data_sources {
 让我们稍微调整一下配置并添加 BG 线程：
 
 ```protobuf
- tracepoint {
- name: "sched/sched_switch"
- filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\" || prev_comm ~ \"SystemUIBg-*\" || next_comm ~ \"SystemUIBg-*\""
- }
+  tracepoint {
+    name: "sched/sched_switch"
+    filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\" || prev_comm ~ \"SystemUIBg-*\" || next_comm ~ \"SystemUIBg-*\""
+  }
 ```
 
 新的 trace 看起来像这样。你会注意到现在我们有更多的 V 形，因为我们还有 SystemUiBG* 线程的每个调度事件的调用栈。点击它们确认了我们的理论。所有这些 BG 线程都在获取和释放 ScheduledThreadPoolExecutor 锁。
@@ -285,72 +285,72 @@ ScheduledThreadPoolExecutor 中的每个工作线程执行以下操作：
 duration_ms: 10000
 
 buffers: {
- size_kb: 102400
- fill_policy: DISCARD
+  size_kb: 102400
+  fill_policy: DISCARD
 }
 
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- period: 1
- tracepoint {
- name: "sched/sched_switch"
- filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\" || prev_comm ~ \"SystemUIBg-*\" || next_comm ~ \"SystemUIBg-*\""
- }
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- callstack_sampling {
- kernel_frames: true
- }
- ring_buffer_pages: 2048
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        period: 1
+        tracepoint {
+          name: "sched/sched_switch"
+          filter: "prev_comm ~ \"*systemui*\" || next_comm ~ \"*systemui*\" || prev_comm ~ \"SystemUIBg-*\" || next_comm ~ \"SystemUIBg-*\""
+        }
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      callstack_sampling {
+        kernel_frames: true
+      }
+      ring_buffer_pages: 2048
+    }
+  }
 }
 
 data_sources {
- config {
- name: "linux.perf"
- perf_event_config {
- timebase {
- period: 1
- tracepoint {
- name: "sched/sched_waking"
- filter: "comm ~ \"*systemui*\" || comm ~ \"SystemUIBg-*\""
- }
- timestamp_clock: PERF_CLOCK_MONOTONIC
- }
- callstack_sampling {
- kernel_frames: true
- }
- ring_buffer_pages: 2048
- }
- }
+  config {
+    name: "linux.perf"
+    perf_event_config {
+      timebase {
+        period: 1
+        tracepoint {
+          name: "sched/sched_waking"
+          filter: "comm ~ \"*systemui*\" || comm ~ \"SystemUIBg-*\""
+        }
+        timestamp_clock: PERF_CLOCK_MONOTONIC
+      }
+      callstack_sampling {
+        kernel_frames: true
+      }
+      ring_buffer_pages: 2048
+    }
+  }
 }
 
 # 通过 ftrace 包含调度数据
 data_sources: {
- config: {
- name: "linux.ftrace"
- ftrace_config: {
- ftrace_events: "sched/sched_switch"
- ftrace_events: "sched/sched_waking"
- atrace_categories: "dalvik"
- atrace_categories: "gfx"
- atrace_categories: "view"
- }
- }
+  config: {
+    name: "linux.ftrace"
+    ftrace_config: {
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "sched/sched_waking"
+      atrace_categories: "dalvik"
+      atrace_categories: "gfx"
+      atrace_categories: "view"
+    }
+  }
 }
 
 # 通过 procfs 包含进程名称和分组
 data_sources: {
- config: {
- name: "linux.process_stats"
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+  config: {
+    name: "linux.process_stats"
+    process_stats_config {
+      scan_all_processes_on_start: true
+    }
+  }
 }
 ```
 
@@ -362,17 +362,17 @@ data_sources: {
 
 ```protobuf
 data_sources: {
- config: {
- name: "linux.ftrace"
- ftrace_config: {
- syscall_events: "sys_futex"
- ftrace_events: "sched/sched_switch"
- ftrace_events: "sched/sched_waking"
- atrace_categories: "dalvik"
- atrace_categories: "gfx"
- atrace_categories: "view"
- }
- }
+  config: {
+    name: "linux.ftrace"
+    ftrace_config: {
+      syscall_events: "sys_futex"
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "sched/sched_waking"
+      atrace_categories: "dalvik"
+      atrace_categories: "gfx"
+      atrace_categories: "view"
+    }
+  }
 }
 ```
 

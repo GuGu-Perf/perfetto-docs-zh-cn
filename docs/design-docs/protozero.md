@@ -57,9 +57,9 @@ Protozero 在构建时对 libprotobuf 有依赖（插件依赖于 libprotobuf �
 syntax = "proto2";
 
 message TestMsg {
- optional string str_val = 1;
- optional int32 int_val = 2;
- repeated TestMsg nested = 3;
+  optional string str_val = 1;
+  optional int32 int_val = 2;
+  repeated TestMsg nested = 3;
 }
 ```
 
@@ -76,25 +76,25 @@ out/default/protoc --cpp_out=. test_msg.proto
 ```c++
 // 此类由标准 protoc 编译器在 .pb.h 源中生成。
 class TestMsg : public protobuf::MessageLite {
- private:
- int32 int_val_;
- ArenaStringPtr str_val_;
- RepeatedPtrField<TestMsg> nested_; // 实际上是 vector<TestMsg>
+  private:
+   int32 int_val_;
+   ArenaStringPtr str_val_;
+   RepeatedPtrField<TestMsg> nested_; // 实际上是 vector<TestMsg>
 
  public:
- const std::string& str_val() const;
- void set_str_val(const std::string& value);
+  const std::string& str_val() const;
+  void set_str_val(const std::string& value);
 
- bool has_int_val() const;
- int32_t int_val() const;
- void set_int_val(int32_t value);
+  bool has_int_val() const;
+  int32_t int_val() const;
+  void set_int_val(int32_t value);
 
- ::TestMsg* add_nested();
- ::TestMsg* mutable_nested(int index);
- const TestMsg& nested(int index);
+  ::TestMsg* add_nested();
+  ::TestMsg* mutable_nested(int index);
+  const TestMsg& nested(int index);
 
- std::string SerializeAsString();
- bool ParseFromString(const std::string&);
+  std::string SerializeAsString();
+  bool ParseFromString(const std::string&);
 }
 ```
 
@@ -114,18 +114,18 @@ class TestMsg : public protobuf::MessageLite {
 // 此类由 .pbzero.h 源中的 Protozero 插件生成。
 class TestMsg : public protozero::Message {
  public:
- void set_str_val(const std::string& value) {
- AppendBytes(/*field_id=*/1, value.data(), value.size());
- }
- void set_str_val(const char* data, size_t size) {
- AppendBytes(/*field_id=*/1, data, size);
- }
- void set_int_val(int32_t value) {
- AppendVarInt(/*field_id=*/2, value);
- }
- TestMsg* add_nested() {
- return BeginNestedMessage<TestMsg>(/*field_id=*/3);
- }
+  void set_str_val(const std::string& value) {
+    AppendBytes(/*field_id=*/1, value.data(), value.size());
+  }
+  void set_str_val(const char* data, size_t size) {
+    AppendBytes(/*field_id=*/1, data, size);
+  }
+  void set_int_val(int32_t value) {
+    AppendVarInt(/*field_id=*/2, value);
+  }
+  TestMsg* add_nested() {
+    return BeginNestedMessage<TestMsg>(/*field_id=*/3);
+  }
 }
 ```
 
@@ -171,9 +171,9 @@ Protozero 设计的一个关键部分是支持在非全局连续的连续内存�
 
 ```c++
 TestMsg outer_msg;
-for (int i = 0; i < 1000; i++) {
- TestMsg* nested = outer_msg.add_nested();
- nested->set_int_val(42);
+for (int i = 0; i < 1000; i++) {
+  TestMsg* nested = outer_msg.add_nested();
+  nested->set_int_val(42);
 }
 ```
 
@@ -185,22 +185,22 @@ for (int i = 0; i < 1000; i++) {
 
 ```mermaid
 sequenceDiagram
- participant C as 调用站点
- participant M as Message
- participant SSR as ScatteredStreamWriter
- participant DEL as Buffer Delegate
- C->>M: set_int_val(...)
- activate C
- M->>SSR: AppendVarInt(...)
- deactivate C
- Note over C,SSR: 快速路径上的典型写入
+  participant C as Call site
+  participant M as Message
+  participant SSR as ScatteredStreamWriter
+  participant DEL as Buffer Delegate
+  C->>M: set_int_val(...)
+  activate C
+  M->>SSR: AppendVarInt(...)
+  deactivate C
+  Note over C,SSR: A typical write on the fast-path
 
- C->>M: set_str_val(...)
- activate C
- M->>SSR: AppendString(...)
- SSR->>DEL: GetNewBuffer(...)
- deactivate C
- Note over C,DEL: 跨越 4KB - 32KB chunks 时的慢速路径写入。
+  C->>M: set_str_val(...)
+  activate C
+  M->>SSR: AppendString(...)
+  SSR->>DEL: GetNewBuffer(...)
+  deactivate C
+  Note over C,DEL: A write on the slow-path when crossing 4KB - 32KB chunks.
 ```
 
 ### 延迟修补
@@ -220,12 +220,12 @@ nested->set_str_val("foo");
 ```bash
 1a 07 0a 03 66 6f 6f 10 2a
 ^-+-^ ^-----+------^ ^-+-^
- | | |
- | | +--> 字段 ID: 2 [int_val], value = 42。
- | |
- | +------> 字段 ID: 1 [str_val], len = 3, value = "foo" (66 6f 6f)。
- |
- +------> 字段 ID: 3 [nested], length: 7 # !!!
+  |         |          |
+  |         |          +--> Field ID: 2 [int_val], value = 42.
+  |         |
+  |         +------> Field ID: 1 [str_val], len = 3, value = "foo" (66 6f 6f).
+  |
+  +------> Field ID: 3 [nested], length: 7 # !!!
 ```
 
 此序列中的第二个字节（07）对于直接编码是有问题的。在调用 `outer_msg.add_nested()` 时，我们无法预先知道嵌套消息的总体大小（在这种情况下，5 + 2 = 7）。
@@ -250,11 +250,11 @@ NOTE: 有关基准测试的完整代码，请参阅 `/src/protozero/test/protoze
 
 ```c++
 void FillMessage_Simple(T* msg) {
- msg->set_field_int32(...);
- msg->set_field_uint32(...);
- msg->set_field_int64(...);
- msg->set_field_uint64(...);
- msg->set_field_string(...);
+  msg->set_field_int32(...);
+  msg->set_field_uint32(...);
+  msg->set_field_int64(...);
+  msg->set_field_uint64(...);
+  msg->set_field_string(...);
 }
 ```
 
@@ -264,11 +264,11 @@ void FillMessage_Simple(T* msg) {
 
 ```c++
 void FillMessage_Nested(T* msg, int depth = 0) {
- FillMessage_Simple(msg);
- if (depth < 3) {
- auto* child = msg->add_field_nested();
- FillMessage_Nested(child, depth + 1);
- }
+  FillMessage_Simple(msg);
+  if (depth < 3) {
+    auto* child = msg->add_field_nested();
+    FillMessage_Nested(child, depth + 1);
+  }
 }
 ```
 
@@ -280,21 +280,21 @@ void FillMessage_Nested(T* msg, int depth = 0) {
 
 ```c++
 struct SOLMsg {
- template <typename T>
- void Append(T x) {
+  template <typename T>
+  void Append(T x) {
  // memcpy 将被编译器省略，后者只发出一条 64 位对齐 mov 指令。
- memcpy(reinterpret_cast<void*>(ptr_), &x, sizeof(x));
- ptr_ += sizeof(x);
- }
+    memcpy(reinterpret_cast<void*>(ptr_), &x, sizeof(x));
+    ptr_ += sizeof(x);
+  }
 
- void set_field_int32(int32_t x) { Append(x); }
- void set_field_uint32(uint32_t x) { Append(x); }
- void set_field_int64(int64_t x) { Append(x); }
- void set_field_uint64(uint64_t x) { Append(x); }
- void set_field_string(const char* str) { ptr_ = strcpy(ptr_, str); }
+  void set_field_int32(int32_t x) { Append(x); }
+  void set_field_uint32(uint32_t x) { Append(x); }
+  void set_field_int64(int64_t x) { Append(x); }
+  void set_field_uint64(uint64_t x) { Append(x); }
+  void set_field_string(const char* str) { ptr_ = strcpy(ptr_, str); }
 
- alignas(uint64_t) char storage_[sizeof(g_fake_input_simple) + 8];
- char* ptr_ = &storage_[0];
+  alignas(uint64_t) char storage_[sizeof(g_fake_input_simple) + 8];
+  char* ptr_ = &storage_[0];
 };
 ```
 
@@ -312,18 +312,18 @@ is_debug = false
 target_cpu = "arm64"
 
 $ ninja -C out/droid_arm64/ perfetto_benchmarks && \
- adb push --sync out/droid_arm64/perfetto_benchmarks /data/local/tmp/perfetto_benchmarks && \
- adb shell '/data/local/tmp/perfetto_benchmarks --benchmark_filter=BM_Proto*'
+  adb push --sync out/droid_arm64/perfetto_benchmarks /data/local/tmp/perfetto_benchmarks && \
+  adb shell '/data/local/tmp/perfetto_benchmarks --benchmark_filter=BM_Proto*'
 
 ------------------------------------------------------------------------
-Benchmark Time CPU Iterations
+Benchmark                                 Time           CPU Iterations
 ------------------------------------------------------------------------
-BM_Protozero_Simple_Libprotobuf 402 ns 398 ns 1732807
-BM_Protozero_Simple_Protozero 242 ns 239 ns 2929528
-BM_Protozero_Simple_SpeedOfLight 118 ns 117 ns 6101381
-BM_Protozero_Nested_Libprotobuf 1810 ns 1800 ns 390468
-BM_Protozero_Nested_Protozero 780 ns 773 ns 901369
-BM_Protozero_Nested_SpeedOfLight 138 ns 136 ns 5147958
+BM_Protozero_Simple_Libprotobuf         402 ns        398 ns    1732807
+BM_Protozero_Simple_Protozero           242 ns        239 ns    2929528
+BM_Protozero_Simple_SpeedOfLight        118 ns        117 ns    6101381
+BM_Protozero_Nested_Libprotobuf        1810 ns       1800 ns     390468
+BM_Protozero_Nested_Protozero           780 ns        773 ns     901369
+BM_Protozero_Nested_SpeedOfLight        138 ns        136 ns    5147958
 ```
 
 ##### HP Z920 工作站（Intel Xeon E5-2690 v4）运行 Linux
@@ -335,15 +335,15 @@ is_clang = true
 is_debug = false
 
 $ ninja -C out/linux_clang_release/ perfetto_benchmarks && \
- out/linux_clang_release/perfetto_benchmarks --benchmark_filter=BM_Proto*
+  out/linux_clang_release/perfetto_benchmarks --benchmark_filter=BM_Proto*
 
 ------------------------------------------------------------------------
-Benchmark Time CPU Iterations
+Benchmark                                 Time           CPU Iterations
 ------------------------------------------------------------------------
-BM_Protozero_Simple_Libprotobuf 428 ns 428 ns 1624801
-BM_Protozero_Simple_Protozero 261 ns 261 ns 2715544
-BM_Protozero_Simple_SpeedOfLight 111 ns 111 ns 6297387
-BM_Protozero_Nested_Libprotobuf 1625 ns 1625 ns 436411
-BM_Protozero_Nested_Protozero 843 ns 843 ns 849302
-BM_Protozero_Nested_SpeedOfLight 140 ns 140 ns 5012910
+BM_Protozero_Simple_Libprotobuf         428 ns        428 ns    1624801
+BM_Protozero_Simple_Protozero           261 ns        261 ns    2715544
+BM_Protozero_Simple_SpeedOfLight        111 ns        111 ns    6297387
+BM_Protozero_Nested_Libprotobuf        1625 ns       1625 ns     436411
+BM_Protozero_Nested_Protozero           843 ns        843 ns     849302
+BM_Protozero_Nested_SpeedOfLight        140 ns        140 ns    5012910
 ```

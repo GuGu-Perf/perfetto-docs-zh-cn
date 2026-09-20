@@ -34,11 +34,11 @@ NOTE: 如果你使用的是早于 9 (P) 的 Android 版本，设备上的工具�
 adb shell perfetto \
  # 设备上输出文件的路径。
  # 采集 trace 的时间。
- -o /data/misc/perfetto-traces/trace_file.perfetto-trace \
+  -o /data/misc/perfetto-traces/trace_file.perfetto-trace \
  # 采集 trace 的时间。
- -t 20s \
+  -t 20s \
  # 要采集的 atrace 类别。
- sched freq idle am wm gfx view binder_driver hal dalvik input res memory
+  sched freq idle am wm gfx view binder_driver hal dalvik input res memory
 ```
 
 然而，直接使用 `adb shell perfetto` 时有几个注意事项需要注意:
@@ -66,41 +66,41 @@ cat<<EOF>config.pbtx
 duration_ms: 10000
 
 buffers: {
- size_kb: 8960
- fill_policy: DISCARD
+    size_kb: 8960
+    fill_policy: DISCARD
 }
 buffers: {
- size_kb: 1280
- fill_policy: DISCARD
+    size_kb: 1280
+    fill_policy: DISCARD
 }
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched/sched_switch"
- ftrace_events: "power/suspend_resume"
- ftrace_events: "sched/sched_process_exit"
- ftrace_events: "sched/sched_process_free"
- ftrace_events: "task/task_newtask"
- ftrace_events: "task/task_rename"
- ftrace_events: "ftrace/print"
- atrace_categories: "gfx"
- atrace_categories: "view"
- atrace_categories: "webview"
- atrace_categories: "camera"
- atrace_categories: "dalvik"
- atrace_categories: "power"
- }
- }
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "sched/sched_switch"
+            ftrace_events: "power/suspend_resume"
+            ftrace_events: "sched/sched_process_exit"
+            ftrace_events: "sched/sched_process_free"
+            ftrace_events: "task/task_newtask"
+            ftrace_events: "task/task_rename"
+            ftrace_events: "ftrace/print"
+            atrace_categories: "gfx"
+            atrace_categories: "view"
+            atrace_categories: "webview"
+            atrace_categories: "camera"
+            atrace_categories: "dalvik"
+            atrace_categories: "power"
+        }
+    }
 }
 data_sources: {
- config {
- name: "linux.process_stats"
- target_buffer: 1
- process_stats_config {
- scan_all_processes_on_start: true
- }
- }
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
 }
 EOF
 
@@ -168,7 +168,7 @@ Perfetto 旨在支持来自不同源（例如，adb、设备上的应用程序�
 duration_ms: 10000
 
 buffers: {
- size_kb: 8192
+    size_kb: 8192
 }
 
 # 请求优先级为 10 的独占会话。
@@ -177,13 +177,13 @@ buffers: {
 exclusive_prio: 10
 
 data_sources: {
- config {
- name: "linux.ftrace"
- ftrace_config {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
  # 像 funcgraph 这样的高级功能现在可以更可靠地使用。
- enable_function_graph: true
- ftrace_events: "sched/sched_switch"
- }
- }
+            enable_function_graph: true
+            ftrace_events: "sched/sched_switch"
+        }
+    }
 }
 ```

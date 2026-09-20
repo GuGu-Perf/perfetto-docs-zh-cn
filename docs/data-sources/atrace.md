@@ -76,24 +76,24 @@ ts | process_name | pid | counter_name | value
 
 ```protobuf
 buffers {
- size_kb: 102400
- fill_policy: RING_BUFFER
+  size_kb: 102400
+  fill_policy: RING_BUFFER
 }
 
 data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
  # 启用特定的系统事件标签。
- atrace_categories: "am"
- atrace_categories: "pm"
+      atrace_categories: "am"
+      atrace_categories: "pm"
 
  # 启用特定应用的事件。
- atrace_apps: "com.google.android.apps.docs"
+      atrace_apps: "com.google.android.apps.docs"
 
  # 为所有应用启用所有事件。
- atrace_apps: "*"
- }
- }
+      atrace_apps: "*"
+    }
+  }
 }
 ```

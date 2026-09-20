@@ -18,12 +18,12 @@
 $ out/rel/perfetto_benchmarks --benchmark_filter='.*BM_TaskRunner.*'
 ...
 -------------------------------------------------------------------------------------------
-Benchmark Time CPU Iterations
+Benchmark                                                 Time             CPU   Iterations
 -------------------------------------------------------------------------------------------
-BM_TaskRunner_SingleThreaded<UnixTaskRunner> 27778190 ns 27772029 ns 25
-BM_TaskRunner_SingleThreaded<LockFreeTaskRunner> 10381056 ns 10375656 ns 67
-BM_TaskRunner_MultiThreaded<UnixTaskRunner> 567794 ns 344625 ns 2033
-BM_TaskRunner_MultiThreaded<LockFreeTaskRunner> 265943 ns 265754 ns 2749
+BM_TaskRunner_SingleThreaded<UnixTaskRunner>       27778190 ns     27772029 ns           25
+BM_TaskRunner_SingleThreaded<LockFreeTaskRunner>   10381056 ns     10375656 ns           67
+BM_TaskRunner_MultiThreaded<UnixTaskRunner>          567794 ns       344625 ns         2033
+BM_TaskRunner_MultiThreaded<LockFreeTaskRunner>      265943 ns       265754 ns         2749
 ```
 
 ## 架构
@@ -65,15 +65,15 @@ Slabs 排列为单向链表。
 
 
 ```
- tail_ (atomic_shared_ptr)
- |
- ▼
- +-----------------+ +-----------------+ +-----------------+
- | Slab N | | Slab N-1 | | Slab 0 |
- | tasks: [....] | | tasks: [....] | | tasks: [....] |
- | next_task_slot | | next_task_slot | | next_task_slot |
- | prev (sptr) ----+----->| prev (sptr) ----+----->| prev = nullptr |
- +-----------------+ +-----------------+ +-----------------+
+           tail_ (atomic_shared_ptr)
+                    |
+                    ▼
+  +-----------------+      +-----------------+      +-----------------+
+  |     Slab N      |      |    Slab N-1     |      |     Slab 0      |
+  | tasks: [....]   |      | tasks: [....]   |      | tasks: [....]   |
+  | next_task_slot  |      | next_task_slot  |      | next_task_slot  |
+  | prev (sptr) ----+----->| prev (sptr) ----+----->| prev = nullptr |
+  +-----------------+      +-----------------+      +-----------------+
 ```
 
 1. **单向访问**： Producer 线程只访问 `tail` slab，从不向后遍历。
@@ -111,9 +111,9 @@ new_slab->next_task_slot.store(1, std::memory_order_relaxed);
 slot = 0;
 if (!tail_.compare_exchange_strong(slab, new_slab)) {
  // 另一个线程赢得了竞争，使用他们的 slab 重试
- new_slab->prev = nullptr;
- DeleteSlab(new_slab);
- continue;
+    new_slab->prev = nullptr;
+    DeleteSlab(new_slab);
+    continue;
 }
 ```
 
@@ -144,19 +144,19 @@ if (!tail_.compare_exchange_strong(slab, new_slab)) {
 ```cpp
 std::function<void()> PopTaskRecursive(Slab* slab, Slab* next_slab) {
  // 首先,递归检查较旧的 slabs(FIFO 顺序)
- Slab* prev = slab->prev;
- if (prev) {
- auto task = PopTaskRecursive(prev, slab);
- if (task) return task;
- }
+    Slab* prev = slab->prev;
+    if (prev) {
+        auto task = PopTaskRecursive(prev, slab);
+        if (task) return task;
+    }
  
  // 然后检查当前 slab 的已发布任务
- for (size_t w = 0; w < Slab::kNumWords; ++w) {
- BitWord wr_word = slab->tasks_written[w].load(std::memory_order_acquire);
- BitWord rd_word = slab->tasks_read[w];
- BitWord unread_word = wr_word & ~rd_word;
+    for (size_t w = 0; w < Slab::kNumWords; ++w) {
+        BitWord wr_word = slab->tasks_written[w].load(std::memory_order_acquire);
+        BitWord rd_word = slab->tasks_read[w];
+        BitWord unread_word = wr_word & ~rd_word;
  // 查找并消费第一个未读任务...
- }
+    }
  
  // 安全的 slab 删除逻辑...
 }

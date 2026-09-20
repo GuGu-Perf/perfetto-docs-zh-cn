@@ -47,16 +47,16 @@ target_link_libraries(example perfetto ${CMAKE_THREAD_LIBS_INIT})
 
 if (WIN32)
  # perfetto 库包含许多符号，因此它需要大对象格式。
- target_compile_options(perfetto PRIVATE "/bigobj")
+  target_compile_options(perfetto PRIVATE "/bigobj")
  # 在 windows.h 中禁用旧功能。
- add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+  add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
  # 在 Windows 上，我们应该链接到 WinSock2。
- target_link_libraries(example ws2_32)
+  target_link_libraries(example ws2_32)
 endif (WIN32)
 
 # 使用 Visual Studio 编译器时启用符合标准的模式。
 if (MSVC)
- target_compile_options(example PRIVATE "/permissive-")
+  target_compile_options(example PRIVATE "/permissive-")
 endif (MSVC)
 ```
 
@@ -66,19 +66,19 @@ endif (MSVC)
 #include <perfetto.h>
 
 int main(int argc, char** argv) {
- perfetto::TracingInitArgs args;
+  perfetto::TracingInitArgs args;
 
  // backends 决定在何处记录 Trace 事件。你可以选择一个或多个：
 
  // 1) 进程内 backend 仅在应用程序本身内记录。
- args.backends |= perfetto::kInProcessBackend;
+  args.backends |= perfetto::kInProcessBackend;
 
  // 2) 系统 backend 将事件写入系统 Perfetto daemon，
  // 允许在同一 Timeline 上合并应用程序和系统事件（例如，ftrace）。
  // 要求 Perfetto `traced` daemon 正在运行（例如，在 Android Pie 和更新版本上）。
- args.backends |= perfetto::kSystemBackend;
+  args.backends |= perfetto::kSystemBackend;
 
- perfetto::Tracing::Initialize(args);
+  perfetto::Tracing::Initialize(args);
 }
 ```
 
@@ -119,28 +119,29 @@ Track 事件是处理应用程序特定 Tracing 的建议选项，因为它们�
 #include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
- perfetto::Category("rendering")
- .SetDescription("Events from the graphics subsystem"),
- perfetto::Category("network")
- .SetDescription("Network upload and download statistics"));
+    perfetto::Category("rendering")
+        .SetDescription("Events from the graphics subsystem"),
+    perfetto::Category("network")
+        .SetDescription("Network upload and download statistics"));
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 ...
 
 int main(int argc, char** argv) {
- ...
- perfetto::Tracing::Initialize(args);
- perfetto::TrackEvent::Register();
+  ...
+  perfetto::Tracing::Initialize(args);
+  perfetto::TrackEvent::Register();
 }
+
 ...
 
 void LayerTreeHost::DoUpdateLayers() {
- TRACE_EVENT("rendering", "LayerTreeHost::DoUpdateLayers");
- ...
- for (PictureLayer& pl : layers) {
- TRACE_EVENT("rendering", "PictureLayer::Update");
- pl.Update();
- }
+  TRACE_EVENT("rendering", "LayerTreeHost::DoUpdateLayers");
+  ...
+  for (PictureLayer& pl : layers) {
+    TRACE_EVENT("rendering", "PictureLayer::Update");
+    pl.Update();
+  }
 }
 ```
 
@@ -154,13 +155,13 @@ Track 事件是最佳的默认选项，可以用很低的复杂度满足大多�
 
 ```protobuf
 data_sources {
- config {
- name: "track_event"
- track_event_config {
- enabled_categories: "rendering"
- disabled_categories: "*"
- }
- }
+  config {
+    name: "track_event"
+    track_event_config {
+        enabled_categories: "rendering"
+        disabled_categories: "*"
+    }
+  }
 }
 ```
 
@@ -177,20 +178,20 @@ data_sources {
 ```C++
 class CustomDataSource : public perfetto::DataSource<CustomDataSource> {
  public:
- void OnSetup(const SetupArgs&) override {
+  void OnSetup(const SetupArgs&) override {
  // 使用此回调根据 SetupArgs 中的 TraceConfig 对你的数据源应用任何自定义配置。
- }
+  }
 
- void OnStart(const StartArgs&) override {
+  void OnStart(const StartArgs&) override {
  // 此通知可用于初始化 GPU 驱动程序、启用 Counters 等。
- }
+  }
 
- void OnStop(const StopArgs&) override {
+  void OnStop(const StopArgs&) override {
  // 撤销在 OnStart 中完成的任何初始化。
- }
+  }
 
  // 数据源也可以有每个实例的状态。
- int my_custom_state = 0;
+  int my_custom_state = 0;
 };
 
 PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(CustomDataSource);
@@ -206,12 +207,12 @@ PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(CustomDataSource);
 
 ```C++
 int main(int argc, char** argv) {
- ...
- perfetto::Tracing::Initialize(args);
+  ...
+  perfetto::Tracing::Initialize(args);
  // 添加以下内容：
- perfetto::DataSourceDescriptor dsd;
- dsd.set_name("com.example.custom_data_source");
- CustomDataSource::Register(dsd);
+  perfetto::DataSourceDescriptor dsd;
+  dsd.set_name("com.example.custom_data_source");
+  CustomDataSource::Register(dsd);
 }
 ```
 
@@ -227,9 +228,9 @@ ds_cfg->set_name("com.example.custom_data_source");
 
 ```C++
 CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
- auto packet = ctx.NewTracePacket();
- packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
- packet->set_for_testing()->set_str("Hello world!");
+  auto packet = ctx.NewTracePacket();
+  packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
+  packet->set_for_testing()->set_str("Hello world!");
 });
 ```
 
@@ -237,8 +238,8 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 
 ```C++
 CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
- auto safe_handle = ctx.GetDataSourceLocked(); // 持有 RAII 锁。
- DoSomethingWith(safe_handle->my_custom_state);
+  auto safe_handle = ctx.GetDataSourceLocked(); // 持有 RAII 锁。
+  DoSomethingWith(safe_handle->my_custom_state);
 });
 ```
 
@@ -347,7 +348,7 @@ ds_cfg->set_name("my_data_source");
 
 ```C++
 std::unique_ptr<perfetto::TracingSession> tracing_session(
- perfetto::Tracing::NewTrace());
+    perfetto::Tracing::NewTrace());
 tracing_session->Setup(cfg);
 tracing_session->StartBlocking();
 ```

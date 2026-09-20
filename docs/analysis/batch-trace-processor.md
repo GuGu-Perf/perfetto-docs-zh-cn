@@ -21,12 +21,12 @@ NOTE: 如果你是 Google 员工，请查看 [go/perfetto-btp-load-internal](htt
 from perfetto.batch_trace_processor.api import BatchTraceProcessor
 
 files = [
- 'traces/slow-start.pftrace',
- 'traces/oom.pftrace',
- 'traces/high-battery-drain.pftrace',
+  'traces/slow-start.pftrace',
+  'traces/oom.pftrace',
+  'traces/high-battery-drain.pftrace',
 ]
 with BatchTraceProcessor(files) as btp:
- btp.query('...')
+  btp.query('...')
 ```
 
 可以使用 [glob](https://docs.python.org/3/library/glob.html) 加载目录中的所有 trace：
@@ -36,7 +36,7 @@ from perfetto.batch_trace_processor.api import BatchTraceProcessor
 
 files = glob.glob('traces/*.pftrace')
 with BatchTraceProcessor(files) as btp:
- btp.query('...')
+  btp.query('...')
 ```
 
 NOTE: 加载过多 trace 可能会导致内存不足问题：详见[内存使用](/docs/analysis/batch-trace-processor#memory-usage) 部分。
@@ -57,7 +57,7 @@ config = BatchTraceProcessorConfig(
  # 参见下面的 "Trace URIs"
 )
 with BatchTraceProcessor('foo:bar=1,baz=abc', config=config) as btp:
- btp.query('...')
+  btp.query('...')
 ```
 
 ## 编写查询
@@ -68,10 +68,10 @@ with BatchTraceProcessor('foo:bar=1,baz=abc', config=config) as btp:
 
 ```python
 >>> btp.query('select count(1) from slice')
-[ count(1)
-0 2092592, count(1)
-0 156071, count(1)
-0 121431]
+[  count(1)
+0  2092592,   count(1)
+0   156071,   count(1)
+0   121431]
 ```
 
 `query` 的返回值是一个 [Pandas](https://pandas.pydata.org/) dataframe 列表，每个加载的 trace 对应一个。
@@ -80,10 +80,10 @@ with BatchTraceProcessor('foo:bar=1,baz=abc', config=config) as btp:
 
 ```python
 >>> btp.query_and_flatten('select count(1) from slice')
- count(1)
-0 2092592
-1 156071
-2 121431
+  count(1)
+0  2092592
+1   156071
+2   121431
 ```
 
 `query_and_flatten` 还会隐式添加指示来源 trace 的列。具体添加哪些列取决于所使用的 resolver：请查阅所用 resolver 的文档以获取更多信息。
@@ -163,9 +163,9 @@ URI 只是谜题的一部分：最终 batch trace processor 仍需要 trace 的�
 
 ```python
 def some_complex_calculation(tp):
- res = tp.query('...').as_pandas_dataframe()
+  res = tp.query('...').as_pandas_dataframe()
  # ... 使用 res 进行一些计算
- return res
+  return res
 
 # |some_complex_calculation| 可以使用 [TraceProcessor] 对象调用：
 tp = TraceProcessor('/foo/bar.pftrace')

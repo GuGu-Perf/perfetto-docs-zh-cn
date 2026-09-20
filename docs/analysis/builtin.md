@@ -91,12 +91,12 @@ CPU profile
 
 ```sql
 SELECT
- perf_session_id,
- EXPERIMENTAL_PROFILE(
- STACK_FROM_STACK_PROFILE_CALLSITE(callsite_id),
- 'samples',
- 'count',
-  1) AS profile
+  perf_session_id,
+  EXPERIMENTAL_PROFILE(
+    STACK_FROM_STACK_PROFILE_CALLSITE(callsite_id),
+    'samples',
+    'count',
+    1) AS profile
 FROM perf_sample
 GROUP BY perf_session_id
 ```
@@ -105,14 +105,14 @@ Heap profile
 
 ```sql
 SELECT
- EXPERIMENTAL_PROFILE(
- CAT_STACKS(heap_name, STACK_FROM_STACK_PROFILE_CALLSITE(callsite_id)),
- 'count',
- 'count',
- count,
- 'size',
- 'bytes',
- size) AS profile
+  EXPERIMENTAL_PROFILE(
+    CAT_STACKS(heap_name, STACK_FROM_STACK_PROFILE_CALLSITE(callsite_id)),
+    'count',
+    'count',
+    count,
+    'size',
+    'bytes',
+    size) AS profile
 FROM heap_profile_allocation
 WHERE size >= 0 AND count >= 0
 ```

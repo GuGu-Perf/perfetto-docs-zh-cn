@@ -34,8 +34,8 @@ Heap dumps 不得与 [ART Allocation Profiling](native-heap-profiler.md#art-allo
 
 ```sql
 select c.name, sum(o.self_size)
- from heap_graph_object o join heap_graph_class c on (o.type_id = c.id)
- where reachable = 1 group by 1 order by 2 desc;
+       from heap_graph_object o join heap_graph_class c on (o.type_id = c.id)
+       where reachable = 1 group by 1 order by 2 desc;
 ```
 
 |name |sum(o.self_size) |
@@ -54,9 +54,9 @@ INCLUDE PERFETTO MODULE android.memory.heap_graph.class_summary_tree;
 
 SELECT
  -- 类的名称。
- name,
+  name,
  -- 此节点的 `self_size` 及其后代的所有节点的总和。
- cumulative_size
+  cumulative_size
 FROM android_heap_graph_class_summary_tree;
 ```
 
@@ -76,12 +76,12 @@ ART heap dump 数据源通过 trace 配置的 [JavaHprofConfig](/docs/reference/
 
 ```protobuf
 data_sources {
- config {
- name: "android.java_hprof"
- java_hprof_config {
- process_cmdline: "com.google.android.inputmethod.latin"
- dump_smaps: true
- }
- }
+  config {
+    name: "android.java_hprof"
+    java_hprof_config {
+      process_cmdline: "com.google.android.inputmethod.latin"
+      dump_smaps: true
+    }
+  }
 }
 ```

@@ -15,19 +15,19 @@
 duration_ms: 10000
 
 buffers {
- size_kb: 65536
- fill_policy: RING_BUFFER
+  size_kb: 65536
+  fill_policy: RING_BUFFER
 }
 
 data_sources {
- config {
- name: "linux.ftrace"
- target_buffer: 0
- ftrace_config {
- ftrace_events: "sched_switch"
- ftrace_events: "sched_wakeup"
- }
- }
+  config {
+    name: "linux.ftrace"
+    target_buffer: 0
+    ftrace_config {
+      ftrace_events: "sched_switch"
+      ftrace_events: "sched_wakeup"
+    }
+  }
 }
 
 ```
@@ -79,14 +79,14 @@ trace 服务（`traced`）充当配置分发器：它从 `perfetto` 命令行客
 ```protobuf
 # 缓冲区 #0
 buffers {
- size_kb: 4096
- fill_policy: RING_BUFFER
+  size_kb: 4096
+  fill_policy: RING_BUFFER
 }
 
 # 缓冲区 #1
 buffers {
- size_kb: 8192
- fill_policy: DISCARD
+  size_kb: 8192
+  fill_policy: DISCARD
 }
 ```
 
@@ -122,27 +122,27 @@ WARNING: DISCARD 可能会与在 trace 结束时提交数据的数据源产生�
 
 ```protobuf
 data_sources {
- config {
- name: "linux.ftrace"
- target_buffer: 0 # <-- 这进入缓冲区 0。
- ftrace_config { ... }
- }
+  config {
+    name: "linux.ftrace"
+    target_buffer: 0 # <-- 这进入缓冲区 0。
+    ftrace_config { ... }
+  }
 }
 
 data_sources: {
- config {
- name: "linux.sys_stats"
- target_buffer: 1 # <-- 这进入缓冲区 1。
- sys_stats_config { ... }
- }
+  config {
+      name: "linux.sys_stats"
+      target_buffer: 1 # <-- 这进入缓冲区 1。
+      sys_stats_config { ... }
+  }
 }
 
 data_sources: {
- config {
- name: "android.heapprofd"
- target_buffer: 1 # <-- 这也进入缓冲区 1。
- heapprofd_config { ... }
- }
+  config {
+    name: "android.heapprofd"
+    target_buffer: 1 # <-- 这也进入缓冲区 1。
+    heapprofd_config { ... }
+  }
 }
 ```
 
@@ -172,9 +172,9 @@ WARNING: 不要将文本格式用于机器对机器交互（基准测试、脚�
 cd ~/code/perfetto # Android 树中的 external/perfetto。
 
 protoc --encode=perfetto.protos.TraceConfig \
- -I. protos/perfetto/config/perfetto_config.proto \
- < config.txpb \
- > config.bin
+        -I. protos/perfetto/config/perfetto_config.proto \
+        < config.txpb \
+        > config.bin
 ```
 
 然后将其传递给 perfetto，如下所示，不带 `--txt` 参数：
@@ -285,21 +285,21 @@ NOTE: 只有当对应的构建标志启用时（`enable_perfetto_zlib`、`enable
 
 ```protobuf
 message TraceConfig {
- ...
- repeated DataSource data_sources = 2; // 见下文。
+  ...
+  repeated DataSource data_sources = 2; // 见下文。
 }
 
 message DataSource {
- optional protos.DataSourceConfig config = 1; // 见下文。
- ...
+  optional protos.DataSourceConfig config = 1; // 见下文。
+  ...
 }
 
 message DataSourceConfig {
- optional string name = 1;
- ...
- optional FtraceConfig ftrace_config = 100 [lazy = true];
- ...
- optional AndroidPowerConfig android_power_config = 106 [lazy = true];
+  optional string name = 1;
+  ...
+  optional FtraceConfig ftrace_config = 100 [lazy = true];
+  ...
+  optional AndroidPowerConfig android_power_config = 106 [lazy = true];
 }
 ```
 
@@ -331,16 +331,16 @@ NOTE: 典型的 Perfetto 运行时模型是：一个进程 == 一个 Perfetto Pr
 
 ```protobuf
 buffers {
- size_kb: 4096
+  size_kb: 4096
 }
 
 data_sources {
- config {
- name: "track_event"
- }
+  config {
+    name: "track_event"
+  }
  # 仅在 Chrome 和 Chrome canary 上启用数据源。
- producer_name_filter: "com.android.chrome"
- producer_name_filter: "com.google.chrome.canary"
+  producer_name_filter: "com.android.chrome"
+  producer_name_filter: "com.google.chrome.canary"
 }
 ```
 
@@ -382,13 +382,13 @@ Perfetto 支持基于触发器的替代启动或停止 trace 模式。总体思�
 # 如果击中 "myapp_is_slow",trace 开始记录数据并将在
 # 5 秒后停止。
 trigger_config {
- trigger_mode: START_TRACING
- triggers {
- name: "myapp_is_slow"
- stop_delay_ms: 5000
- }
+  trigger_mode: START_TRACING
+  triggers {
+    name: "myapp_is_slow"
+    stop_delay_ms: 5000
+  }
  # 如果没有触发器被击中,trace 将在 30 秒后结束而不记录任何数据
- trigger_timeout_ms: 30000
+  trigger_timeout_ms: 30000
 }
 
 # 配置的其余部分照常。
@@ -407,13 +407,13 @@ STOP_TRACING 触发器允许在触发器被击中时过早地完成 trace。在�
 ```protobuf
 # 如果击中 "missed_frame",trace 将在 1 秒后停止。
 trigger_config {
- trigger_mode: STOP_TRACING
- triggers {
- name: "missed_frame"
- stop_delay_ms: 1000
- }
+  trigger_mode: STOP_TRACING
+  triggers {
+    name: "missed_frame"
+    stop_delay_ms: 1000
+  }
  # 如果没有触发器被击中,trace 将在 30 秒后结束。
- trigger_timeout_ms: 30000
+  trigger_timeout_ms: 30000
 }
 
 # 配置的其余部分照常。

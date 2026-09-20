@@ -57,16 +57,16 @@ file_write_period_ms: 5000
 buffers {
  # 此缓冲区需要足够大以仅容纳两个连续的
  # |file_write_period| 之间的数据（在此示例中为 5 秒）。
- size_kb: 16384
+  size_kb: 16384
 }
 
 data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched_switch"
- }
- }
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "sched_switch"
+    }
+  }
 }
 ' | perfetto -c - --txt --detach=session1 -o /data/misc/perfetto-traces/trace
 
@@ -90,16 +90,16 @@ file_write_period_ms: 1000000000
 
 buffers {
  # 这将是最终 trace 的大小。
- size_kb: 16384
+  size_kb: 16384
 }
 
 data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched_switch"
- }
- }
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "sched_switch"
+    }
+  }
 }
 ' | perfetto -c - --txt --detach=session2 -o /data/misc/perfetto-traces/trace
 
@@ -119,16 +119,16 @@ duration_ms: 10000
 write_into_file: true
 
 buffers {
- size_kb: 16384
+  size_kb: 16384
 }
 
 data_sources {
- config {
- name: "linux.ftrace"
- ftrace_config {
- ftrace_events: "sched_switch"
- }
- }
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "sched_switch"
+    }
+  }
 }
 ' | perfetto -c - --txt --detach=session3 -o /data/misc/perfetto-traces/trace
 

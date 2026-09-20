@@ -24,7 +24,7 @@ ui/src/
 ├── plugins/ # 可选的第三方/外部插件
 ├── core_plugins/ # 必需的核心插件(无法禁用)
 ├── frontend/ # 主要前端渲染代码
-├── trace_processor/# 引擎通信层(查询结果、SQL 实用程序)
+├── trace_processor/# Engine communication layer (query results, SQL utilities)
 ├── test/ # Playwright 集成测试
 └── assets/ # SCSS 样式表和静态资产
 ```
@@ -74,24 +74,24 @@ import {App} from '../../public/app';
 
 export default class MyPlugin implements PerfettoPlugin {
  // 唯一的反向 DNS 标识符
- static readonly id = 'com.example.MyPlugin';
+  static readonly id = 'com.example.MyPlugin';
 
  // 可选:可读描述
- static readonly description = 'Does something useful';
+  static readonly description = 'Does something useful';
 
  // 可选:声明对其他插件的依赖
- static readonly dependencies = [OtherPlugin];
+  static readonly dependencies = [OtherPlugin];
 
  // 当插件被激活时调用(在 trace 加载之前)
- static onActivate(app: App): void {
+  static onActivate(app: App): void {
  // 注册不需要 trace 的命令、侧边栏项、页面
- }
+  }
 
  // 当加载 trace 时调用
- async onTraceLoad(trace: Trace): Promise<void> {
+  async onTraceLoad(trace: Trace): Promise<void> {
  // 注册需要 trace 数据的 Track、选项卡、命令
  // 查询 trace processor,将 Track 添加到工作区
- }
+  }
 }
 ```
 
@@ -120,20 +120,20 @@ UI 使用 Mithril.js。遵循这些模式：
 import m from 'mithril';
 
 interface MyComponentAttrs {
- readonly value: string;
- readonly onChange: (newValue: string) => void;
+  readonly value: string;
+  readonly onChange: (newValue: string) => void;
 }
 
 export class MyComponent implements m.ClassComponent<MyComponentAttrs> {
  // 本地状态
- private expanded = false;
+  private expanded = false;
 
- view({attrs}: m.CVnode<MyComponentAttrs>): m.Children {
- return m('.my-component',
- m(Button, {label: attrs.value, onclick: () => this.expanded = !this.expanded}),
- this.expanded && m('.details', 'Expanded content'),
- );
- }
+  view({attrs}: m.CVnode<MyComponentAttrs>): m.Children {
+    return m('.my-component',
+      m(Button, {label: attrs.value, onclick: () => this.expanded = !this.expanded}),
+      this.expanded && m('.details', 'Expanded content'),
+    );
+  }
 }
 ```
 
@@ -307,10 +307,10 @@ import {Button, ButtonVariant} from '../widgets/button';
 import {Popup} from '../widgets/popup';
 
 m(Button, {
- label: 'Click me',
- icon: 'search',
- variant: ButtonVariant.Filled,
- onclick: () => { /* 处理点击 */ },
+  label: 'Click me',
+  icon: 'search',
+  variant: ButtonVariant.Filled,
+  onclick: () => { /* handle click */ },
 });
 ```
 
@@ -336,23 +336,23 @@ m(Button, {
 
 ```typescript
 async onTraceLoad(trace: Trace): Promise<void> {
- const result = await trace.engine.query(`
- SELECT ts, dur, name
- FROM slice
- WHERE name LIKE '%mySlice%'
- LIMIT 100
- `);
+  const result = await trace.engine.query(`
+    SELECT ts, dur, name
+    FROM slice
+    WHERE name LIKE '%mySlice%'
+    LIMIT 100
+  `);
 
  // 使用类型化迭代
- const iter = result.iter({
- ts: LONG, // bigint
- dur: LONG, // bigint
- name: STR, // string
- });
+  const iter = result.iter({
+    ts: LONG, // bigint
+    dur: LONG, // bigint
+    name: STR, // string
+  });
 
- for (; iter.valid(); iter.next()) {
-	 console.log(iter.ts, iter.dur, iter.name);
-	 }
+  for (; iter.valid(); iter.next()) {
+    console.log(iter.ts, iter.dur, iter.name);
+  }
 }
 ```
 
@@ -460,10 +460,10 @@ const cls = classNames('pf-row', isSelected && 'pf-row--selected', isDisabled &&
 import {assertUnreachable} from '../base/assert';
 
 switch (value) {
- case 'a': return handleA();
- case 'b': return handleB();
- default:
- assertUnreachable(value); // 如果情况不详尽,TypeScript 将报错
+  case 'a': return handleA();
+  case 'b': return handleB();
+  default:
+    assertUnreachable(value); // 如果情况不详尽,TypeScript 将报错
 }
 ```
 
@@ -506,14 +506,14 @@ m('.pf-my-component', 'content') // 带有 .scss 文件中的样式
 ```scss
 // 不好
 .pf-my-component {
- color: #333;
- background: white;
+  color: #333;
+  background: white;
 }
 
 // 好
 .pf-my-component {
- color: var(--pf-color-text);
- background: var(--pf-color-background);
+  color: var(--pf-color-text);
+  background: var(--pf-color-background);
 }
 ```
 
@@ -524,13 +524,13 @@ m('.pf-my-component', 'content') // 带有 .scss 文件中的样式
 ```typescript
 // 不好 - 在生命周期方法之间拆分代码会损害可读性。
 oncreate() {
- this.computedValue = inexpensiveComputation();
+  this.computedValue = inexpensiveComputation();
 }
 
 // 好 - 在 view 中计算。如果昂贵，请在构造函数中初始化。
 view() {
- const computedValue = inexpensiveComputation();
- return m('div', computedValue);
+  const computedValue = inexpensiveComputation();
+  return m('div', computedValue);
 }
 ```
 
@@ -594,8 +594,8 @@ const config = JSON.parse(data) as MyConfig;
 
 // 好 - 验证解析
 const ConfigSchema = z.object({
- name: z.string(),
- value: z.number(),
+  name: z.string(),
+  value: z.number(),
 });
 const config = ConfigSchema.parse(JSON.parse(data));
 ```
