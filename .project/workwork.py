@@ -169,6 +169,32 @@ def strip_fences(text):
     return "\n".join(out)
 
 
+# A12 辅助：围栏块提取与代码注释行识别（注释行按政策 B 可翻译，比对时过滤）
+_CODE_COMMENT = re.compile(r"^\s*(//|#|--|;|/\*|\*)")
+# 行尾注释剥离（对称应用于两侧：行尾注释按政策 B 可翻译；
+# 剥离过度也是对称的，只在"译了被剥离区域"时误报，届时人工复核）
+_TRAILING_COMMENT = re.compile(r"\s+(//|#|--)[^\n]*$")
+
+
+def _code_part(line):
+    return _TRAILING_COMMENT.sub("", line.rstrip())
+
+
+def _fenced_blocks(text):
+    out, cur, in_fence = [], None, False
+    for line in text.splitlines():
+        if line.startswith("```"):
+            if in_fence:
+                out.append(cur)
+            else:
+                cur = []
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            cur.append(line)
+    return out
+
+
 def upstream_md(rel):  # rel 相对 docs/，返回英文原文或 None
     p = subprocess.run(["git", "-C", str(PERFETTO_DIR), "show", f"HEAD:docs/{rel}"],
                        capture_output=True, text=True, timeout=TIMEOUT_GIT)
@@ -282,6 +308,22 @@ def cmd_audit(args):
         ub, lb = emph_count(up), emph_count(loc)
         if ub != lb:
             report(f"A11 加粗/斜体数 docs/{f}: 上游={ub} 本地={lb}")
+
+        # A12 代码块非注释行必须与上游逐字节一致（代码本体不翻译的不变量——
+        # 抓缩进塌缩/NBSP 丢失/标点混入等 DOM 签名不可见的缺陷；注释行按
+        # 政策 B 可翻译，过滤后比对序列）
+        zblocks = _fenced_blocks(loc_raw)
+        eblocks = _fenced_blocks(up_raw)
+        if len(zblocks) != len(eblocks):
+            report(f"A12 代码块数 docs/{f}: 上游={len(eblocks)} 本地={len(zblocks)}")
+        else:
+            for bi_, (zl, el) in enumerate(zip(zblocks, eblocks)):
+                zc = [_code_part(l) for l in zl if not _CODE_COMMENT.match(l)]
+                ec = [_code_part(l) for l in el if not _CODE_COMMENT.match(l)]
+                if zc != ec:
+                    report(f"A12 代码行不一致 docs/{f} 第{bi_+1}块"
+                           f"（如: 上游 {next((repr(x) for x, y in zip(ec, zc) if x != y), ec[:1])!r}"
+                           f" vs 本地 {next((repr(y) for x, y in zip(ec, zc) if x != y), zc[:1])!r}）")
 
     # A7b 幽灵引用（含 .json 数据文件——它们会注入翻译 prompt，引用错误会误导子代理）
     for doc in list(SCRIPT_DIR.glob("*.md")) + list(SCRIPT_DIR.glob("*.json")) \
