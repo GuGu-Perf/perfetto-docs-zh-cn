@@ -89,7 +89,14 @@
 
 - `capture/record trace` → **采集 trace**；`to profile` → **进行 profile/profiling**
 - Markdown 结构与原文 100% 一致：加粗/斜体/代码保留标记替换内容；列表类型层级数量不变；
-  表格行列数严格一致；代码块语言标记不变且**块内不翻译**；URL 与图片路径不变
+  表格行列数严格一致；代码块语言标记不变；URL 与图片路径不变
+- **代码块内容三层约束**（政策 B，2026-09-19）：
+  1. 代码本体（命令/标识符/输出）永不翻译
+  2. 有语言标注的代码块内**注释可以翻译**——由此产生的 hljs 高亮差异已被
+     compare-structure 容忍（`--strict-hljs` 可严查）
+  3. **无语言标注的代码块整块保持英文**（含注释）——hljs autoDetect 会被中文
+     翻转语言判定（如 livecodeserver→node-repl），属结构性差异；语法敏感前缀
+     （SQL `-- Note:` 等）同样保持英文
 - **链接 URL 右括号必须半角 `)`**（全角 `）` 会破坏 markdown 解析，历史高频 bug）
 - 短语级定型译法见 `.project/phrases.json`（优先级高于自行斟酌）
 
