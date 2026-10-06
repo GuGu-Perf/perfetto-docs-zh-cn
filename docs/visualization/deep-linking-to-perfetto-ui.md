@@ -61,22 +61,38 @@ var handle = window.open('https://ui.perfetto.dev');
 ```js
 {
   'perfetto': {
-    buffer: ArrayBuffer;
+    buffer?: ArrayBuffer;              // Exactly one of buffer or stream
+    stream?: ReadableStream;           // Exactly one of buffer or stream
+    bytesTotal?: number;               // Optional stream size
     title: string;
-    fileName?: string; // Optional
-    url?: string; // Optional
-    appStateHash?: string // Optional
+    fileName?: string;                 // Optional
+    url?: string;                      // Optional
+    appStateHash?: string              // Optional
   }
 }
 ```
 
 `perfetto` 对象的属性包括：
 
-- `buffer`：包含原始 trace 数据的 `ArrayBuffer`。你通常通过从后端获取 trace 文件来获得它。
+- `buffer`：包含原始 trace 数据的 `ArrayBuffer`。你通常通过从后端获取 trace 文件来获得它。`buffer` 和 `stream` 必须恰好提供其中一个。
+- `stream`：包含 trace 数据的、经转移的 `ReadableStream`。使用它可以避免在打开 trace 之前将整个 trace 加载到内存中。
+- `bytesTotal`（可选）：用于进度报告的流总大小。为零或省略时表示未知。
 - `title`：将在 UI 中显示为 trace 标题的可读字符串。这有助于用户在打开多个标签页时区分不同的 trace。
 - `fileName`（可选）：如果用户决定从 Perfetto UI 下载 trace，则建议的文件名。如果省略，将使用通用名称。
 - `url`（可选）：用于共享 trace 的 URL。请参阅下面的"共享"部分。
 - `appStateHash`（可选）：用于在共享时恢复 UI 状态的哈希。请参阅下面的"共享"部分。
+
+要转移一个 stream，需把它放进 transfer 列表：
+
+```js
+const response = await fetch('/api/trace');
+const stream = response.body;
+handle.postMessage(
+    {perfetto: {stream, title: 'My trace', bytesTotal: 0}}, '*', [stream]);
+```
+
+如上所示，stream 必须以转移方式传递，且事先不能被读取过。当 Perfetto 加载数据时，浏览器会调节源产生数据的速度。流式传输的 trace 不会被保留，因此无法下载、分享或缓存。精确的 stream 要求参见
+[嵌入 API 参考](/docs/visualization/embedding-api-reference.md)。
 
 ### 共享 trace 和 UI 状态
 
@@ -133,7 +149,7 @@ Googlers：请查看
 
 ### 推送的 trace 去哪里了？
 
-Perfetto UI 仅是客户端的，不需要任何服务器端交互。通过 `postMessage()` 推送的 trace 仅保留在浏览器内存/缓存中，不会发送到任何服务器。
+Perfetto UI 仅是客户端的，不需要任何服务器端交互。通过 `postMessage()` 推送的 trace 仅保留在浏览器内存/缓存中，不会发送到任何服务器。流式传输的 trace 在加载过程中即被消费，不会加入浏览器缓存。
 
 ## 使用 URL 参数自定义 UI
 

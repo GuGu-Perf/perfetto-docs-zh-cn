@@ -497,6 +497,22 @@
       "zh": "Trace 汇总",
       "translate": true,
       "forbidden": []
+    },
+    {
+      "en": "Pipe Syntax",
+      "zh": "pipe 语法",
+      "translate": false,
+      "forbidden": [
+        "管道语法"
+      ]
+    },
+    {
+      "en": "Pipe Operator",
+      "zh": "pipe 运算符",
+      "translate": false,
+      "forbidden": [
+        "管道运算符"
+      ]
     }
   ],
   "markers": {

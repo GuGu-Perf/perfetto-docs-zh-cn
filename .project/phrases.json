@@ -17,7 +17,11 @@
     "Analyzing traces from the command line": "从命令行分析 trace",
     "Tracing on Linux": "在 Linux 上进行 Tracing",
     "Capturing periodic trace snapshots": "周期性采集 Trace 快照",
-    "Using AI with Perfetto": "在 Perfetto 中使用 AI"
+    "Using AI with Perfetto": "在 Perfetto 中使用 AI",
+    "PerfettoSQL Pipe Syntax Getting Started": "PerfettoSQL pipe 语法入门指南",
+    "PerfettoSQL Pipe Syntax Reference": "PerfettoSQL pipe 语法参考",
+    "Migrating to PerfettoSQL Pipe Syntax": "迁移到 PerfettoSQL pipe 语法",
+    "PerfettoSQL Pipe Operator Implementation Notes": "PerfettoSQL pipe 运算符实现说明"
   },
   "phrases": {
     "capture/record a trace": "采集 trace",

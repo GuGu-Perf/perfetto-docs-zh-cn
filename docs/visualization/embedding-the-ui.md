@@ -65,7 +65,8 @@ function waitForReady() {
 ## 步骤 3：发送 trace
 
 握手完成后，向 iframe 的 `contentWindow` 发送一个仅含单个 `perfetto` 键的
-对象。只有 `buffer`（原始 trace 字节的 `ArrayBuffer`）和 `title` 是必需的：
+对象。传入 `title`，以及 `buffer`（原始 trace 字节的 `ArrayBuffer`）或
+`stream`（经转移的 `ReadableStream`）中的恰好一个：
 
 ```js
 async function openTrace() {
@@ -90,7 +91,11 @@ async function openTrace() {
 
 `perfetto` 对象的完整字段列表：
 
-- `buffer`（必需）：原始 trace 字节的 `ArrayBuffer`。
+- `buffer`：原始 trace 字节的 `ArrayBuffer`。`buffer` 和 `stream` 必须恰好提供
+  其中一个。
+- `stream`：包含 trace 数据的、经转移的 `ReadableStream`。`buffer` 和
+  `stream` 必须恰好提供其中一个。
+- `bytesTotal`（可选）：用于进度报告的流总大小。为零或省略时表示未知。
 - `title`（必需）：显示为 trace 标题的字符串。
 - `fileName`（可选）：用户下载 trace 时建议的文件名。
 - `url`（可选）：分享 URL。参见
@@ -111,6 +116,30 @@ NOTE: 如果要在同一 iframe 中更换 trace 而不重新加载它，请在�
 TIP: 裸 `ArrayBuffer` 也会被接受（UI 将其视为名为 "External trace" 的
 trace），但推荐发送 `{ perfetto: { buffer, title } }` 对象，以便由你控制
 标题。
+
+### 流式传输 trace 而不缓冲整个文件
+
+对于较大的 trace，直接传递响应正文，而不是先把它转换为 `ArrayBuffer`：
+
+```js
+async function openTraceStream() {
+  await waitForReady();
+
+  const response = await fetch('/api/trace');
+  if (!response.body) throw new Error('Response body is not streamable');
+
+  const stream = response.body;
+  const bytesTotal = Number(response.headers.get('content-length')) || 0;
+  iframe.contentWindow.postMessage(
+    {perfetto: {stream, bytesTotal, title: 'My embedded trace'}},
+    '*',
+    [stream],
+  );
+}
+```
+
+如上所示，stream 必须以转移方式传递，且事先不能被读取过。当 Perfetto 加载数据时，浏览器会自动调节数据产生的速度。流式传输的 trace 不会被保留，因此之后无法下载、分享或缓存。精确的 stream 要求参见
+[嵌入 API 参考](/docs/visualization/embedding-api-reference.md)。
 
 ## 步骤 4（可选）：驱动视图
 

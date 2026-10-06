@@ -295,6 +295,13 @@ TIP: `tools/setup_all_configs.py` 可用于为大多数支持的配置生成 out
 
 启用 [未定义行为清理器](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
 
+`perfetto_cxx_standard = "c++17"`
+
+选择独立构建所用的 C++ 语言标准（默认 `"c++17"`）。Perfetto 源码改动必须
+保持与 C++17 兼容。当构建环境有要求时，嵌入方可以选择 `"c++20"` 或
+`"c++23"`，例如在链接以更新的 C++ 标准构建的系统库（例如通过
+`perfetto_use_system_protobuf` 使用的 abseil）时。
+
 ### {#custom-toolchain} 使用自定义工具链和 CC / CXX / CFLAGS 环境变量
 
 将 Perfetto 作为其他构建环境的一部分构建时，可能需要关闭所有内置的工具链相关路径猜测脚本并手动指定工具链的路径。

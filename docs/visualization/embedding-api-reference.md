@@ -41,18 +41,27 @@ NOTE: 这是一份参考文档，而非教程。此处未列出的字段和消�
 
 ## 打开 trace
 
-要打开一个 trace，发送一个带有单个 `perfetto` 键的对象：
+要打开一个 trace，发送一个带有单个 `perfetto` 键的对象。传入 `buffer` 或 `stream` 中的恰好一个：
 
 ```js
 iframe.contentWindow.postMessage({perfetto: {buffer, title}}, '*');
+```
+
+`ReadableStream` 必须以转移方式传递。背压（backpressure）会从 trace 解析传导到流的生产端，限制生产端能够超前多少：
+
+```js
+iframe.contentWindow.postMessage(
+    {perfetto: {stream, title, bytesTotal}}, '*', [stream]);
 ```
 
 `perfetto` 对象的字段：
 
 | 字段          | 类型                                                      | 必需 | 默认值 | 含义                                                                                                                              |
 | -------------- | -------------------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `buffer`       | `ArrayBuffer`                                             | 是      | -       | 原始 trace 字节，例如来自 `fetch(...).then(r => r.arrayBuffer())`。                                                                  |
-| `title`        | `string`                                                 | 是      | -       | 在 UI 中显示的 trace 标题。                                                                                                          |
+| `buffer`       | `ArrayBuffer`                                             | `buffer` 或 `stream` 二选一 | - | 原始 trace 字节，例如来自 `fetch(...).then(r => r.arrayBuffer())`。                                                  |
+| `stream`       | `ReadableStream<ArrayBuffer \| ArrayBufferView>`          | `buffer` 或 `stream` 二选一 | - | 经转移的原始 trace 数据块流。                                                                                        |
+| `bytesTotal`   | `number`                                                  | 否       | `0`     | 用于进度报告的流总大小；`0` 表示未知。                                                                                |
+| `title`        | `string`                                                  | 是      | -       | 在 UI 中显示的 trace 标题。                                                                                                          |
 | `fileName`     | `string`                                                 | 否      | -       | 用户下载 trace 时建议的文件名。                                                                                                      |
 | `url`          | `string`                                                 | 否      | -       | 分享 URL。分享详情参见[深度链接到 Perfetto UI](/docs/visualization/deep-linking-to-perfetto-ui.md)。                                                          |
 | `appStateHash` | `string`                                                 | 否      | -       | 40 字符十六进制哈希；从 GCS 恢复已保存的 UI 状态。参见[深度链接到 Perfetto UI](/docs/visualization/deep-linking-to-perfetto-ui.md)。 |
@@ -61,6 +70,8 @@ iframe.contentWindow.postMessage({perfetto: {buffer, title}}, '*');
 | `localOnly`    | `boolean`                                                | 否      | `true`  | 遗留字段。设为 `false` 会将 `shareable` 和 `downloadable` 都设为 `true`。显式指定的 `shareable`/`downloadable` 优先。                    |
 | `keepApiOpen`  | `boolean`                                                | 否      | `false` | 若为 `true`，监听器保持活跃，宿主之后可以发送更多 trace。若为 `false`/省略，处理器在第一个 trace 之后移除自己的消息监听器（避免重复发送，b/182502595）。 |
 | `pluginArgs`   | `{[pluginId: string]: {[key: string]: unknown}}`         | 否      | -       | 传递给 plugin 的 `onTraceLoad()`。                                                                                                  |
+
+流式传输的 trace 在解析后不会被保留，因此无法下载、分享或缓存。`fileName`、`url`、`shareable`、`downloadable`、`localOnly` 和 `pluginArgs` 因而不适用于 stream。
 
 ### 裸 ArrayBuffer 简写
 
@@ -117,7 +128,7 @@ iframe.contentWindow.postMessage(
 NOTE: `visStart`/`visEnd` 和 `ts`/`dur` 是原始的**纳秒**值，
 而 `timeStart`/`timeEnd` 的 `postMessage` 字段是**秒**。
 
-NOTE: 切片选择通过 `ts`+`dur` 进行，绝不通过 `id`，因为 ID 在不同运行之间不稳定。
+NOTE: slice 选择通过 `ts`+`dur` 进行，绝不通过 `id`，因为 ID 在不同运行之间不稳定。
 
 ## 来源信任
 
