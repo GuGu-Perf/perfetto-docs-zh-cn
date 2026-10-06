@@ -17,7 +17,8 @@
 设计纪律（见 .project/workwork.md）:
   - 单文件单入口：新增能力一律作为本文件的子命令，不新建脚本
   - 每个外部调用（git/curl/node）都带超时
-  - 按目标选直连/代理：perfetto.dev 走代理，GitHub Pages/localhost 直连
+  - 按目标选直连/代理：perfetto.dev 走代理，GitHub Pages/localhost 直连；
+    启动时自动剥离失效代理环境变量，代理抓取前先 TCP 探测快速失败
 """
 import argparse
 import json
@@ -25,10 +26,12 @@ import os
 import posixpath
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
 import time
+import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
@@ -541,11 +544,42 @@ def normalize_sig(sig, tolerate_hljs=True):
     return out
 
 
+_proxy_probe_cache = {}
+
+
+def proxy_alive(proxy_url, timeout=1.0):
+    """TCP 探测代理是否可达（结果缓存）。VPN 到期/Clash 退出后遗留的代理地址会黑洞全部流量。"""
+    if proxy_url in _proxy_probe_cache:
+        return _proxy_probe_cache[proxy_url]
+    try:
+        u = urllib.parse.urlsplit(proxy_url if "://" in proxy_url else f"http://{proxy_url}")
+        host, port = u.hostname, u.port or (443 if u.scheme == "https" else 80)
+        with socket.create_connection((host, port), timeout=timeout):
+            alive = True
+    except Exception:
+        alive = False
+    _proxy_probe_cache[proxy_url] = alive
+    return alive
+
+
+def sanitize_proxy_env():
+    """剥离指向失效代理的环境变量——shell 里遗留的 export 会毒化后续所有 git/curl 子进程。"""
+    for var in ("https_proxy", "http_proxy", "all_proxy",
+                "HTTPS_PROXY", "HTTP_PROXY", "ALL_PROXY"):
+        v = os.environ.get(var)
+        if v and not proxy_alive(v):
+            warn(f"{var}={v} 不可达（代理未运行？），本轮自动剥离")
+            os.environ.pop(var, None)
+
+
 def fetch(url, dest, use_proxy):
     if dest.exists() and dest.stat().st_size > 0:
         return True
     handlers = []
     if use_proxy:
+        if not proxy_alive(PROXY):
+            err(f"代理 {PROXY} 不可达（恢复代理或设 WORKWORK_PROXY 覆盖后重试），跳过: {url}")
+            return False
         handlers.append(urllib.request.ProxyHandler(
             {"http": PROXY, "https": PROXY}))
     else:
@@ -937,6 +971,7 @@ def main():
     cs.add_argument("--verbose", action="store_true", help="输出全量差异明细")
 
     args = ap.parse_args()
+    sanitize_proxy_env()
     {"sync-check": cmd_sync, "sync-update": cmd_sync,
      "audit": cmd_audit, "proofread": cmd_proofread,
      "compare-structure": cmd_compare_structure,

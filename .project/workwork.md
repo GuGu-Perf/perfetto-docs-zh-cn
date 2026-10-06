@@ -12,8 +12,10 @@
    **新建任何文件须经人工批准**
 3. **超时纪律**：每条外部命令（git/curl/node）必须带超时；耗时预估按悲观值报告；
    预期 >60s 的任务后台执行 + 阶段性汇报；长任务中间产物落盘缓存（`.cache/`）可续跑
-4. **网络纪律**：perfetto.dev 走代理（`http://127.0.0.1:7897`）；
-   gugu-perf.github.io 与 localhost 直连；单次抓取 `--max-time ≤15s`
+4. **网络纪律**：gugu-perf.github.io 与 localhost 直连；单次抓取 `--max-time ≤15s`；
+   代理环境随 VPN 状态变化（2026-10 起 Clash 已停）——工具启动时自动探测并
+   **剥离失效的代理环境变量**，代理抓取前先 TCP 探测快速失败
+   （`WORKWORK_PROXY` 可覆盖地址）；开工先实测网络再定策略
 5. **规则纪律**：新增 lint/审计规则须先在语料上校准（flags 对照上游确认为真违规）
    才能作为 error 级；规则依据事实来源（如渲染器源码 render.mjs）
 6. **上游原文必须用 `git -C ../perfetto show HEAD:<path>` 获取**——
