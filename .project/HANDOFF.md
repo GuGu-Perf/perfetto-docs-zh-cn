@@ -6,6 +6,41 @@
 
 ---
 
+## 2026-10-06 会话：上游同步 1a186d13→e5be393a + 网络环境剧变（VPN 到期）
+
+### 本轮产出
+- 同步上游 fd9c7de6（LAST_SYNC=e5be393a），8 文件：4 新增（PerfettoSQL pipe 系列
+  hidden 文档）+ 4 修改（cxx_standard gn 参数、postMessage stream/bytesTotal）
+- 提交 cb589d2f 推送；部署 ea505a1b（回退点 tag `pre-deploy-20261006-134939`）
+- 门禁全绿：audit 131 文件 0 差异 / proofread 0 错（W1 存量 44 未清）/
+  compare-structure 122 页 0 差异 / 回译抽查 3 文件（拦截 2 处小问题并修复）
+
+### 坑与绕法（下次会话必读）
+1. **网络环境已剧变**：VPN 到期、Clash 已关，整机无代理直连（github.com 直连
+   可用）。workwork.md 网络纪律中 7897 代理已失效——开工先实测再定策略
+2. **"子代理工作就断网"根因**：Clash 半死状态（订阅过期但系统代理/TUN 挂着）
+   黑洞流量；子代理并发 LLM 请求放大暴露。与项目/子代理操作无关
+   （scutil --proxy 全关、无代理进程、路由正常均已验证）
+3. **Agent 报 "Network connection failed for the provider request" 是基础设施错误**，
+   重试即可；**被 cancelled 的子代理可能已完成写入**——重派前先查产物
+   （本轮 2 个 cancelled 代理实际已写完 4 个新文件且结构 audit 全过）
+4. **`--live` 抽查的 CDN 缓存坑**：部署后 10 分钟内（`max-age=600`）CDN 可能仍发
+   旧页导致"结构差异"假阳性——先 `--refresh` 重抓再下结论
+   （另：本地归一化 `/perfetto-docs-zh-cn/` 前缀后手动比对可确证）
+5. **中文→英文术语 replace_all 的连锁 W1**：中文邻接处缺空格（本轮 4 处），
+   批量替换后必须复跑 proofread
+6. hidden 文档（不在 toc）不进 compare-structure 页清单，但 build 会产出 html
+   （线上可直接 URL 访问）——live 抽查可以抽到
+
+### 术语决策
+- **PerfettoSQL pipe 系列统一英文**：pipe 语法 / pipe 运算符 / pipeline（查询构造）。
+  glossary 新增 Pipe Syntax、Pipe Operator（禁用 管道语法/管道运算符，全语料校准过）；
+  phrases 新增 4 条页面链接文本。历史文档通用「管道」（trace-processor 处理管道等，
+  14 文件）保留
+- 表格"必需"列同类单元格要么全译要么全不译（回译抽查发现的观感问题）
+
+---
+
 ## 2026-09-20 会话：A12 代码块内容检查（第 18 类坑）
 
 - 用户肉眼发现 atrace.html 代码块缩进错误 → 排查发现**系统性缩进塌缩**（嵌套 2/4/6/8

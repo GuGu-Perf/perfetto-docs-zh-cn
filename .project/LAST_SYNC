@@ -1,9 +1,5 @@
 # LAST_SYNC - 上游同步记录文件
 #
-# 格式: git log --oneline 单行格式
-#   <short-hash> <date> <time> <tz> <message>
-#
-# 更新方式:
-#   bash .project/workwork.sh sync-update
+# 更新方式: python3 .project/workwork.py sync-update
 
-1a186d13 2026-09-16 20:54:48 +0000 tp: add explicit debuginfod lookup for native symbols (#7403)
+e5be393a 2026-10-01 11:17:11 -0700 docs: add hidden documentation for PerfettoSQL pipe syntax (#7712)
