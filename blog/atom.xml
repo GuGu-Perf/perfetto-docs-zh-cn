@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:base="https://perfetto.dev/">
+  <title>Perfetto Blog</title>
+  <subtitle>Release notes, performance investigations and deep dives from the people who build Perfetto.</subtitle>
+  <link rel="self" href="https://perfetto.dev/blog/atom.xml"/>
+  <link rel="alternate" type="text/html" href="https://perfetto.dev/blog/"/>
+  <id>https://perfetto.dev/blog/</id>
+  <updated>2026-09-01T00:00:00Z</updated>
+  <entry>
+    <title>Diagnosing a 1 GB ViewTreeObserver Memory Leak with Perfetto</title>
+    <link href="https://perfetto.dev/blog/diagnosing-1gb-viewtreeobserver-leak"/>
+    <id>https://perfetto.dev/blog/diagnosing-1gb-viewtreeobserver-leak</id>
+    <updated>2026-09-01T00:00:00Z</updated>
+    <published>2026-09-01T00:00:00Z</published>
+    <author><name>@goldenluk</name><uri>https://github.com/goldenluk</uri></author>
+    <summary>How a single background scrim view silently leaked nearly 1 GB of UI hierarchies in production, and how we diagnosed and fixed it using Perfetto.</summary>
+  </entry>
+  <entry>
+    <title>Perfetto v58</title>
+    <link href="https://perfetto.dev/blog/perfetto-v58"/>
+    <id>https://perfetto.dev/blog/perfetto-v58</id>
+    <updated>2026-08-24T00:00:00Z</updated>
+    <published>2026-08-24T00:00:00Z</published>
+    <author><name>@perfetto-team</name></author>
+    <summary>We’re excited to share Perfetto v58.2! This release makes it possible to merge traces from different machines onto one timeline, introduces Memscope and Memory Overview for end-to-end memory investigations, lets you keep a parsed trace running and analyze it through lightweight remote clients, adds Zstd trace compression, and substantially improves Perfetto’s AI-assisted analysis workflows. It also introduces a common stack-sampling format, new export options, and a collection of UI and SDK improvements.</summary>
+  </entry>
+  <entry>
+    <title>Perfetto v57</title>
+    <link href="https://perfetto.dev/blog/perfetto-v57"/>
+    <id>https://perfetto.dev/blog/perfetto-v57</id>
+    <updated>2026-07-02T00:00:00Z</updated>
+    <published>2026-07-02T00:00:00Z</published>
+    <author><name>@perfetto-team</name></author>
+    <summary>We're excited to share Perfetto v57.1! This release introduces an installable AI skill that teaches coding agents how to use Perfetto, a long-awaited fix for overlapping events in JSON traces (commonly affecting the PyTorch profiler), state tracks, a brand-new track type alongside slices and counters, end-to-end support for systemd journald logs, a rework of the query results grid, and new SDK capabilities like nested tracks and correlation ids.</summary>
+  </entry>
+  <entry>
+    <title>Perfetto v56</title>
+    <link href="https://perfetto.dev/blog/perfetto-v56"/>
+    <id>https://perfetto.dev/blog/perfetto-v56</id>
+    <updated>2026-06-03T00:00:00Z</updated>
+    <published>2026-06-03T00:00:00Z</published>
+    <author><name>@perfetto-team</name></author>
+    <summary>Perfetto v56.0 is out! This release adds more to the Heap Dump Explorer, a round of UI improvements, easier-to-read multi-machine traces, kernel-assisted stack sampling in traced_perf, and a few new SDK knobs.</summary>
+  </entry>
+  <entry>
+    <title>Perfetto v55</title>
+    <link href="https://perfetto.dev/blog/perfetto-v55"/>
+    <id>https://perfetto.dev/blog/perfetto-v55</id>
+    <updated>2026-05-13T00:00:00Z</updated>
+    <published>2026-05-13T00:00:00Z</published>
+    <author><name>@perfetto-team</name></author>
+    <summary>We are excited to share Perfetto v55.1! Highlights include GPU-accelerated trace rendering, a new Heap Dump Explorer, native Linux heap profiling, a redesigned trace_processor shell, multi-GPU analysis, and a major docs refresh.</summary>
+  </entry>
+</feed>

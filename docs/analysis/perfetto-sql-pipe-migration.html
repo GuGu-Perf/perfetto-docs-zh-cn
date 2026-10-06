@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>迁移到 PerfettoSQL pipe 语法 - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="迁移到 PerfettoSQL pipe 语法 - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta property="og:url" content="https://perfetto.dev/docs/analysis/perfetto-sql-pipe-migration">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/analysis/perfetto-sql-pipe-migration">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/contributing/getting-started#community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/rust-sdk.html">Rust SDK</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">Cookbooks</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/local-android-trace-recording.html">本地录制 Android Trace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/command-line-analysis.html">从命令行分析 trace</a></li>
+<li class="tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/linux-cookbook.html">Linux 上的 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">采集周期性 Trace 快照</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/using-ai.html">在 Perfetto 中使用 AI</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/concepts/merging-traces.html">Trace 合并</a></li>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/multi-machine-tracing.html">多机器记录</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/funcgraph.html">内核函数图追踪</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/video-frames.html">屏幕录制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/merging-traces.html">在 UI 中合并 trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/data-explorer.html">Data Explorer</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-the-ui.html">嵌入 Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/visualization/memscope.html">Memscope 与 Memory Overview</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/merging-traces.html">从命令行合并 trace</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/reference/trace-processor-cli.html">trace_processor</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-manifest.html">Trace Manifest 格式</a></p></li>
+<li class="tag-android tag-linux tag-cpp tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-api-reference.html">嵌入 API</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/deployment/multi-machine-architecture.html">多机架构</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="md-content" data-md-file="/docs/analysis/perfetto-sql-pipe-migration">
+    <h1>迁移到 PerfettoSQL pipe 语法</h1><p>本指南面向已经了解 PerfettoSQL 的读者，介绍我们为什么引入 pipe 语法、它与现有宏和虚拟表有何不同，以及如何迁移现有查询。</p>
+<blockquote>
+<p><strong>警告:</strong> pipe 语法是<strong>实验性的、不稳定的</strong>。请<strong>不要</strong>在仪表盘、脚本或生产查询中依赖它。任何内容都可能且必将在毫无预兆的情况下损坏。在 PerfettoSQL 标准库之外，你必须在自己的连接上执行 <code>PERFETTO PRAGMA pipelines = 1;</code> 才能启用它。</p>
+</blockquote>
+<p>相关页面：</p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-getting-started.html">PerfettoSQL pipe 语法入门指南</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-syntax.html">PerfettoSQL pipe 语法参考</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/design-docs/perfetto-sql-pipelines.html">PerfettoSQL pipe 运算符实现说明</a></li>
+</ul>
+<hr>
+<h2><a name="-pipe-" class="anchor" href="#-pipe-"></a>为什么需要 pipe 语法？</h2><p>用标准 SQLite 编写 trace 分析查询时，会遇到几个反复出现的痛点：</p>
+<ol>
+<li><strong>表宏与虚拟表不擅长组合。</strong>区间交集与树遍历这类操作并不存在于 SQL 之中。Perfetto 通过 <code>SPAN_JOIN</code> 等 SQLite 虚拟表，或者用 <code>_interval_intersect!</code>、<code>_graph_aggregating_scan!</code>、<code>_callstacks_self_to_cumulative!</code> 等宏封装的 C++ 表函数来提供这些能力。把其中两三个串联起来，就需要深层嵌套的子查询，或者一串中间视图和中间表。</li>
+<li><strong>手工搭建 <code>id</code> 通道与反向 JOIN。</strong><code>_interval_intersect!</code> 只返回 <code>ts</code>、<code>dur</code>、<code>id_0</code>、<code>id_1</code> 等列。要读取输入中的其他列，每个输入都必须有 <code>id</code> 列，或者包一层 <code>_ii_subquery!</code>，随后还要按 <code>id_0</code>、<code>id_1</code> 等对每个输入表各做一次 <code>JOIN</code>。</li>
+<li><strong>为树手工建立索引和临时表。</strong>要用 <code>_graph_aggregating_scan!</code> 沿调用栈或堆图向上求和，需要先物化一张原始表，在 <code>parent_id</code> 上创建 <code>PERFETTO INDEX</code>，以免查找叶子的 <code>NOT IN</code> 查询退化为平方复杂度，然后运行扫描，最后再按 <code>id</code> 把结果 JOIN 回原始表。</li>
+<li><strong>难读的宏错误与 SQLite 虚拟表开销。</strong>PerfettoSQL 宏是文本替换，因此参数里的一处错误会产生指向展开后宏体内部的 SQLite 错误。在运行时，SQLite 与自定义运算符之间传递行，会迫使每一行都经过 SQLite 逐行处理的虚拟表接口。</li>
+</ol>
+<h3><a name="pipe-" class="anchor" href="#pipe-"></a>pipe 带来了什么变化</h3><p>PerfettoSQL pipe 语法使用线性的 <code>|&gt;</code> 阶段，设计上参考了 <a href="https://cloud.google.com/bigquery/docs/pipe-syntax">GoogleSQL pipe 语法</a>，并在列式批处理执行器上运行这些阶段：</p>
+<ul>
+<li><strong><code>INTERVAL INTERSECTION OF</code> 和 <code>TREE ACCUMULATE</code> 是语言的一部分。</strong>它们会自动携带输入列。不再需要 <code>id_0</code>/<code>id_1</code> 反向 JOIN、<code>_ii_subquery!</code> 或 <code>parent_id</code> 索引。</li>
+<li><strong>直接扫描 dataframe。</strong>当 pipeline 读取 <code>slice</code> 或 <code>sched</code> 这类已定稿的 <code>PERFETTO TABLE</code> 时，会直接在 C++ 中读取该表的列式存储，而不经过 SQLite。</li>
+<li><strong>编译期列检查与裁剪。</strong>编译器会提前检查列名和类型，出错时指向出错的 token，并在执行前丢弃未使用的列和未使用的树聚合。</li>
+</ul>
+<hr>
+<h2><a name="-pipe-" class="anchor" href="#-pipe-"></a>启用 pipe 语法</h2><p>在 <code>trace_processor_shell</code>、Perfetto UI、Python API 和 diff 测试中，可以在自己的连接上通过以下语句启用 pipe 语法：</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">PERFETTO PRAGMA pipelines <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;</code></div><p>可以用 <code>PERFETTO PRAGMA pipelines = 0;</code> 再次关闭它。在 PerfettoSQL 标准库内部，无需该 pragma，pipeline 默认启用。</p>
+<hr>
+<h2><a name="-sql-pipeline-" class="anchor" href="#-sql-pipeline-"></a>什么放在 SQL 里，什么放在 pipeline 里？</h2><p>pipe 语法正在逐步构建中。目前，pipeline 支持两个 trace 运算符——<code>INTERVAL INTERSECTION OF</code> 和 <code>TREE ACCUMULATE</code>，以及六个列重塑阶段：<code>SELECT</code>、<code>EXTEND</code>、<code>DROP</code>、<code>RENAME</code>、<code>SET</code> 和 <code>AS</code>。</p>
+<p>如今迁移查询时，请按以下方式在 SQL 与 pipeline 之间分工：</p>
+<table>
+<thead>
+<tr>
+<th align="left">任务</th>
+<th align="left">目前应在哪里完成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">过滤行、标准 <code>JOIN</code>、<code>GROUP BY</code>、窗口函数与计算表达式</td>
+<td align="left">放在 <code>FROM (SELECT ...)</code> 源子查询内，或者对得到的 <code>PERFETTO TABLE</code> 执行标准 SQL 查询。</td>
+</tr>
+<tr>
+<td align="left">对两张及以上的表求时间区间交集</td>
+<td align="left">在 pipeline 开头使用 <code>INTERVAL INTERSECTION OF (...) [PER ...]</code>。</td>
+</tr>
+<tr>
+<td align="left">沿父子树向上或向下求和</td>
+<td align="left">使用 <code>|&gt; TREE ACCUMULATE UP | DOWN SUM(col) AS total</code> 阶段。</td>
+</tr>
+<tr>
+<td align="left">挑选、丢弃、重命名或调换列</td>
+<td align="left">使用 <code>|&gt; SELECT</code>、<code>|&gt; EXTEND</code>、<code>|&gt; DROP</code>、<code>|&gt; RENAME</code>、<code>|&gt; SET</code>、<code>|&gt; AS</code> 阶段。</td>
+</tr>
+<tr>
+<td align="left">对最终输出排序或限制行数</td>
+<td align="left">对 pipeline 创建的 <code>PERFETTO TABLE</code> 执行带 <code>ORDER BY</code> 或 <code>LIMIT</code> 的 <code>SELECT</code>。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意:</strong> pipeline 可以作为顶层语句运行，也可以作为 <code>CREATE [OR REPLACE] PERFETTO TABLE ... AS &lt;pipeline&gt;</code> 的主体。它尚不能用作 <code>CREATE PERFETTO VIEW</code>、<code>CREATE PERFETTO FUNCTION</code> 或 <code>WITH</code> CTE 的主体。</p>
+</blockquote>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>迁移区间交集</h2><p>用 <code>INTERVAL INTERSECTION OF</code> 替换 <code>_interval_intersect!</code> 和 <code>SPAN_JOIN</code>。</p>
+<h3><a name="-code-_interval_intersect-code-" class="anchor" href="#-code-_interval_intersect-code-"></a>迁移前：<code>_interval_intersect!</code></h3><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">INCLUDE PERFETTO <span class="hljs-keyword">MODULE</span> intervals.intersect;
+
+<span class="hljs-keyword">CREATE</span> PERFETTO <span class="hljs-keyword">TABLE</span> _estimates_w_tasks_attribution <span class="hljs-keyword">AS</span>
+<span class="hljs-keyword">SELECT</span> ii.ts, ii.dur, ii.cpu, uw.estimated_mw, s.utid
+<span class="hljs-keyword">FROM</span> _interval_intersect<span class="hljs-operator">!</span>(
+  (
+    _ii_subquery<span class="hljs-operator">!</span>(_unioned_wattson_estimates_mw),
+    _ii_subquery<span class="hljs-operator">!</span>(_wattson_task_slices)
+  ),
+  (cpu)
+) <span class="hljs-keyword">AS</span> ii
+<span class="hljs-keyword">JOIN</span> _unioned_wattson_estimates_mw <span class="hljs-keyword">AS</span> uw
+  <span class="hljs-keyword">ON</span> uw._auto_id <span class="hljs-operator">=</span> id_0
+<span class="hljs-keyword">JOIN</span> _wattson_task_slices <span class="hljs-keyword">AS</span> s
+  <span class="hljs-keyword">ON</span> s._auto_id <span class="hljs-operator">=</span> id_1;</code></div><h3><a name="-code-interval-intersection-of-code-" class="anchor" href="#-code-interval-intersection-of-code-"></a>迁移后：<code>INTERVAL INTERSECTION OF</code></h3><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">CREATE</span> PERFETTO <span class="hljs-keyword">TABLE</span> _estimates_w_tasks_attribution <span class="hljs-keyword">AS</span>
+<span class="hljs-type">INTERVAL</span> <span class="hljs-keyword">INTERSECTION</span> <span class="hljs-keyword">OF</span> (
+  _unioned_wattson_estimates_mw <span class="hljs-keyword">AS</span> estimate,
+  _wattson_task_slices <span class="hljs-keyword">AS</span> task
+) <span class="hljs-keyword">PER</span> cpu
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> <span class="hljs-keyword">SELECT</span> ts, dur, cpu, estimate.estimated_mw, task.utid;</code></div><h3><a name="-code-interval-intersection-of-code-" class="anchor" href="#-code-interval-intersection-of-code-"></a><code>INTERVAL INTERSECTION OF</code> 迁移检查清单</h3><ol>
+<li><strong>去掉反向 JOIN 和 <code>_ii_subquery!</code> 包装。</strong><code>_interval_intersect!</code> 要求每个输入都有 <code>id</code> 列，好让你能把 <code>id_0</code> 和 <code>id_1</code> JOIN 回输入表。<code>INTERVAL INTERSECTION OF</code> 会自动携带操作数的列，只要求输入带有 <code>ts</code> 和 <code>dur</code>。只有当你确实需要在输出中以 <code>alias.id</code> 的形式暴露 SQLite 的 <code>_auto_id</code> 时，才保留 <code>_ii_subquery!</code>。</li>
+<li><strong>给每个操作数一个互不相同的别名。</strong>写成 <code>INTERVAL INTERSECTION OF (a AS x, b AS y)</code>。在子查询上省略 <code>AS &lt;alias&gt;</code>，或者在不同操作数之间复用同一别名，都是编译错误。</li>
+<li><strong>用 <code>PER</code> 取代分区列列表或 <code>PARTITIONED</code>。</strong>写成 <code>PER cpu</code> 或 <code>PER utid, track_id</code>。对于不分区的交集，直接省略 <code>PER</code> 即可。</li>
+<li><strong>给操作数列加限定名，而区域的 <code>ts</code>、<code>dur</code> 和 <code>PER</code> 列保持裸名。</strong>裸名 <code>ts</code> 和 <code>dur</code> 是相交区域的起点和时长，裸名 <code>cpu</code> 是匹配行共享的分区键。其余所有操作数列——包括每个操作数原始的、未经裁剪的 <code>x.ts</code> 和 <code>x.dur</code>——都必须用操作数的别名加以限定，例如 <code>x.utid</code> 或 <code>y.freq</code>。务必在 <code>INTERVAL INTERSECTION OF</code> 之后紧跟 <code>|&gt; SELECT ...</code>；如果没有 <code>SELECT</code> 阶段，每个操作数的 <code>ts</code> 和 <code>dur</code> 都会留在输出行中，从而产生重复的列名。</li>
+<li><strong>留意行为差异。</strong><ul>
+<li><strong><code>dur IS NULL</code> 或 <code>ts IS NULL</code> 的行会被跳过。</strong>如果输入表用 <code>lead(ts) OVER (...) - ts AS dur</code> 计算时长，其最后一行就会出现 <code>dur IS NULL</code>。<code>_interval_intersect!</code> 会把 <code>NULL</code> 时长强制转换为 <code>0</code>；<code>INTERVAL INTERSECTION OF</code> 则会跳过 <code>ts</code> 或 <code>dur</code> 为 <code>NULL</code> 的行。</li>
+<li><strong><code>ts</code> 或 <code>dur</code> 为负数会被视为错误。</strong><code>dur = -1</code> 的未完成 slice 会被拒绝，报错为 <code>ts or dur is below zero</code>。请在输入中用 <code>WHERE dur &gt;= 0</code> 或 <code>WHERE dur &gt; 0</code> 过滤。</li>
+<li><strong>操作数内部区间重叠也没问题。</strong>当区间在单张表内重叠时，<code>SPAN_JOIN</code> 会产生错误的结果，而 <code>INTERVAL INTERSECTION OF</code> 会自动处理重叠区间。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>迁移树聚合</h2><p>用 <code>TREE ACCUMULATE UP</code> 和 <code>TREE ACCUMULATE DOWN</code> 替换 <code>_graph_aggregating_scan!</code>、<code>_callstacks_self_to_cumulative!</code>，以及用递归 CTE 实现的子树和或路径和。</p>
+<h3><a name="-code-_graph_aggregating_scan-code-" class="anchor" href="#-code-_graph_aggregating_scan-code-"></a>迁移前：<code>_graph_aggregating_scan!</code></h3><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">CREATE</span> PERFETTO <span class="hljs-keyword">TABLE</span> _heap_graph_class_tree_cumulatives <span class="hljs-keyword">AS</span>
+<span class="hljs-keyword">SELECT</span>
+  a.id,
+  a.cumulative_count,
+  a.cumulative_size
+<span class="hljs-keyword">FROM</span> _graph_aggregating_scan<span class="hljs-operator">!</span>(
+  (
+    <span class="hljs-keyword">SELECT</span> id <span class="hljs-keyword">AS</span> source_node_id, parent_id <span class="hljs-keyword">AS</span> dest_node_id
+    <span class="hljs-keyword">FROM</span> _heap_graph_class_tree
+    <span class="hljs-keyword">WHERE</span> parent_id <span class="hljs-keyword">IS</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span>
+  ),
+  (
+    <span class="hljs-keyword">SELECT</span>
+      id,
+      self_count <span class="hljs-keyword">AS</span> cumulative_count,
+      self_size <span class="hljs-keyword">AS</span> cumulative_size
+    <span class="hljs-keyword">FROM</span> _heap_graph_class_tree
+    <span class="hljs-keyword">WHERE</span> id <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">IN</span> (
+      <span class="hljs-keyword">SELECT</span> parent_id <span class="hljs-keyword">FROM</span> _heap_graph_class_tree <span class="hljs-keyword">WHERE</span> parent_id <span class="hljs-keyword">IS</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span>
+    )
+  ),
+  (cumulative_count, cumulative_size),
+  (
+    <span class="hljs-keyword">WITH</span> agg <span class="hljs-keyword">AS</span> (
+      <span class="hljs-keyword">SELECT</span>
+        t.id,
+        <span class="hljs-built_in">SUM</span>(t.cumulative_count) <span class="hljs-keyword">AS</span> child_count,
+        <span class="hljs-built_in">SUM</span>(t.cumulative_size) <span class="hljs-keyword">AS</span> child_size
+      <span class="hljs-keyword">FROM</span> $<span class="hljs-keyword">table</span> t
+      <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> t.id
+    )
+    <span class="hljs-keyword">SELECT</span>
+      a.id,
+      a.child_count <span class="hljs-operator">+</span> r.self_count <span class="hljs-keyword">AS</span> cumulative_count,
+      a.child_size <span class="hljs-operator">+</span> r.self_size <span class="hljs-keyword">AS</span> cumulative_size
+    <span class="hljs-keyword">FROM</span> agg a
+    <span class="hljs-keyword">JOIN</span> _heap_graph_class_tree r <span class="hljs-keyword">USING</span> (id)
+  )
+) <span class="hljs-keyword">AS</span> a;</code></div><h3><a name="-code-tree-accumulate-up-code-" class="anchor" href="#-code-tree-accumulate-up-code-"></a>迁移后：<code>TREE ACCUMULATE UP</code></h3><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">CREATE</span> PERFETTO <span class="hljs-keyword">TABLE</span> _heap_graph_class_tree_cumulatives <span class="hljs-keyword">AS</span>
+<span class="hljs-keyword">FROM</span> _heap_graph_class_tree
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP
+  <span class="hljs-built_in">SUM</span>(self_count) <span class="hljs-keyword">AS</span> cumulative_count,
+  <span class="hljs-built_in">SUM</span>(self_size) <span class="hljs-keyword">AS</span> cumulative_size;</code></div><h3><a name="-code-tree-accumulate-code-" class="anchor" href="#-code-tree-accumulate-code-"></a><code>TREE ACCUMULATE</code> 迁移检查清单</h3><ol>
+<li><strong>删除中间原始表、<code>parent_id</code> 索引和反向 JOIN。</strong>可以直接从宏或子查询接入 pipeline：<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">CREATE</span> PERFETTO <span class="hljs-keyword">TABLE</span> _linux_perf_callstacks <span class="hljs-keyword">AS</span>
+<span class="hljs-keyword">FROM</span> _callstacks_for_callsites<span class="hljs-operator">!</span>((<span class="hljs-keyword">SELECT</span> callsite_id <span class="hljs-keyword">FROM</span> perf_sample))
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP <span class="hljs-built_in">SUM</span>(self_count) <span class="hljs-keyword">AS</span> cumulative_count;</code></div><code>TREE ACCUMULATE</code> 会保留输入行的所有列，并在末尾追加 <code>cumulative_count</code>。不需要把结果 <code>JOIN</code> 回输入表，也不需要在 <code>parent_id</code> 上创建 <code>PERFETTO INDEX</code>。</li>
+<li><strong>确保数据源具有 <code>id</code> 和 <code>parent_id</code> 列。</strong><code>TREE ACCUMULATE</code> 会在当前行中查找裸名 <code>id</code> 和 <code>parent_id</code>。根节点必须满足 <code>parent_id IS NULL</code>。</li>
+<li><strong>总计总是包含节点自身。</strong><code>TREE ACCUMULATE UP SUM(x) AS total</code> 把节点自身的 <code>x</code> 与其全部后代的 <code>x</code> 相加；<code>TREE ACCUMULATE DOWN SUM(x) AS path</code> 把节点自身的 <code>x</code> 与其全部祖先的 <code>x</code> 相加。迁移手写的 <code>_graph_aggregating_scan!</code> 查询时，请检查旧的步骤查询是否忘记为非叶节点加上 <code>r.self_*</code>。</li>
+<li><strong>如有需要，在公开表上保留 <code>ORDER BY id</code>。</strong><code>TREE ACCUMULATE UP</code> 按子节点在前的顺序产出行，<code>DOWN</code> 按父节点在前的顺序产出行。如果某个公开的标准库表或测试期望行按 <code>id</code> 排序，请用 <code>SELECT ... ORDER BY id</code> 查询生成的表。</li>
+</ol>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>常见陷阱</h2><h3><a name="1-" class="anchor" href="#1-"></a>1. 每个源列都需要有效且互不相同的名称</h3><p>当 pipeline 从 SQL 子查询读取数据时，编译器会在列裁剪运行之前检查该子查询返回的每一列，包括后续阶段会丢弃的列：</p>
+<ul>
+<li><strong>未加别名的表达式会失败：</strong><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">-- ERROR: expected every column to have a valid name, but &#x27;1 + 1&#x27; is not one:</span>
+<span class="hljs-comment">-- give it one with AS</span>
+<span class="hljs-keyword">FROM</span> (<span class="hljs-keyword">SELECT</span> id, parent_id, <span class="hljs-number">1</span> <span class="hljs-operator">+</span> <span class="hljs-number">1</span> <span class="hljs-keyword">FROM</span> tree)
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP <span class="hljs-built_in">SUM</span>(id) <span class="hljs-keyword">AS</span> total
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> <span class="hljs-keyword">SELECT</span> id, total;</code></div></li>
+<li><strong>子查询中出现重复列名会失败：</strong>SQLite 会把 <code>SELECT 1 AS x, 2 AS x</code> 中的第二个 <code>x</code> 重命名为 <code>x:1</code>。pipeline 编译器会以如下信息拒绝：<code>expected distinct column names, but there are two named &#39;x&#39;, which SQLite renamed to &#39;x&#39; and &#39;x:1&#39;</code>。</li>
+</ul>
+<h3><a name="2-code-from-code-code-where-code-code-join-code-" class="anchor" href="#2-code-from-code-code-where-code-code-join-code-"></a>2. 在 <code>FROM</code> 中把 <code>WHERE</code> 和 <code>JOIN</code> 括在圆括号里</h3><p>pipeline 的 <code>FROM</code> 子句只接受表名或视图名，或者带圆括号的 <code>SELECT</code> 子查询：</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-comment">-- ERROR:</span>
+<span class="hljs-keyword">FROM</span> slice <span class="hljs-keyword">WHERE</span> dur <span class="hljs-operator">&gt;</span> <span class="hljs-number">0</span> <span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP <span class="hljs-built_in">SUM</span>(dur) <span class="hljs-keyword">AS</span> total;
+
+<span class="hljs-comment">-- OK:</span>
+<span class="hljs-keyword">FROM</span> (<span class="hljs-keyword">SELECT</span> id, parent_id, dur <span class="hljs-keyword">FROM</span> slice <span class="hljs-keyword">WHERE</span> dur <span class="hljs-operator">&gt;</span> <span class="hljs-number">0</span>)
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP <span class="hljs-built_in">SUM</span>(dur) <span class="hljs-keyword">AS</span> total;</code></div><h3><a name="3-" class="anchor" href="#3-"></a>3. 表别名会在绑定那一刻对行做快照</h3><p>在 <code>DROP</code>、<code>RENAME</code>、<code>SET</code>、<code>EXTEND</code> 等 pipeline 阶段中，表别名会记住别名创建时行所具有的列：</p>
+<ul>
+<li><code>FROM t |&gt; DROP x |&gt; SELECT t.x</code> 仍然有效，可以找回 <code>x</code>。</li>
+<li><code>FROM t |&gt; RENAME x AS y |&gt; SELECT t.x</code> 仍以 <code>t.x</code> 访问该列，而裸名 <code>y</code> 以新名称访问它。</li>
+<li><code>|&gt; SELECT ...</code> 会构建一个新行并清除之前的所有别名。</li>
+<li><code>|&gt; AS u</code> 会用 <code>u</code> 替换之前的所有别名，并对当前行做快照。</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
