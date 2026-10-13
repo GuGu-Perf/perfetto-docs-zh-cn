@@ -779,6 +779,62 @@ def patch_homepage():
     ok("首页配置已修改（README.md 渲染 / 首页）")
 
 
+def check_asset_refs(site_dir, repo_name=None, files=None):
+    """fail-closed：html 引用的本地资产必须在产物树中可达（防首页图片类漏洞）。
+
+    返回坏引用列表（空 = 通过）。repo_name 给定时，根绝对路径必须已带 /repo_name/ 前缀。
+    """
+    prefix = f"/{repo_name}/" if repo_name else "/"
+    bad = []
+    for f in (files if files is not None else site_dir.rglob("*.html")):
+        s = f.read_text(encoding="utf-8")
+        for m in re.finditer(r'(?<=\s)(?:src|href|data)="([^"]+)"', s):
+            u = m.group(1).split("#")[0].split("?")[0]
+            if not u or u.startswith(("//", "#")) or re.match(r"^[a-zA-Z][a-zA-Z0-9+.\-]*:", u):
+                continue
+            if u.startswith("/"):
+                if repo_name and not u.startswith(prefix):
+                    bad.append(f"{f.relative_to(site_dir)}: 未修补根路径 {u}")
+                    continue
+                target = site_dir / u[len(prefix):]
+            else:
+                target = f.parent / u
+            if not Path(os.path.normpath(str(target))).exists():
+                bad.append(f"{f.relative_to(site_dir)}: 资产缺失 {u}")
+    return bad
+
+
+def fix_homepage_assets(site_dir):
+    """首页由 docs/README.md 渲染，其相对资产引用基于上游仓库语境（如 images/…，
+    仓库根路径），站点产物中需按 docs/ 前缀回退解析并重写；解析不到则 fail-closed 中止。"""
+    idx = site_dir / "index.html"
+    changed = []
+
+    def _fix(m):
+        attr, val = m.group(1), m.group(2)
+        base = val.split("#")[0].split("?")[0]
+        if (not base or base.startswith(("//", "#", "/"))
+                or re.match(r"^[a-zA-Z][a-zA-Z0-9+.\-]*:", base)):
+            return m.group(0)
+        if (site_dir / base).exists():
+            return m.group(0)
+        cand = "docs/" + base
+        if (site_dir / cand).exists():
+            changed.append(f"{base} → {cand}")
+            return f'{attr}="{cand}"' + val[len(base):]
+        return m.group(0)  # 解析不到，留给断言报错
+
+    idx.write_text(re.sub(r'(?<=\s)(src|href|data)="([^"]+)"', _fix,
+                          idx.read_text(encoding="utf-8")), encoding="utf-8")
+    if changed:
+        warn("首页资产引用适配（仓库语境 → 站点产物）: " + "; ".join(changed))
+    bad = check_asset_refs(site_dir, files=[idx])
+    if bad:
+        err(f"首页资产可达性断言失败: {bad}（README 引用了产物中不存在的资产，中止）")
+        sys.exit(1)
+    ok("首页资产可达性断言通过 (fail-closed)")
+
+
 def run_build(use_new):
     info("清理旧构建输出...")
     shutil.rmtree(PERFETTO_DIR / "out/perfetto.dev", ignore_errors=True)
@@ -806,57 +862,78 @@ def run_build(use_new):
         err("首页断言失败：index.html 不含「什么是 Perfetto」——上游构建/补丁可能失效")
         err("参考 .project/plan/ 的 fail-closed 防护设计")
         sys.exit(1)
+    fix_homepage_assets(PERFETTO_DIR / "out/perfetto.dev/site")
     ok("构建完成 + 首页断言通过")
 
 
-def fix_gh_pages_paths(temp, repo_name):
-    """路径修补（原 sed 逻辑的跨平台移植）+ fail-closed 校验。"""
-    for f in (temp / "docs").iterdir():
+def patch_site_paths(site_dir, repo_name=None):
+    """站点产物路径修补 + fail-closed 校验。
+
+    repo_name 给定 = gh-pages 子路径模式（加 /repo 前缀 + .nojekyll + js/css 修补）；
+    None = 本地根路径模式（deploy-local 静态服务，重命名/.html 追加与生产同构，
+    保证预览即所得——dev server 实时渲染会绕过部署期修补，已弃用）。
+    """
+    pfx = f"/{repo_name}" if repo_name else ""
+    for f in (site_dir / "docs").iterdir():
         if f.is_file() and "." not in f.name:
             f.rename(f.with_name(f.name + ".html"))
-    for f in (temp / "docs").rglob("*"):
+    for f in (site_dir / "docs").rglob("*"):
         if f.is_file() and f.suffix not in (".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".html"):
             f.rename(f.with_name(f.name + ".html"))
-    subs = [
-        ('href="/assets/', f'href="/{repo_name}/assets/'),
-        ('src="/assets/', f'src="/{repo_name}/assets/'),
-        ('href="/docs/', f'href="/{repo_name}/docs/'),
-        ('src="/docs/', f'src="/{repo_name}/docs/'),
-        ('data="/docs/', f'data="/{repo_name}/docs/'),
-        ('href="/"', f'href="/{repo_name}/"'),
-    ]
-    for f in temp.rglob("*.html"):
+
+    def _append_html(m):
+        path, frag = m.group(1), m.group(2)
+        if "." in path.rsplit("/", 1)[-1]:  # 已带扩展名（图片等资产），不追加
+            return m.group(0)
+        return f'href="{pfx}/docs/{path}.html{frag or ""}"'
+
+    for f in site_dir.rglob("*.html"):
         s = f.read_text(encoding="utf-8")
-        for a, b in subs:
-            s = s.replace(a, b)
-        s = re.sub(rf'href="/{repo_name}/docs/([^"]*)"', lambda m: f'href="/{repo_name}/docs/{m.group(1)}.html"', s)
-        s = s.replace(f'href="/{repo_name}/docs/.html"', f'href="/{repo_name}/docs/"')
+        if repo_name:
+            for a, b in [('href="/assets/', f'href="{pfx}/assets/'),
+                         ('src="/assets/', f'src="{pfx}/assets/'),
+                         ('href="/docs/', f'href="{pfx}/docs/'),
+                         ('src="/docs/', f'src="{pfx}/docs/'),
+                         ('data="/docs/', f'data="{pfx}/docs/'),
+                         ('href="/blog/', f'href="{pfx}/blog/'),
+                         ('src="/blog/', f'src="{pfx}/blog/'),
+                         ('href="/"', f'href="{pfx}/"')]:
+                s = s.replace(a, b)
+        s = re.sub(rf'href="{pfx}/docs/([^"#]*)(#[^"]*)?"', _append_html, s)
+        s = s.replace(f'href="{pfx}/docs/.html"', f'href="{pfx}/docs/"')
         f.write_text(s, encoding="utf-8")
-    js = temp / "assets/script.js"
-    if js.exists():
-        js.write_text(js.read_text(encoding="utf-8")
-                      .replace('"/assets/mermaid.min.js"', f'"/{repo_name}/assets/mermaid.min.js"'),
-                      encoding="utf-8")
-    css = temp / "assets/style.css"
-    if css.exists():
-        css.write_text(css.read_text(encoding="utf-8")
-                       .replace('"/assets/sprite.png"', f'"/{repo_name}/assets/sprite.png"'),
-                       encoding="utf-8")
-    (temp / ".nojekyll").touch()
+    if repo_name:
+        js = site_dir / "assets/script.js"
+        if js.exists():
+            js.write_text(js.read_text(encoding="utf-8")
+                          .replace('"/assets/mermaid.min.js"', f'"{pfx}/assets/mermaid.min.js"'),
+                          encoding="utf-8")
+        css = site_dir / "assets/style.css"
+        if css.exists():
+            css.write_text(css.read_text(encoding="utf-8")
+                           .replace('"/assets/sprite.png"', f'"{pfx}/assets/sprite.png"'),
+                           encoding="utf-8")
+        (site_dir / ".nojekyll").touch()
 
     # fail-closed 校验
-    idx = (temp / "index.html").read_text(encoding="utf-8")
-    checks = [
-        (f'href="/{repo_name}/assets/style.css"' in idx, "style.css 前缀缺失"),
-        (f'src="/{repo_name}/assets/script.js"' in idx, "script.js 前缀缺失"),
-        (f'href="/{repo_name}/docs/' in idx, "docs 链接前缀缺失"),
-        ("什么是 Perfetto" in idx, "首页中文断言失败"),
-    ]
-    bad = [msg for good, msg in checks if not good]
-    if bad:
-        err(f"路径修补校验失败: {bad}（上游模板可能变更，中止部署）")
+    idx = (site_dir / "index.html").read_text(encoding="utf-8")
+    if repo_name:
+        checks = [
+            (f'href="{pfx}/assets/style.css"' in idx, "style.css 前缀缺失"),
+            (f'src="{pfx}/assets/script.js"' in idx, "script.js 前缀缺失"),
+            (f'href="{pfx}/docs/' in idx, "docs 链接前缀缺失"),
+            ("什么是 Perfetto" in idx, "首页中文断言失败"),
+        ]
+        bad = [msg for good, msg in checks if not good]
+        if bad:
+            err(f"路径修补校验失败: {bad}（上游模板可能变更，中止部署）")
+            sys.exit(1)
+        ok("路径修补校验通过 (fail-closed)")
+    bad_refs = check_asset_refs(site_dir, repo_name)
+    if bad_refs:
+        err(f"全站资产可达性断言失败（{len(bad_refs)} 处，示例: {bad_refs[:5]}）——中止部署")
         sys.exit(1)
-    ok("路径修补校验通过 (fail-closed)")
+    ok("全站资产可达性断言通过 (fail-closed)")
 
 
 def cmd_deploy(args):
@@ -883,7 +960,7 @@ def cmd_deploy(args):
         repo_name = REPO_DIR.name
         temp = Path(tempfile.mkdtemp(prefix="ghpages-"))
         shutil.copytree(PERFETTO_DIR / "out/perfetto.dev/site", temp, dirs_exist_ok=True)
-        fix_gh_pages_paths(temp, repo_name)
+        patch_site_paths(temp, repo_name)
 
         run(["git", "init"], cwd=temp)
         run(["git", "config", "user.email", "deploy@perfetto-docs.local"], cwd=temp)
@@ -911,16 +988,18 @@ def cmd_deploy(args):
         ok(f"GitHub Pages 部署成功: https://gugu-perf.github.io/{repo_name}/")
         return
 
-    # deploy-local: 启动服务器
+    # deploy-local: 静态服务修补后的产物（与生产同构；dev server 实时渲染会绕过部署期修补）
     step(3, "启动本地服务器")
+    site = PERFETTO_DIR / "out/perfetto.dev/site"
+    patch_site_paths(site)
     log = tempfile.NamedTemporaryFile(prefix="perfetto-server-", suffix=".log", delete=False)
-    cmd = [str(PERFETTO_DIR / "infra/perfetto.dev/build"), "--serve"] if use_new \
-        else ["node", "infra/perfetto.dev/build.js", "--serve"]
-    subprocess.Popen(cmd, cwd=PERFETTO_DIR, stdout=log, stderr=subprocess.STDOUT)
+    subprocess.Popen([sys.executable, "-m", "http.server", "8082",
+                      "--bind", "127.0.0.1", "--directory", str(site)],
+                     stdout=log, stderr=subprocess.STDOUT)
     for _ in range(30):
         time.sleep(1)
         if port_in_use(8082):
-            ok("服务器已启动: http://localhost:8082/docs/")
+            ok("服务器已启动: http://localhost:8082/（静态服务，与生产同构）")
             info(f"日志: {log.name}")
             return
     err("服务器未能在 30 秒内启动，检查日志: " + log.name)

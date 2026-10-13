@@ -6,6 +6,35 @@
 
 ---
 
+## 2026-10-13 会话：首页图片损坏 → 资产可达性断言体系（连锁抓获 3 个存量 bug）
+
+### 根因三层（首页 perfetto-stack.svg 404）
+1. **资产从未进产物**：docs/README.md（上游亦如此）用仓库根相对路径
+   `images/perfetto-stack.svg`，而 build.mjs 只打包 docs/ 与生成的 assets/，
+   仓库根 images/ 不在站点构建范围
+2. **`data=` 属性盲区**：渲染器把 SVG 输出为 `<object data="...">`（非
+   `<img src>`），路径修补与一切校验只扫 src/href——data= 从未被任何层看见
+3. **断言只查字符串不查可达性**：fail-closed 检查"style.css 前缀存在"之类，
+   从不验证引用的资产在产物树中真实存在
+
+### 机制补全（workwork.py）
+- `check_asset_refs(site_dir, repo_name)`：扫 src/href/data（带词边界防
+  metadata= 误匹配），相对/子路径前缀双模式，scheme 形式 URL（上游生成页的
+  `filename:linenumber`）跳过
+- `fix_homepage_assets`：首页相对资产按 docs/ 前缀回退解析并重写（透明告警），
+  解析不到 fail-closed 中止
+- `fix_gh_pages_paths` → `patch_site_paths(repo_name=None)`：本地根路径模式
+- **deploy-local 弃用 dev server**（build --serve 实时渲染绕过一切部署期修补，
+  预览≠生产——本轮实测确认），改为修补产物静态服务（http.server）——
+  **09-19 记录的 compare-structure/dev-server 竞态坑随之消亡**
+
+### 新断言连环抓获的 3 个线上存量 bug（都已修复）
+1. 片段链接 .html 追加错位：`X#frag` → `X#frag.html`（应为 `X.html#frag`，350 处）
+2. `/blog/` 前缀未重写：blog 内链线上 404（解析到域名根）
+3. 图片 href 被追加 .html：`xxx.png.html`
+
+---
+
 ## 2026-10-06 会话：上游同步 1a186d13→e5be393a + 网络环境剧变（VPN 到期）
 
 ### 本轮产出

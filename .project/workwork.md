@@ -38,8 +38,8 @@
 
 | 命令 | 作用 |
 |------|------|
-| `deploy-local` | 复制中文 docs → 首页补丁 → 构建（自动探测 build.mjs/GN 新旧系统）→ fail-closed 首页断言 → 启动 :8082 |
-| `deploy-gh-pages` | 同上构建 + 路径修补（fail-closed 产物校验）+ pre-deploy-* 回退 tag + 强推 gh-pages |
+| `deploy-local` | 复制中文 docs → 首页补丁 → 构建（自动探测 build.mjs/GN 新旧系统）→ fail-closed 首页断言 + 首页资产可达性断言 → 修补产物静态服务 :8082（与生产同构；dev server 实时渲染已弃用） |
+| `deploy-gh-pages` | 同上构建 + 路径修补（fail-closed 产物校验 + **全站资产可达性断言**：src/href/data 引用必须在产物树存在）+ pre-deploy-* 回退 tag + 强推 gh-pages |
 | `rollback-gh-pages [tag]` | 回退 gh-pages 到部署前状态（默认最近 tag） |
 | `sync-check` | 强制同步上游仓库 → 对比 LAST_SYNC → 列出 docs/ 变更（无变更退出 0） |
 | `sync-update` | 更新 LAST_SYNC 为上游最新 docs/ commit |
