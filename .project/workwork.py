@@ -901,6 +901,17 @@ def patch_site_paths(site_dir, repo_name=None):
                 s = s.replace(a, b)
         s = re.sub(rf'href="{pfx}/docs/([^"#]*)(#[^"]*)?"', _append_html, s)
         s = s.replace(f'href="{pfx}/docs/.html"', f'href="{pfx}/docs/"')
+
+        # script.js 以 url.pathname === data-md-file 识别当前页（高亮 + 滚动定位）；
+        # 路径修补改了导航 href 后必须同步改 data-md-file，否则匹配永远失败
+        def _md_file(m):
+            v = m.group(1)
+            if v == "/index.html" or v.startswith("/docs/"):
+                if not v.endswith(".html"):
+                    v += ".html"
+                return f'data-md-file="{pfx}{v}"'
+            return m.group(0)
+        s = re.sub(r'data-md-file="(/[^"#]*)"', _md_file, s)
         f.write_text(s, encoding="utf-8")
     if repo_name:
         js = site_dir / "assets/script.js"
@@ -934,6 +945,20 @@ def patch_site_paths(site_dir, repo_name=None):
         err(f"全站资产可达性断言失败（{len(bad_refs)} 处，示例: {bad_refs[:5]}）——中止部署")
         sys.exit(1)
     ok("全站资产可达性断言通过 (fail-closed)")
+
+    # fail-closed：data-md-file 必须等于页面自身 URL 路径（导航高亮/滚动的匹配前提）
+    bad_md = []
+    for p in [site_dir / "index.html"] + list((site_dir / "docs").rglob("*.html")):
+        m = re.search(r'data-md-file="([^"]*)"', p.read_text(encoding="utf-8"))
+        if not m:
+            continue
+        expected = f"{pfx}/{p.relative_to(site_dir).as_posix()}"
+        if m.group(1) != expected:
+            bad_md.append(f"{p.relative_to(site_dir)}: {m.group(1)} != {expected}")
+    if bad_md:
+        err(f"data-md-file 自路径断言失败（{len(bad_md)} 处，示例: {bad_md[:3]}）——中止")
+        sys.exit(1)
+    ok("data-md-file 自路径断言通过 (fail-closed)")
 
 
 def cmd_deploy(args):

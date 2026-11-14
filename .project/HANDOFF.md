@@ -33,6 +33,13 @@
    改完译文要让用户刷新预览必须重跑 deploy-local，跑 compare-structure 不更新预览
 6. toc 标签类漂移（.tag-cpp→.tag-cpp-rust）audit 不查，本轮已对齐 31 处；后续会话可
    顺手 diff 上游 toc 标签
+7. **侧边栏定位失效（用户报告）**：script.js 以 `导航链接 pathname === data-md-file`
+   识别当前页（高亮+scrollIntoView），路径修补只改了导航 href 没改 data-md-file →
+   匹配永败 → 侧边栏跳转后回顶。**该 bug 自引入 .html 后缀修补起存在于每次部署**。
+   修复：patch_site_paths 同步修补 data-md-file + 新增第五道 fail-closed 断言
+   （每页 data-md-file == 自身 URL 路径），浏览器实测（IAB）高亮与滚动均恢复。
+   教训：改产物链接形态时，枚举所有消费该形态的属性/脚本（grep 产物 HTML 找
+   pathname 类属性），不是只改肉眼可见的 href
 
 ### 术语决策
 - **feature → 特性**（googler-features 页 7 处 + toc；phrases 入库；历史 62 文件
