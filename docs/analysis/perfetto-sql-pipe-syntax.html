@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PerfettoSQL pipe 语法参考 - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="PerfettoSQL pipe 语法参考 - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta property="og:url" content="https://perfetto.dev/docs/analysis/perfetto-sql-pipe-syntax">
+
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/analysis/perfetto-sql-pipe-syntax">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/community.html">社区与获取帮助</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/rust-sdk.html">Rust SDK</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">实战指南</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/local-android-trace-recording.html">本地录制 Android Trace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/command-line-analysis.html">从命令行分析 trace</a></li>
+<li class="tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/linux-cookbook.html">Linux 上的 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">采集周期性 Trace 快照</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/using-ai.html">在 Perfetto 中使用 AI</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/concepts/merging-traces.html">Trace 合并</a></li>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp-rust tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/multi-machine-tracing.html">多机器记录</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/funcgraph.html">内核函数图追踪</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/video-frames.html">屏幕录制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/merging-traces.html">在 UI 中合并 trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/data-explorer.html">Data Explorer</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-the-ui.html">嵌入 Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/visualization/memscope.html">Memscope 与 Memory Overview</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/googler-features.html">Googler 特性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/merging-traces.html">从命令行合并 trace</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/reference/trace-processor-cli.html">trace_processor</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-manifest.html">Trace Manifest 格式</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-api-reference.html">嵌入 API</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/deployment/multi-machine-architecture.html">多机架构</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="md-content" data-md-file="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-syntax.html">
+    <h1>PerfettoSQL pipe 语法参考</h1><blockquote>
+<p><strong>警告：</strong>pipe 语法是<strong>实验性的、不稳定的</strong>。<strong>不要</strong>在仪表盘、脚本或生产查询中依赖它。任何内容都可能并且终将发生破坏，恕不另行通知。在 PerfettoSQL 标准库之外，需要通过 <code>PERFETTO PRAGMA pipelines = 1;</code> 在连接上启用它。</p>
+</blockquote>
+<p>相关页面：</p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-getting-started.html">PerfettoSQL pipe 语法入门指南</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-migration.html">迁移到 PerfettoSQL pipe 语法</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/design-docs/perfetto-sql-pipelines.html">PerfettoSQL pipe 运算符实现说明</a></li>
+</ul>
+<hr>
+<h2><a name="pragma-" class="anchor" href="#pragma-"></a>Pragma 与语句形式</h2><h3><a name="perfetto-pragma-pipelines" class="anchor" href="#perfetto-pragma-pipelines"></a><code>PERFETTO PRAGMA pipelines</code> </h3><p>为当前连接开启或关闭 pipe 语法。标准库始终可以使用它。</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">PERFETTO PRAGMA pipelines <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;  <span class="hljs-comment">-- 开启</span>
+PERFETTO PRAGMA pipelines <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;  <span class="hljs-comment">-- 关闭</span></code></div><p>该值必须是非负整数字面量；任何非 <code>0</code> 的值都会开启 pipeline。该 pragma 名称区分大小写。</p>
+<h3><a name="-" class="anchor" href="#-"></a>顶层形式</h3><p>pipeline 可以是一条独立的语句，也可以作为 <code>PERFETTO TABLE</code> 的主体：</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-operator">&lt;</span>pipeline<span class="hljs-operator">&gt;</span>;
+
+<span class="hljs-keyword">CREATE</span> [<span class="hljs-keyword">OR</span> REPLACE] PERFETTO <span class="hljs-keyword">TABLE</span> <span class="hljs-operator">&lt;</span>table_name<span class="hljs-operator">&gt;</span> [(<span class="hljs-operator">&lt;</span>schema<span class="hljs-operator">&gt;</span>)] <span class="hljs-keyword">AS</span>
+<span class="hljs-operator">&lt;</span>pipeline<span class="hljs-operator">&gt;</span>;</code></div><p>它目前还不能作为视图、函数或 <code>WITH</code> 子句的主体，也不能出现在子查询内部。</p>
+<p>一个 <code>&lt;pipeline&gt;</code> 由一个源加上任意数量的阶段组成：</p>
+<div class="railroad"><div class="railroad-name">pipeline</div><svg class="railroad-diagram" width="421" height="81" viewBox="0 0 421 81">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M174 41h0"></path>
+<rect x="50" y="30" width="124" height="22"></rect>
+<text x="112" y="45">source-clause</text>
+</g>
+<path d="M174 41h10"></path>
+<g>
+<path d="M184 41h0"></path>
+<path d="M380 41h0"></path>
+<path d="M184 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M204 21h156"></path>
+</g>
+<path d="M360 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M184 41h20"></path>
+<g>
+<path d="M204 41h0"></path>
+<path d="M360 41h0"></path>
+<path d="M204 41h10"></path>
+<g>
+<path d="M214 41h0"></path>
+<path d="M350 41h0"></path>
+<path d="M214 41h10"></path>
+<g>
+<path d="M224 41h0"></path>
+<path d="M260 41h0"></path>
+<rect x="224" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="242" y="45">|></text>
+</g>
+<path d="M260 41h10"></path>
+<path d="M270 41h10"></path>
+<g>
+<path d="M280 41h0"></path>
+<path d="M340 41h0"></path>
+<rect x="280" y="30" width="60" height="22"></rect>
+<text x="310" y="45">stage</text>
+</g>
+<path d="M340 41h10"></path>
+</g>
+<path d="M350 41h10"></path>
+<path d="M214 41a10 10 0 0 0 -10 10v0a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M214 61h136"></path>
+</g>
+<path d="M350 61a10 10 0 0 0 10 -10v0a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M360 41h20"></path>
+</g>
+<path d="M 380 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><code>|&gt;</code> 的 <code>|</code> 和 <code>&gt;</code> 之间必须连续书写、不能有空格。</li>
+<li><code>TREE</code>、<code>ACCUMULATE</code>、<code>UP</code>、<code>DOWN</code>、<code>INTERVAL</code>、<code>INTERSECTION</code>、<code>FLATTEN</code>、<code>FILL</code>、<code>GAPS</code>、<code>AGGREGATE</code>、<code>PER</code>、<code>EXTEND</code>、<code>GRAPH</code>、<code>BFS</code>、<code>DFS</code>、<code>DOMINATOR</code>、<code>NODES</code> 和 <code>EDGES</code> 不是保留字，因此仍可在 SQL 中用作名称。</li>
+<li>别名始终需要 <code>AS</code>：应写 <code>FROM slice AS s</code>，而不是 <code>FROM slice s</code>。</li>
+</ul>
+<p><code>&lt;source-clause&gt;</code> 是 <a href="#from"><code>FROM</code></a>、<a href="#interval-intersection-of"><code>INTERVAL INTERSECTION OF</code></a> 或 <a href="#graph-tree"><code>GRAPH ... TREE</code></a>。<code>&lt;stage&gt;</code> 是以下之一：</p>
+<div class="railroad"><div class="railroad-name">stage</div><svg class="railroad-diagram" width="285" height="452" viewBox="0 0 285 452">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 31h0"></path>
+<path d="M244 31h0"></path>
+<path d="M40 31h20"></path>
+<a href="#where"><path d="M60 31h52"></path>
+<path d="M172 31h52"></path>
+<rect x="112" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="142" y="35">WHERE</text>
+</a>
+<path d="M224 31h20"></path>
+<path d="M40 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<a href="#distinct"><path d="M60 61h40"></path>
+<path d="M184 61h40"></path>
+<rect x="100" y="50" width="84" height="22" rx="10" ry="10"></rect>
+<text x="142" y="65">DISTINCT</text>
+</a>
+<path d="M224 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10"></path>
+<a href="#order-by"><path d="M60 91h40"></path>
+<path d="M184 91h40"></path>
+<rect x="100" y="80" width="84" height="22" rx="10" ry="10"></rect>
+<text x="142" y="95">ORDER BY</text>
+</a>
+<path d="M224 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10"></path>
+<a href="#limit"><path d="M60 121h52"></path>
+<path d="M172 121h52"></path>
+<rect x="112" y="110" width="60" height="22" rx="10" ry="10"></rect>
+<text x="142" y="125">LIMIT</text>
+</a>
+<path d="M224 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v100a10 10 0 0 0 10 10"></path>
+<a href="#interval-flatten"><path d="M60 151h8"></path>
+<path d="M216 151h8"></path>
+<rect x="68" y="140" width="148" height="22" rx="10" ry="10"></rect>
+<text x="142" y="155">INTERVAL FLATTEN</text>
+</a>
+<path d="M224 151a10 10 0 0 0 10 -10v-100a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v130a10 10 0 0 0 10 10"></path>
+<a href="#interval-fill-gaps"><path d="M60 181h0"></path>
+<path d="M224 181h0"></path>
+<rect x="60" y="170" width="164" height="22" rx="10" ry="10"></rect>
+<text x="142" y="185">INTERVAL FILL GAPS</text>
+</a>
+<path d="M224 181a10 10 0 0 0 10 -10v-130a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v160a10 10 0 0 0 10 10"></path>
+<a href="#tree-accumulate"><path d="M60 211h12"></path>
+<path d="M212 211h12"></path>
+<rect x="72" y="200" width="140" height="22" rx="10" ry="10"></rect>
+<text x="142" y="215">TREE ACCUMULATE</text>
+</a>
+<path d="M224 211a10 10 0 0 0 10 -10v-160a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v190a10 10 0 0 0 10 10"></path>
+<a href="#aggregate"><path d="M60 241h36"></path>
+<path d="M188 241h36"></path>
+<rect x="96" y="230" width="92" height="22" rx="10" ry="10"></rect>
+<text x="142" y="245">AGGREGATE</text>
+</a>
+<path d="M224 241a10 10 0 0 0 10 -10v-190a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v220a10 10 0 0 0 10 10"></path>
+<a href="#select"><path d="M60 271h48"></path>
+<path d="M176 271h48"></path>
+<rect x="108" y="260" width="68" height="22" rx="10" ry="10"></rect>
+<text x="142" y="275">SELECT</text>
+</a>
+<path d="M224 271a10 10 0 0 0 10 -10v-220a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v250a10 10 0 0 0 10 10"></path>
+<a href="#extend"><path d="M60 301h48"></path>
+<path d="M176 301h48"></path>
+<rect x="108" y="290" width="68" height="22" rx="10" ry="10"></rect>
+<text x="142" y="305">EXTEND</text>
+</a>
+<path d="M224 301a10 10 0 0 0 10 -10v-250a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v280a10 10 0 0 0 10 10"></path>
+<a href="#drop"><path d="M60 331h56"></path>
+<path d="M168 331h56"></path>
+<rect x="116" y="320" width="52" height="22" rx="10" ry="10"></rect>
+<text x="142" y="335">DROP</text>
+</a>
+<path d="M224 331a10 10 0 0 0 10 -10v-280a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v310a10 10 0 0 0 10 10"></path>
+<a href="#rename"><path d="M60 361h48"></path>
+<path d="M176 361h48"></path>
+<rect x="108" y="350" width="68" height="22" rx="10" ry="10"></rect>
+<text x="142" y="365">RENAME</text>
+</a>
+<path d="M224 361a10 10 0 0 0 10 -10v-310a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v340a10 10 0 0 0 10 10"></path>
+<a href="#set"><path d="M60 391h60"></path>
+<path d="M164 391h60"></path>
+<rect x="120" y="380" width="44" height="22" rx="10" ry="10"></rect>
+<text x="142" y="395">SET</text>
+</a>
+<path d="M224 391a10 10 0 0 0 10 -10v-340a10 10 0 0 1 10 -10"></path>
+<path d="M40 31a10 10 0 0 1 10 10v370a10 10 0 0 0 10 10"></path>
+<a href="#as"><path d="M60 421h64"></path>
+<path d="M160 421h64"></path>
+<rect x="124" y="410" width="36" height="22" rx="10" ry="10"></rect>
+<text x="142" y="425">AS</text>
+</a>
+<path d="M224 421a10 10 0 0 0 10 -10v-370a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M 244 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><h3><a name="-" class="anchor" href="#-"></a>共享规则</h3><p><code>&lt;source&gt;</code> 是一个表或子查询，可带可选的别名：</p>
+<div class="railroad"><div class="railroad-name">source</div><svg class="railroad-diagram" width="521" height="102" viewBox="0 0 521 102">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 41h0"></path>
+<path d="M304 41h0"></path>
+<path d="M40 41h20"></path>
+<g>
+<path d="M60 41h62"></path>
+<path d="M222 41h62"></path>
+<rect x="122" y="30" width="100" height="22"></rect>
+<text x="172" y="45">table-name</text>
+</g>
+<path d="M284 41h20"></path>
+<path d="M40 41a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M60 71h0"></path>
+<path d="M284 71h0"></path>
+<path d="M60 71h10"></path>
+<g>
+<path d="M70 71h0"></path>
+<path d="M98 71h0"></path>
+<rect x="70" y="60" width="28" height="22" rx="10" ry="10"></rect>
+<text x="84" y="75">(</text>
+</g>
+<path d="M98 71h10"></path>
+<path d="M108 71h10"></path>
+<g>
+<path d="M118 71h0"></path>
+<path d="M226 71h0"></path>
+<rect x="118" y="60" width="108" height="22"></rect>
+<text x="172" y="75">select-stmt</text>
+</g>
+<path d="M226 71h10"></path>
+<path d="M236 71h10"></path>
+<g>
+<path d="M246 71h0"></path>
+<path d="M274 71h0"></path>
+<rect x="246" y="60" width="28" height="22" rx="10" ry="10"></rect>
+<text x="260" y="75">)</text>
+</g>
+<path d="M274 71h10"></path>
+</g>
+<path d="M284 71a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+</g>
+<g>
+<path d="M304 41h0"></path>
+<path d="M480 41h0"></path>
+<path d="M304 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M324 21h136"></path>
+</g>
+<path d="M460 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M304 41h20"></path>
+<g>
+<path d="M324 41h0"></path>
+<path d="M460 41h0"></path>
+<path d="M324 41h10"></path>
+<g>
+<path d="M334 41h0"></path>
+<path d="M370 41h0"></path>
+<rect x="334" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="352" y="45">AS</text>
+</g>
+<path d="M370 41h10"></path>
+<path d="M380 41h10"></path>
+<g>
+<path d="M390 41h0"></path>
+<path d="M450 41h0"></path>
+<rect x="390" y="30" width="60" height="22"></rect>
+<text x="420" y="45">alias</text>
+</g>
+<path d="M450 41h10"></path>
+</g>
+<path d="M460 41h20"></path>
+</g>
+<path d="M 480 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p><code>&lt;column&gt;</code> 可以由别名限定：</p>
+<div class="railroad"><div class="railroad-name">column</div><svg class="railroad-diagram" width="321" height="72" viewBox="0 0 321 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 41h0"></path>
+<path d="M208 41h0"></path>
+<path d="M40 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M60 21h128"></path>
+</g>
+<path d="M188 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M40 41h20"></path>
+<g>
+<path d="M60 41h0"></path>
+<path d="M188 41h0"></path>
+<path d="M60 41h10"></path>
+<g>
+<path d="M70 41h0"></path>
+<path d="M130 41h0"></path>
+<rect x="70" y="30" width="60" height="22"></rect>
+<text x="100" y="45">alias</text>
+</g>
+<path d="M130 41h10"></path>
+<path d="M140 41h10"></path>
+<g>
+<path d="M150 41h0"></path>
+<path d="M178 41h0"></path>
+<rect x="150" y="30" width="28" height="22" rx="10" ry="10"></rect>
+<text x="164" y="45">.</text>
+</g>
+<path d="M178 41h10"></path>
+</g>
+<path d="M188 41h20"></path>
+</g>
+<path d="M208 41h10"></path>
+<g>
+<path d="M218 41h0"></path>
+<path d="M270 41h0"></path>
+<rect x="218" y="30" width="52" height="22"></rect>
+<text x="244" y="45">name</text>
+</g>
+<path d="M270 41h10"></path>
+<path d="M 280 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p><code>&lt;per-clause&gt;</code> 列出用于将行划分为组的列：</p>
+<div class="railroad"><div class="railroad-name">per-clause</div><svg class="railroad-diagram" width="253" height="92" viewBox="0 0 253 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M94 31h0"></path>
+<rect x="50" y="20" width="44" height="22" rx="10" ry="10"></rect>
+<text x="72" y="35">PER</text>
+</g>
+<path d="M94 31h10"></path>
+<path d="M104 31h10"></path>
+<g>
+<path d="M114 31h0"></path>
+<path d="M202 31h0"></path>
+<path d="M114 31h10"></path>
+<g>
+<path d="M124 31h0"></path>
+<path d="M192 31h0"></path>
+<rect x="124" y="20" width="68" height="22"></rect>
+<text x="158" y="35">column</text>
+</g>
+<path d="M192 31h10"></path>
+<path d="M124 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M124 61h20"></path>
+<path d="M172 61h20"></path>
+<rect x="144" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="158" y="65">,</text>
+</g>
+<path d="M192 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M202 31h10"></path>
+<path d="M 212 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p>重复列出的列不会产生新的分组。</p>
+<h3><a name="-" class="anchor" href="#-"></a>限制</h3><ul>
+<li>pipeline 最多输出 256 列。</li>
+<li>源的每一列都必须有一个互不相同的名称，由字母、数字和 <code>_</code> 组成且不以数字开头。即使对于会被后续阶段删除的列也是如此：<ul>
+<li>没有名称的列（如 <code>SELECT 1 + 1</code>）会失败并报错 <code>expected every column to have a name, but column &lt;n&gt; has none: give it one with AS</code>。</li>
+<li>不是有效标识符的名称会失败并报错 <code>expected every column to have a valid name, but &#39;&lt;name&gt;&#39; is not one: give it one with AS</code>。</li>
+<li>两个列共用一个名称会失败并报错 <code>expected distinct column names, but there are two named &#39;&lt;name&gt;&#39;</code>。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>源</h2><h3><a name="from" class="anchor" href="#from"></a><code>FROM</code> </h3><div class="railroad"><svg class="railroad-diagram" width="241" height="62" viewBox="0 0 241 62">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M102 31h0"></path>
+<rect x="50" y="20" width="52" height="22" rx="10" ry="10"></rect>
+<text x="76" y="35">FROM</text>
+</g>
+<path d="M102 31h10"></path>
+<path d="M112 31h10"></path>
+<g>
+<path d="M122 31h0"></path>
+<path d="M190 31h0"></path>
+<rect x="122" y="20" width="68" height="22"></rect>
+<text x="156" y="35">source</text>
+</g>
+<path d="M190 31h10"></path>
+<path d="M 200 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><code>&lt;table-name&gt;</code> 是表、视图，或展开后为这两者之一的宏。不支持 <code>main.t</code> 这类带 schema 限定的名称。</li>
+<li><code>&lt;select-stmt&gt;</code> 是任意 SQL <code>SELECT</code>。</li>
+<li><strong>限定符：</strong><code>FROM slice</code> 允许把列写成 <code>slice.&lt;col&gt;</code>；<code>FROM slice AS s</code> 则改为 <code>s.&lt;col&gt;</code>。未加别名的子查询没有限定符，直到后续的 <code>|&gt; AS &lt;alias&gt;</code> 为止。</li>
+</ul>
+<h3><a name="interval-intersection-of" class="anchor" href="#interval-intersection-of"></a><code>INTERVAL INTERSECTION OF</code> </h3><p>找出两个或多个源的区间相互重叠的位置：</p>
+<div class="railroad"><svg class="railroad-diagram" width="721" height="102" viewBox="0 0 721 102">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M134 41h0"></path>
+<rect x="50" y="30" width="84" height="22" rx="10" ry="10"></rect>
+<text x="92" y="45">INTERVAL</text>
+</g>
+<path d="M134 41h10"></path>
+<path d="M144 41h10"></path>
+<g>
+<path d="M154 41h0"></path>
+<path d="M270 41h0"></path>
+<rect x="154" y="30" width="116" height="22" rx="10" ry="10"></rect>
+<text x="212" y="45">INTERSECTION</text>
+</g>
+<path d="M270 41h10"></path>
+<path d="M280 41h10"></path>
+<g>
+<path d="M290 41h0"></path>
+<path d="M326 41h0"></path>
+<rect x="290" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="308" y="45">OF</text>
+</g>
+<path d="M326 41h10"></path>
+<path d="M336 41h10"></path>
+<g>
+<path d="M346 41h0"></path>
+<path d="M374 41h0"></path>
+<rect x="346" y="30" width="28" height="22" rx="10" ry="10"></rect>
+<text x="360" y="45">(</text>
+</g>
+<path d="M374 41h10"></path>
+<path d="M384 41h10"></path>
+<g>
+<path d="M394 41h0"></path>
+<path d="M482 41h0"></path>
+<path d="M394 41h10"></path>
+<g>
+<path d="M404 41h0"></path>
+<path d="M472 41h0"></path>
+<rect x="404" y="30" width="68" height="22"></rect>
+<text x="438" y="45">source</text>
+</g>
+<path d="M472 41h10"></path>
+<path d="M404 41a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M404 71h20"></path>
+<path d="M452 71h20"></path>
+<rect x="424" y="60" width="28" height="22" rx="10" ry="10"></rect>
+<text x="438" y="75">,</text>
+</g>
+<path d="M472 71a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M482 41h10"></path>
+<path d="M492 41h10"></path>
+<g>
+<path d="M502 41h0"></path>
+<path d="M530 41h0"></path>
+<rect x="502" y="30" width="28" height="22" rx="10" ry="10"></rect>
+<text x="516" y="45">)</text>
+</g>
+<path d="M530 41h10"></path>
+<g>
+<path d="M540 41h0"></path>
+<path d="M680 41h0"></path>
+<path d="M540 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M560 21h100"></path>
+</g>
+<path d="M660 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M540 41h20"></path>
+<g>
+<path d="M560 41h0"></path>
+<path d="M660 41h0"></path>
+<rect x="560" y="30" width="100" height="22"></rect>
+<text x="610" y="45">per-clause</text>
+</g>
+<path d="M660 41h20"></path>
+</g>
+<path d="M 680 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><h4>要求</h4><ul>
+<li>至少两个源。</li>
+<li>每个源都有自己的别名。表名本身就是自己的别名；子查询需要 <code>AS &lt;alias&gt;</code>。</li>
+<li>每个源都有 <code>ts</code> 和 <code>dur</code>，以及每一个 <code>PER</code> 列。</li>
+</ul>
+<h4>输出</h4><p>对于在 <code>PER</code> 列上取值一致的行，每个源各有一行相互重叠的每个区域 <code>[ts, ts + dur)</code>，都会产生一行。</p>
+<table>
+<thead>
+<tr>
+<th align="left">列</th>
+<th align="left">按裸名称可找到</th>
+<th align="left">通过别名可找到</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">区域 <code>ts</code>、<code>dur</code></td>
+<td align="left">是</td>
+<td align="left">否</td>
+</tr>
+<tr>
+<td align="left">每个源自己的 <code>ts</code>、<code>dur</code></td>
+<td align="left">否</td>
+<td align="left"><code>&lt;alias&gt;.ts</code></td>
+</tr>
+<tr>
+<td align="left">第一个源的 <code>PER</code> 列</td>
+<td align="left">是</td>
+<td align="left">是</td>
+</tr>
+<tr>
+<td align="left">后续源的 <code>PER</code> 列</td>
+<td align="left">否</td>
+<td align="left">是</td>
+</tr>
+<tr>
+<td align="left">其余所有源列</td>
+<td align="left">是，仅当只有一个源拥有该列</td>
+<td align="left">是</td>
+</tr>
+</tbody></table>
+<p>被两个源共有的裸名称是有歧义的；当某处引用它时就会出错。</p>
+<p><code>*</code>、<code>|&gt; AS &lt;alias&gt;</code> 以及在交集处结束的 pipeline 的结果，都持有按裸名称可找到的列：先是区域的 <code>ts</code> 和 <code>dur</code>，然后是按顺序排列的各源的列。当两个源共用一个列名时，两份副本都会出现在结果中，这样的结果便无法保存为表。请添加一个 <code>|&gt; SELECT</code>，通过别名来命名这些列。</p>
+<h4>区间规则</h4><ul>
+<li><strong>半开：</strong><code>[0, 10)</code> 与 <code>[10, 20)</code> 不重叠。</li>
+<li><strong>点：</strong><code>dur = 0</code> 的行是 <code>ts</code> 这一时刻。当 <code>a &lt;= ts &lt; b</code> 时，它与 <code>[a, b)</code> 重叠；它也与同一时刻的另一个点重叠。产生的区域 <code>dur = 0</code>。</li>
+<li><strong><code>NULL</code> 边界：</strong><code>ts</code> 或 <code>dur</code> 为 <code>NULL</code> 的行会被跳过。</li>
+<li><strong>负边界：</strong><code>ts</code> 或 <code>dur</code> 为负会失败并报错 <code>ts or dur is below zero</code>。</li>
+<li><strong>溢出：</strong><code>ts + dur</code> 超出 64 位范围会失败并报错 <code>integer overflow</code>。</li>
+<li><strong><code>PER</code> 列中的 <code>NULL</code>：</strong>在某个 <code>PER</code> 列上为 <code>NULL</code> 的行在该列上视为一致，与 <code>GROUP BY</code> 的行为相同。</li>
+</ul>
+<h3><a name="graph-tree" class="anchor" href="#graph-tree"></a><code>GRAPH ... TREE</code> </h3><p>把图归约为一棵树，覆盖从一组种子出发可达的节点：</p>
+<div class="railroad"><svg class="railroad-diagram" width="861" height="122" viewBox="0 0 861 122">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M110 31h0"></path>
+<rect x="50" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="80" y="35">GRAPH</text>
+</g>
+<path d="M110 31h10"></path>
+<g>
+<path d="M120 31h0"></path>
+<path d="M252 31h0"></path>
+<path d="M120 31h20"></path>
+<g>
+<path d="M140 31h24"></path>
+<path d="M208 31h24"></path>
+<rect x="164" y="20" width="44" height="22" rx="10" ry="10"></rect>
+<text x="186" y="35">BFS</text>
+</g>
+<path d="M232 31h20"></path>
+<path d="M120 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M140 61h24"></path>
+<path d="M208 61h24"></path>
+<rect x="164" y="50" width="44" height="22" rx="10" ry="10"></rect>
+<text x="186" y="65">DFS</text>
+</g>
+<path d="M232 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+<path d="M120 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M140 91h0"></path>
+<path d="M232 91h0"></path>
+<rect x="140" y="80" width="92" height="22" rx="10" ry="10"></rect>
+<text x="186" y="95">DOMINATOR</text>
+</g>
+<path d="M232 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M252 31h10"></path>
+<g>
+<path d="M262 31h0"></path>
+<path d="M314 31h0"></path>
+<rect x="262" y="20" width="52" height="22" rx="10" ry="10"></rect>
+<text x="288" y="35">TREE</text>
+</g>
+<path d="M314 31h10"></path>
+<path d="M324 31h10"></path>
+<g>
+<path d="M334 31h0"></path>
+<path d="M394 31h0"></path>
+<rect x="334" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="364" y="35">NODES</text>
+</g>
+<path d="M394 31h10"></path>
+<path d="M404 31h10"></path>
+<g>
+<path d="M414 31h0"></path>
+<path d="M482 31h0"></path>
+<rect x="414" y="20" width="68" height="22"></rect>
+<text x="448" y="35">source</text>
+</g>
+<path d="M482 31h10"></path>
+<path d="M492 31h10"></path>
+<g>
+<path d="M502 31h0"></path>
+<path d="M562 31h0"></path>
+<rect x="502" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="532" y="35">EDGES</text>
+</g>
+<path d="M562 31h10"></path>
+<path d="M572 31h10"></path>
+<g>
+<path d="M582 31h0"></path>
+<path d="M650 31h0"></path>
+<rect x="582" y="20" width="68" height="22"></rect>
+<text x="616" y="35">source</text>
+</g>
+<path d="M650 31h10"></path>
+<path d="M660 31h10"></path>
+<g>
+<path d="M670 31h0"></path>
+<path d="M722 31h0"></path>
+<rect x="670" y="20" width="52" height="22" rx="10" ry="10"></rect>
+<text x="696" y="35">FROM</text>
+</g>
+<path d="M722 31h10"></path>
+<path d="M732 31h10"></path>
+<g>
+<path d="M742 31h0"></path>
+<path d="M810 31h0"></path>
+<rect x="742" y="20" width="68" height="22"></rect>
+<text x="776" y="35">source</text>
+</g>
+<path d="M810 31h10"></path>
+<path d="M 820 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">GRAPH DOMINATOR TREE
+  NODES heap_graph_object
+  EDGES (<span class="hljs-keyword">SELECT</span> owner_id <span class="hljs-keyword">AS</span> src, owned_id <span class="hljs-keyword">AS</span> dst <span class="hljs-keyword">FROM</span> heap_graph_reference)
+  <span class="hljs-keyword">FROM</span> (<span class="hljs-keyword">SELECT</span> id <span class="hljs-keyword">FROM</span> heap_graph_object <span class="hljs-keyword">WHERE</span> root_type <span class="hljs-keyword">IS</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">NULL</span>)
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> TREE ACCUMULATE UP <span class="hljs-built_in">SUM</span>(self_size) <span class="hljs-keyword">AS</span> retained_size</code></div><h4>要求</h4><ul>
+<li><code>NODES</code> 有一个 <code>id</code> 列，<code>EDGES</code> 有 <code>src</code> 和 <code>dst</code> 列，<code>FROM</code> 有一个 <code>id</code> 列。它们都持有整数。</li>
+<li>任何两个节点的 <code>id</code> 都不相同，且每个节点都有一个。</li>
+</ul>
+<h4>输出</h4><p>从种子可达的每个节点产生一行，包含 <code>NODES</code> 的所有列和 <code>parent_id</code>（即该节点在树中的父节点的 <code>id</code>）。根节点的 <code>parent_id</code> 为 <code>NULL</code>。名为 <code>parent_id</code> 的 <code>NODES</code> 列不会被携带。父节点排在其子节点之前。<code>NODES</code> 可以指定别名，用于限定它的列。</p>
+<table>
+<thead>
+<tr>
+<th align="left">类型</th>
+<th align="left">根</th>
+<th align="left">节点的父节点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>BFS</code></td>
+<td align="left">每个种子</td>
+<td align="left">搜索到的第一个有边指向它的节点</td>
+</tr>
+<tr>
+<td align="left"><code>DFS</code></td>
+<td align="left">未被更早的种子到达的每个种子</td>
+<td align="left">到达它时所来自的节点</td>
+</tr>
+<tr>
+<td align="left"><code>DOMINATOR</code></td>
+<td align="left">每个种子</td>
+<td align="left">它的直接支配节点</td>
+</tr>
+</tbody></table>
+<h4>图规则</h4><ul>
+<li><strong>顺序：</strong>种子按其行到达的顺序被搜索，每个节点的边也按同样的顺序被跟随。当一个节点可以从多个同等合适的父节点到达时，由该顺序决定选哪一个，因此可以对 <code>FROM</code> 或 <code>EDGES</code> 排序来控制选择。</li>
+<li><strong>缺失节点：</strong><code>id</code> 不是任何节点或为 <code>NULL</code> 的边或种子会被忽略。<code>NODES</code> 可以是 <code>EDGES</code> 所描述的图的子集。</li>
+<li><strong>支配节点：</strong>一个节点的支配节点，是从种子到它的每条路径都会经过的节点，就好像还有一个额外的节点向每个种子连了一条边。</li>
+</ul>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>聚合</h2><p><code>INTERVAL FLATTEN</code>、<code>TREE ACCUMULATE</code> 和 <code>AGGREGATE</code> 接受一个 <code>&lt;aggregate-list&gt;</code>，并以相同的方式处理每个聚合：</p>
+<div class="railroad"><div class="railroad-name">aggregate-list</div><svg class="railroad-diagram" width="361" height="92" viewBox="0 0 361 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M310 31h0"></path>
+<path d="M50 31h10"></path>
+<g>
+<path d="M60 31h0"></path>
+<path d="M300 31h0"></path>
+<path d="M60 31h10"></path>
+<g>
+<path d="M70 31h0"></path>
+<path d="M162 31h0"></path>
+<rect x="70" y="20" width="92" height="22"></rect>
+<text x="116" y="35">aggregate</text>
+</g>
+<path d="M162 31h10"></path>
+<path d="M172 31h10"></path>
+<g>
+<path d="M182 31h0"></path>
+<path d="M218 31h0"></path>
+<rect x="182" y="20" width="36" height="22" rx="10" ry="10"></rect>
+<text x="200" y="35">AS</text>
+</g>
+<path d="M218 31h10"></path>
+<path d="M228 31h10"></path>
+<g>
+<path d="M238 31h0"></path>
+<path d="M290 31h0"></path>
+<rect x="238" y="20" width="52" height="22"></rect>
+<text x="264" y="35">name</text>
+</g>
+<path d="M290 31h10"></path>
+</g>
+<path d="M300 31h10"></path>
+<path d="M60 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M60 61h106"></path>
+<path d="M194 61h106"></path>
+<rect x="166" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="180" y="65">,</text>
+</g>
+<path d="M300 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M310 31h10"></path>
+<path d="M 320 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><div class="railroad"><div class="railroad-name">aggregate</div><svg class="railroad-diagram" width="389" height="152" viewBox="0 0 389 152">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 31h0"></path>
+<path d="M348 31h0"></path>
+<path d="M40 31h20"></path>
+<g>
+<path d="M60 31h22"></path>
+<path d="M306 31h22"></path>
+<path d="M82 31h10"></path>
+<g>
+<path d="M92 31h0"></path>
+<path d="M152 31h0"></path>
+<rect x="92" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="122" y="35">COUNT</text>
+</g>
+<path d="M152 31h10"></path>
+<path d="M162 31h10"></path>
+<g>
+<path d="M172 31h0"></path>
+<path d="M200 31h0"></path>
+<rect x="172" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="186" y="35">(</text>
+</g>
+<path d="M200 31h10"></path>
+<path d="M210 31h10"></path>
+<g>
+<path d="M220 31h0"></path>
+<path d="M248 31h0"></path>
+<rect x="220" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="234" y="35">&#42;</text>
+</g>
+<path d="M248 31h10"></path>
+<path d="M258 31h10"></path>
+<g>
+<path d="M268 31h0"></path>
+<path d="M296 31h0"></path>
+<rect x="268" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="282" y="35">)</text>
+</g>
+<path d="M296 31h10"></path>
+</g>
+<path d="M328 31h20"></path>
+<path d="M40 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M60 61h0"></path>
+<path d="M328 61h0"></path>
+<g>
+<path d="M60 61h0"></path>
+<path d="M144 61h0"></path>
+<path d="M60 61h20"></path>
+<g>
+<path d="M80 61h0"></path>
+<path d="M124 61h0"></path>
+<rect x="80" y="50" width="44" height="22" rx="10" ry="10"></rect>
+<text x="102" y="65">SUM</text>
+</g>
+<path d="M124 61h20"></path>
+<path d="M60 61a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M80 91h0"></path>
+<path d="M124 91h0"></path>
+<rect x="80" y="80" width="44" height="22" rx="10" ry="10"></rect>
+<text x="102" y="95">MIN</text>
+</g>
+<path d="M124 91a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+<path d="M60 61a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M80 121h0"></path>
+<path d="M124 121h0"></path>
+<rect x="80" y="110" width="44" height="22" rx="10" ry="10"></rect>
+<text x="102" y="125">MAX</text>
+</g>
+<path d="M124 121a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M144 61h10"></path>
+<g>
+<path d="M154 61h0"></path>
+<path d="M182 61h0"></path>
+<rect x="154" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="168" y="65">(</text>
+</g>
+<path d="M182 61h10"></path>
+<path d="M192 61h10"></path>
+<g>
+<path d="M202 61h0"></path>
+<path d="M270 61h0"></path>
+<rect x="202" y="50" width="68" height="22"></rect>
+<text x="236" y="65">column</text>
+</g>
+<path d="M270 61h10"></path>
+<path d="M280 61h10"></path>
+<g>
+<path d="M290 61h0"></path>
+<path d="M318 61h0"></path>
+<rect x="290" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="304" y="65">)</text>
+</g>
+<path d="M318 61h10"></path>
+</g>
+<path d="M328 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M 348 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><strong>形式：</strong>每个聚合都需要一个 <code>AS</code> 名称。表达式、<code>DISTINCT</code>、<code>FILTER</code>、<code>OVER</code> 和其他函数都会被拒绝。</li>
+<li><strong><code>COUNT(*)</code></strong> 对行计数。</li>
+<li><strong><code>SUM</code>、<code>MIN</code> 和 <code>MAX</code></strong> 接受一个整数列。它们会跳过 <code>NULL</code>，并在所有值都为 <code>NULL</code> 时返回 <code>NULL</code>。来自 SQL 源、类型无法预先确定的列，会在查询运行时检查。</li>
+<li><strong>结果</strong>是 <code>LONG</code> 列。溢出会报错。</li>
+<li><strong>作用域：</strong>每个聚合读取的都是该阶段之前的行，因此一个聚合不能读取另一个聚合。</li>
+<li><strong>名称：</strong>聚合可以采用其他列已有的名称。该名称因此变得有歧义，后续阶段引用它时会出错。</li>
+</ul>
+<hr>
+<h2><a name="expressions" class="anchor" href="#expressions"></a>表达式 </h2><p><code>SELECT</code>、<code>EXTEND</code> 和 <code>SET</code> 可以通过以下内容计算值：</p>
+<ul>
+<li><p>列、<code>NULL</code>，以及数字和字符串字面量。</p>
+</li>
+<li><p>作用于数字的 <code>+</code>、<code>-</code>、<code>*</code>、<code>/</code> 和 <code>%</code>。任一操作数为 null 时结果为 null，除以零或对零取余的结果也为 null，与 SQLite 一致。整数溢出会导致查询失败，而 SQLite 在这种情况下会返回一个双精度浮点数。</p>
+</li>
+<li><p><code>=</code>、<code>==</code>、<code>!=</code>、<code>&lt;&gt;</code>、<code>&lt;</code>、<code>&lt;=</code>、<code>&gt;</code> 和 <code>&gt;=</code> 的结果为 0 或 1，任一侧为 null 时结果为 null。字符串按其字节比较。整数可以与浮点字面量比较，与 <a href="#where"><code>WHERE</code></a> 中一样。将整数与其他浮点值比较会出错，字符串与数字比较同样会出错。</p>
+</li>
+<li><p><code>&lt;expr&gt; GLOB &lt;string&gt;</code> 的结果为 0 或 1，<code>&lt;expr&gt;</code> 为 null 时结果为 null。模式必须是字符串字面量，且 <code>&lt;expr&gt;</code> 必须是字符串。</p>
+</li>
+<li><p><code>&lt;expr&gt; IS [NOT] NULL</code> 的结果为 0 或 1。</p>
+</li>
+<li><p><code>coalesce(&lt;expr&gt;, &lt;expr&gt;, ...)</code>、<code>ifnull(&lt;expr&gt;, &lt;expr&gt;)</code> 和 <code>iif(&lt;condition&gt;, &lt;expr&gt;, &lt;expr&gt;)</code>。它们的结果必须是单一类型：整数与双精度浮点数混用会直接报错而不是做加宽转换，因此应写 <code>1.0</code> 而不是 <code>1</code>。<code>NULL</code> 可与任何类型搭配。如果某个参数中的整数运算只被部分行用到，也会报错，因为它可能在 SQLite 根本不会为其执行计算的行上溢出。条件为非零数字时视为真。</p>
+</li>
+</ul>
+<p>其他任何形式（如 <code>AND</code> 或调用其他函数）尚不支持。</p>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>阶段</h2><h3><a name="where" class="anchor" href="#where"></a><code>WHERE</code> </h3><p>保留满足条件的行：</p>
+<div class="railroad"><svg class="railroad-diagram" width="681" height="282" viewBox="0 0 681 282">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M110 31h0"></path>
+<rect x="50" y="20" width="60" height="22" rx="10" ry="10"></rect>
+<text x="80" y="35">WHERE</text>
+</g>
+<path d="M110 31h10"></path>
+<path d="M120 31h10"></path>
+<g>
+<path d="M130 31h0"></path>
+<path d="M630 31h0"></path>
+<path d="M130 31h10"></path>
+<g>
+<path d="M140 31h0"></path>
+<path d="M620 31h0"></path>
+<path d="M140 31h10"></path>
+<g>
+<path d="M150 31h0"></path>
+<path d="M218 31h0"></path>
+<rect x="150" y="20" width="68" height="22"></rect>
+<text x="184" y="35">column</text>
+</g>
+<path d="M218 31h10"></path>
+<g>
+<path d="M228 31h0"></path>
+<path d="M620 31h0"></path>
+<path d="M228 31h20"></path>
+<g>
+<path d="M248 31h100"></path>
+<path d="M500 31h100"></path>
+<path d="M348 31h10"></path>
+<g>
+<path d="M358 31h0"></path>
+<path d="M394 31h0"></path>
+<rect x="358" y="20" width="36" height="22"></rect>
+<text x="376" y="35">op</text>
+</g>
+<path d="M394 31h10"></path>
+<path d="M404 31h10"></path>
+<g>
+<path d="M414 31h0"></path>
+<path d="M490 31h0"></path>
+<rect x="414" y="20" width="76" height="22"></rect>
+<text x="452" y="35">literal</text>
+</g>
+<path d="M490 31h10"></path>
+</g>
+<path d="M600 31h20"></path>
+<path d="M228 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M248 61h96"></path>
+<path d="M504 61h96"></path>
+<path d="M344 61h10"></path>
+<g>
+<path d="M354 61h0"></path>
+<path d="M406 61h0"></path>
+<rect x="354" y="50" width="52" height="22" rx="10" ry="10"></rect>
+<text x="380" y="65">GLOB</text>
+</g>
+<path d="M406 61h10"></path>
+<path d="M416 61h10"></path>
+<g>
+<path d="M426 61h0"></path>
+<path d="M494 61h0"></path>
+<rect x="426" y="50" width="68" height="22"></rect>
+<text x="460" y="65">string</text>
+</g>
+<path d="M494 61h10"></path>
+</g>
+<path d="M600 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+<path d="M228 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M248 91h88"></path>
+<path d="M512 91h88"></path>
+<path d="M336 91h10"></path>
+<g>
+<path d="M346 91h0"></path>
+<path d="M414 91h0"></path>
+<rect x="346" y="80" width="68" height="22" rx="10" ry="10"></rect>
+<text x="380" y="95">REGEXP</text>
+</g>
+<path d="M414 91h10"></path>
+<path d="M424 91h10"></path>
+<g>
+<path d="M434 91h0"></path>
+<path d="M502 91h0"></path>
+<rect x="434" y="80" width="68" height="22"></rect>
+<text x="468" y="95">string</text>
+</g>
+<path d="M502 91h10"></path>
+</g>
+<path d="M600 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10"></path>
+<path d="M228 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M248 121h42"></path>
+<path d="M558 121h42"></path>
+<path d="M290 121h10"></path>
+<g>
+<path d="M300 121h0"></path>
+<path d="M336 121h0"></path>
+<rect x="300" y="110" width="36" height="22" rx="10" ry="10"></rect>
+<text x="318" y="125">IN</text>
+</g>
+<path d="M336 121h10"></path>
+<path d="M346 121h10"></path>
+<g>
+<path d="M356 121h0"></path>
+<path d="M384 121h0"></path>
+<rect x="356" y="110" width="28" height="22" rx="10" ry="10"></rect>
+<text x="370" y="125">(</text>
+</g>
+<path d="M384 121h10"></path>
+<path d="M394 121h10"></path>
+<g>
+<path d="M404 121h0"></path>
+<path d="M500 121h0"></path>
+<path d="M404 121h10"></path>
+<g>
+<path d="M414 121h0"></path>
+<path d="M490 121h0"></path>
+<rect x="414" y="110" width="76" height="22"></rect>
+<text x="452" y="125">literal</text>
+</g>
+<path d="M490 121h10"></path>
+<path d="M414 121a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M414 151h24"></path>
+<path d="M466 151h24"></path>
+<rect x="438" y="140" width="28" height="22" rx="10" ry="10"></rect>
+<text x="452" y="155">,</text>
+</g>
+<path d="M490 151a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M500 121h10"></path>
+<path d="M510 121h10"></path>
+<g>
+<path d="M520 121h0"></path>
+<path d="M548 121h0"></path>
+<rect x="520" y="110" width="28" height="22" rx="10" ry="10"></rect>
+<text x="534" y="125">)</text>
+</g>
+<path d="M548 121h10"></path>
+</g>
+<path d="M600 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10"></path>
+<path d="M228 31a10 10 0 0 1 10 10v130a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M248 181h0"></path>
+<path d="M600 181h0"></path>
+<path d="M248 181h10"></path>
+<g>
+<path d="M258 181h0"></path>
+<path d="M334 181h0"></path>
+<rect x="258" y="170" width="76" height="22" rx="10" ry="10"></rect>
+<text x="296" y="185">BETWEEN</text>
+</g>
+<path d="M334 181h10"></path>
+<path d="M344 181h10"></path>
+<g>
+<path d="M354 181h0"></path>
+<path d="M430 181h0"></path>
+<rect x="354" y="170" width="76" height="22"></rect>
+<text x="392" y="185">literal</text>
+</g>
+<path d="M430 181h10"></path>
+<path d="M440 181h10"></path>
+<g>
+<path d="M450 181h0"></path>
+<path d="M494 181h0"></path>
+<rect x="450" y="170" width="44" height="22" rx="10" ry="10"></rect>
+<text x="472" y="185">AND</text>
+</g>
+<path d="M494 181h10"></path>
+<path d="M504 181h10"></path>
+<g>
+<path d="M514 181h0"></path>
+<path d="M590 181h0"></path>
+<rect x="514" y="170" width="76" height="22"></rect>
+<text x="552" y="185">literal</text>
+</g>
+<path d="M590 181h10"></path>
+</g>
+<path d="M600 181a10 10 0 0 0 10 -10v-130a10 10 0 0 1 10 -10"></path>
+<path d="M228 31a10 10 0 0 1 10 10v170a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M248 221h70"></path>
+<path d="M530 221h70"></path>
+<path d="M318 221h10"></path>
+<g>
+<path d="M328 221h0"></path>
+<path d="M364 221h0"></path>
+<rect x="328" y="210" width="36" height="22" rx="10" ry="10"></rect>
+<text x="346" y="225">IS</text>
+</g>
+<path d="M364 221h10"></path>
+<g>
+<path d="M374 221h0"></path>
+<path d="M458 221h0"></path>
+<path d="M374 221a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M394 201h44"></path>
+</g>
+<path d="M438 201a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M374 221h20"></path>
+<g>
+<path d="M394 221h0"></path>
+<path d="M438 221h0"></path>
+<rect x="394" y="210" width="44" height="22" rx="10" ry="10"></rect>
+<text x="416" y="225">NOT</text>
+</g>
+<path d="M438 221h20"></path>
+</g>
+<path d="M458 221h10"></path>
+<g>
+<path d="M468 221h0"></path>
+<path d="M520 221h0"></path>
+<rect x="468" y="210" width="52" height="22" rx="10" ry="10"></rect>
+<text x="494" y="225">NULL</text>
+</g>
+<path d="M520 221h10"></path>
+</g>
+<path d="M600 221a10 10 0 0 0 10 -10v-170a10 10 0 0 1 10 -10"></path>
+</g>
+</g>
+<path d="M620 31h10"></path>
+<path d="M140 31a10 10 0 0 0 -10 10v200a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M140 251h218"></path>
+<path d="M402 251h218"></path>
+<rect x="358" y="240" width="44" height="22" rx="10" ry="10"></rect>
+<text x="380" y="255">AND</text>
+</g>
+<path d="M620 251a10 10 0 0 0 10 -10v-200a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M630 31h10"></path>
+<path d="M 640 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><code>&lt;op&gt;</code> 是 <code>=</code>、<code>==</code>、<code>!=</code>、<code>&lt;&gt;</code>、<code>&lt;</code>、<code>&lt;=</code>、<code>&gt;</code> 和 <code>&gt;=</code> 之一。</li>
+<li><code>&lt;literal&gt;</code> 是整数、浮点或字符串字面量。</li>
+<li><code>GLOB</code> 和 <code>REGEXP</code> 只匹配字符串列。</li>
+<li>除非模式自身带有锚定，<code>REGEXP</code> 匹配字符串的一部分，与 SQL 的 <code>REGEXP</code> 行为一致。无法编译的模式会报错。</li>
+<li><code>NULL</code> 永远不会匹配比较、<code>GLOB</code>、<code>REGEXP</code> 或 <code>IN</code>。整数与小数的比较方式与 SQL 一致。</li>
+<li>字符串永远不会被转换为数字，数字也不会被转换为字符串。数值列与字符串比较、或字符串列与数字比较都会报错：<code>dur = &#39;5&#39;</code> 会失败并报错 <code>expected a number to compare with a numeric column, but got a string</code>。对 Perfetto 表执行普通 SQL 在这里不会报错：只是匹配不到任何行。</li>
+<li>保留所有列和别名。</li>
+<li>尚不支持：<code>OR</code>、<code>NOT</code>、<code>NOT IN</code>、<code>NOT GLOB</code>、<code>NOT REGEXP</code>、<code>LIKE</code>、圆括号、函数、算术运算，以及字面量在左侧的形式。请改在源子查询中过滤。</li>
+</ul>
+<h3><a name="distinct" class="anchor" href="#distinct"></a><code>DISTINCT</code> </h3><p>移除重复的行：</p>
+<div class="railroad"><svg class="railroad-diagram" width="185" height="62" viewBox="0 0 185 62">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M134 31h0"></path>
+<rect x="50" y="20" width="84" height="22" rx="10" ry="10"></rect>
+<text x="92" y="35">DISTINCT</text>
+</g>
+<path d="M134 31h10"></path>
+<path d="M 144 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>当两行在所有按裸名称可找到的列上都一致时，它们相等。<code>NULL</code> 之间视为相等。</li>
+<li>只有通过别名才能找到的列（如交集的 <code>x.ts</code>）不参与比较，并且会被丢弃，因为它们在每行上没有唯一的值。别名会保留，只持有参与过比较的列。</li>
+<li>每组相等的行只保留第一行，保留下来的行维持原有顺序。</li>
+<li>行最多可以有 64 列。</li>
+</ul>
+<h3><a name="order-by" class="anchor" href="#order-by"></a><code>ORDER BY</code> </h3><p>对行排序：</p>
+<div class="railroad"><svg class="railroad-diagram" width="477" height="132" viewBox="0 0 477 132">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M110 41h0"></path>
+<rect x="50" y="30" width="60" height="22" rx="10" ry="10"></rect>
+<text x="80" y="45">ORDER</text>
+</g>
+<path d="M110 41h10"></path>
+<path d="M120 41h10"></path>
+<g>
+<path d="M130 41h0"></path>
+<path d="M166 41h0"></path>
+<rect x="130" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="148" y="45">BY</text>
+</g>
+<path d="M166 41h10"></path>
+<path d="M176 41h10"></path>
+<g>
+<path d="M186 41h0"></path>
+<path d="M426 41h0"></path>
+<path d="M186 41h10"></path>
+<g>
+<path d="M196 41h0"></path>
+<path d="M416 41h0"></path>
+<path d="M196 41h10"></path>
+<g>
+<path d="M206 41h0"></path>
+<path d="M274 41h0"></path>
+<rect x="206" y="30" width="68" height="22"></rect>
+<text x="240" y="45">column</text>
+</g>
+<path d="M274 41h10"></path>
+<g>
+<path d="M284 41h0"></path>
+<path d="M416 41h0"></path>
+<path d="M284 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M304 21h92"></path>
+</g>
+<path d="M396 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M284 41h20"></path>
+<g>
+<path d="M304 41h0"></path>
+<path d="M396 41h0"></path>
+<path d="M304 41h20"></path>
+<g>
+<path d="M324 41h4"></path>
+<path d="M372 41h4"></path>
+<rect x="328" y="30" width="44" height="22" rx="10" ry="10"></rect>
+<text x="350" y="45">ASC</text>
+</g>
+<path d="M376 41h20"></path>
+<path d="M304 41a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M324 71h0"></path>
+<path d="M376 71h0"></path>
+<rect x="324" y="60" width="52" height="22" rx="10" ry="10"></rect>
+<text x="350" y="75">DESC</text>
+</g>
+<path d="M376 71a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M396 41h20"></path>
+</g>
+</g>
+<path d="M416 41h10"></path>
+<path d="M196 41a10 10 0 0 0 -10 10v40a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M196 101h96"></path>
+<path d="M320 101h96"></path>
+<rect x="292" y="90" width="28" height="22" rx="10" ry="10"></rect>
+<text x="306" y="105">,</text>
+</g>
+<path d="M416 101a10 10 0 0 0 10 -10v-40a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M426 41h10"></path>
+<path d="M 436 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>第一个键决定顺序，后续每个键用来消解前面键相同时的并列。每个键默认为 <code>ASC</code>。</li>
+<li>键是一个列，可以带限定符。尚不支持表达式。</li>
+<li>字符串按其字节排序，与 SQLite 默认的 <code>BINARY</code> 排序规则一致。</li>
+<li>与 SQLite 一致，升序时 <code>NULL</code> 排在最前，降序时排在最后。</li>
+<li>在所有键上都相等的行保持原有顺序。</li>
+<li>保留所有列和别名。</li>
+<li><code>INTERVAL FLATTEN</code>、<code>INTERVAL FILL GAPS</code>、<code>TREE ACCUMULATE</code> 和 <code>AGGREGATE</code> 会以自己的方式排列行，因此应把 <code>ORDER BY</code> 放在它们之后。</li>
+</ul>
+<h3><a name="limit" class="anchor" href="#limit"></a><code>LIMIT</code> </h3><p>跳过一些行后，保留最前面的行：</p>
+<div class="railroad"><svg class="railroad-diagram" width="465" height="72" viewBox="0 0 465 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M110 41h0"></path>
+<rect x="50" y="30" width="60" height="22" rx="10" ry="10"></rect>
+<text x="80" y="45">LIMIT</text>
+</g>
+<path d="M110 41h10"></path>
+<path d="M120 41h10"></path>
+<g>
+<path d="M130 41h0"></path>
+<path d="M190 41h0"></path>
+<rect x="130" y="30" width="60" height="22"></rect>
+<text x="160" y="45">count</text>
+</g>
+<path d="M190 41h10"></path>
+<g>
+<path d="M200 41h0"></path>
+<path d="M424 41h0"></path>
+<path d="M200 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M220 21h184"></path>
+</g>
+<path d="M404 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M200 41h20"></path>
+<g>
+<path d="M220 41h0"></path>
+<path d="M404 41h0"></path>
+<path d="M220 41h10"></path>
+<g>
+<path d="M230 41h0"></path>
+<path d="M298 41h0"></path>
+<rect x="230" y="30" width="68" height="22" rx="10" ry="10"></rect>
+<text x="264" y="45">OFFSET</text>
+</g>
+<path d="M298 41h10"></path>
+<path d="M308 41h10"></path>
+<g>
+<path d="M318 41h0"></path>
+<path d="M394 41h0"></path>
+<rect x="318" y="30" width="76" height="22"></rect>
+<text x="356" y="45">skipped</text>
+</g>
+<path d="M394 41h10"></path>
+</g>
+<path d="M404 41h20"></path>
+</g>
+<path d="M 424 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>按到达顺序跳过 <code>&lt;skipped&gt;</code> 行，然后最多保留 <code>&lt;count&gt;</code> 行。要保留排序后最前面的行，请把它放在 <a href="#order-by"><code>ORDER BY</code></a> 之后。</li>
+<li><code>&lt;count&gt;</code> 和 <code>&lt;skipped&gt;</code> 是整数字面量。与 SQL 一致，负的 count 保留所有行，负的 offset 不跳过任何行。</li>
+<li>保留所有列和别名。</li>
+</ul>
+<h3><a name="interval-flatten" class="anchor" href="#interval-flatten"></a><code>INTERVAL FLATTEN</code> </h3><p>把重叠的区间切分成段，并对每段中处于活动状态的行做聚合：</p>
+<div class="railroad"><svg class="railroad-diagram" width="685" height="72" viewBox="0 0 685 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M134 41h0"></path>
+<rect x="50" y="30" width="84" height="22" rx="10" ry="10"></rect>
+<text x="92" y="45">INTERVAL</text>
+</g>
+<path d="M134 41h10"></path>
+<path d="M144 41h10"></path>
+<g>
+<path d="M154 41h0"></path>
+<path d="M230 41h0"></path>
+<rect x="154" y="30" width="76" height="22" rx="10" ry="10"></rect>
+<text x="192" y="45">FLATTEN</text>
+</g>
+<path d="M230 41h10"></path>
+<g>
+<path d="M240 41h0"></path>
+<path d="M380 41h0"></path>
+<path d="M240 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M260 21h100"></path>
+</g>
+<path d="M360 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M240 41h20"></path>
+<g>
+<path d="M260 41h0"></path>
+<path d="M360 41h0"></path>
+<rect x="260" y="30" width="100" height="22"></rect>
+<text x="310" y="45">per-clause</text>
+</g>
+<path d="M360 41h20"></path>
+</g>
+<path d="M380 41h10"></path>
+<g>
+<path d="M390 41h0"></path>
+<path d="M482 41h0"></path>
+<rect x="390" y="30" width="92" height="22" rx="10" ry="10"></rect>
+<text x="436" y="45">AGGREGATE</text>
+</g>
+<path d="M482 41h10"></path>
+<path d="M492 41h10"></path>
+<g>
+<path d="M502 41h0"></path>
+<path d="M634 41h0"></path>
+<rect x="502" y="30" width="132" height="22"></rect>
+<text x="568" y="45">aggregate-list</text>
+</g>
+<path d="M634 41h10"></path>
+<path d="M 644 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><strong>区间：</strong>裸的 <code>ts</code> 和 <code>dur</code>，它们必须是整数列。输入不需要预先排序。</li>
+<li><strong>分组：</strong>每种 <code>PER</code> 值的组合各自单独扁平化。没有 <code>PER</code> 时，所有行为一组。<code>NULL</code> 键归为一组。</li>
+<li><strong>聚合：</strong>至少一个；参见<a href="#aggregates">聚合</a>。每个聚合都在覆盖某个段的行上计算。</li>
+<li><strong>输出：</strong><code>ts</code>、<code>dur</code>、<code>PER</code> 列，然后是聚合列。其余所有列和所有别名都会被丢弃。列出两次的 <code>PER</code> 列会被输出两次，其名称因此变得有歧义。</li>
+</ul>
+<p>区间规则：</p>
+<ul>
+<li><strong>段：</strong>输出在每个输入的起点和终点处切分。没有行的间隙不产生输出。相邻的段即使值相同也不会合并。</li>
+<li><strong>点：</strong>同一时刻上 <code>dur = 0</code> 的行会额外产生一个 <code>dur = 0</code> 的段。该段的聚合覆盖这些点以及在该时刻处于活动状态的区间：在该时刻开始的区间计入，在该时刻结束的区间不计入。点不计入其他段。</li>
+<li><strong><code>NULL</code> 边界：</strong><code>ts</code> 或 <code>dur</code> 为 <code>NULL</code> 的行会被跳过。</li>
+<li><strong>负边界</strong>会报错。请先过滤掉 <code>dur = -1</code> 的未完成 slice。</li>
+<li><strong>溢出</strong>会报错。</li>
+</ul>
+<p>示例参见<a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-getting-started.html#flattening-overlapping-intervals-interval-flatten">扁平化重叠区间</a>。</p>
+<h3><a name="interval-fill-gaps" class="anchor" href="#interval-fill-gaps"></a><code>INTERVAL FILL GAPS</code> </h3><p>保留每一行，并为背景区间中没有任何行覆盖的每一段补一行：</p>
+<div class="railroad"><svg class="railroad-diagram" width="629" height="72" viewBox="0 0 629 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M134 41h0"></path>
+<rect x="50" y="30" width="84" height="22" rx="10" ry="10"></rect>
+<text x="92" y="45">INTERVAL</text>
+</g>
+<path d="M134 41h10"></path>
+<path d="M144 41h10"></path>
+<g>
+<path d="M154 41h0"></path>
+<path d="M206 41h0"></path>
+<rect x="154" y="30" width="52" height="22" rx="10" ry="10"></rect>
+<text x="180" y="45">FILL</text>
+</g>
+<path d="M206 41h10"></path>
+<path d="M216 41h10"></path>
+<g>
+<path d="M226 41h0"></path>
+<path d="M278 41h0"></path>
+<rect x="226" y="30" width="52" height="22" rx="10" ry="10"></rect>
+<text x="252" y="45">GAPS</text>
+</g>
+<path d="M278 41h10"></path>
+<path d="M288 41h10"></path>
+<g>
+<path d="M298 41h0"></path>
+<path d="M350 41h0"></path>
+<rect x="298" y="30" width="52" height="22" rx="10" ry="10"></rect>
+<text x="324" y="45">WITH</text>
+</g>
+<path d="M350 41h10"></path>
+<path d="M360 41h10"></path>
+<g>
+<path d="M370 41h0"></path>
+<path d="M438 41h0"></path>
+<rect x="370" y="30" width="68" height="22"></rect>
+<text x="404" y="45">source</text>
+</g>
+<path d="M438 41h10"></path>
+<g>
+<path d="M448 41h0"></path>
+<path d="M588 41h0"></path>
+<path d="M448 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M468 21h100"></path>
+</g>
+<path d="M568 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M448 41h20"></path>
+<g>
+<path d="M468 41h0"></path>
+<path d="M568 41h0"></path>
+<rect x="468" y="30" width="100" height="22"></rect>
+<text x="518" y="45">per-clause</text>
+</g>
+<path d="M568 41h20"></path>
+</g>
+<path d="M 588 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p><code>&lt;source&gt;</code> 持有背景区间。</p>
+<ul>
+<li><strong>区间：</strong>裸的 <code>ts</code> 和 <code>dur</code>，输入和背景中都是如此。</li>
+<li><strong>泳道：</strong>每种 <code>PER</code> 值的组合各自单独填充。背景要么拥有全部 <code>PER</code> 列，要么一个也没有：<ul>
+<li>拥有时，它指明存在哪些泳道。没有输入的泳道会被整条填充，而背景中没有的泳道里的输入不会得到填充行。</li>
+<li>没有时，同一背景作用于输入中的每条泳道。</li>
+</ul>
+</li>
+<li><strong>填充行</strong>按名称取背景各列的值，取其所在泳道的 <code>PER</code> 值，其余所有列均为 <code>NULL</code>。背景的每一列也必须出现在输入中。</li>
+<li><strong>类型：</strong>一个列在两个输入中只能有一种类型。一个输入中为字符串、另一个中为数字的列会报错。</li>
+<li><strong>输出：</strong>输入的列。行以任意顺序输出。别名会保留。</li>
+</ul>
+<p>区间规则：</p>
+<ul>
+<li>相互重叠的输入行覆盖它们的并集。</li>
+<li><code>dur = -1</code> 的输入行覆盖其 <code>ts</code> 之后的全部时间。</li>
+<li><code>ts</code> 为 <code>NULL</code> 的输入行不覆盖任何时间，但仍然会被输出。</li>
+<li>点不会分割填充行。</li>
+<li>输入的 <code>ts</code> 为负会报错。</li>
+<li>同一泳道内相互重叠的背景行会报错。</li>
+</ul>
+<p>示例参见<a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-getting-started.html#filling-gaps-interval-fill-gaps">填充间隙</a>。</p>
+<h3><a name="tree-accumulate" class="anchor" href="#tree-accumulate"></a><code>TREE ACCUMULATE</code> </h3><p>沿树向上或向下做聚合：</p>
+<div class="railroad"><svg class="railroad-diagram" width="517" height="92" viewBox="0 0 517 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M102 31h0"></path>
+<rect x="50" y="20" width="52" height="22" rx="10" ry="10"></rect>
+<text x="76" y="35">TREE</text>
+</g>
+<path d="M102 31h10"></path>
+<path d="M112 31h10"></path>
+<g>
+<path d="M122 31h0"></path>
+<path d="M222 31h0"></path>
+<rect x="122" y="20" width="100" height="22" rx="10" ry="10"></rect>
+<text x="172" y="35">ACCUMULATE</text>
+</g>
+<path d="M222 31h10"></path>
+<g>
+<path d="M232 31h0"></path>
+<path d="M324 31h0"></path>
+<path d="M232 31h20"></path>
+<g>
+<path d="M252 31h8"></path>
+<path d="M296 31h8"></path>
+<rect x="260" y="20" width="36" height="22" rx="10" ry="10"></rect>
+<text x="278" y="35">UP</text>
+</g>
+<path d="M304 31h20"></path>
+<path d="M232 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M252 61h0"></path>
+<path d="M304 61h0"></path>
+<rect x="252" y="50" width="52" height="22" rx="10" ry="10"></rect>
+<text x="278" y="65">DOWN</text>
+</g>
+<path d="M304 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M324 31h10"></path>
+<g>
+<path d="M334 31h0"></path>
+<path d="M466 31h0"></path>
+<rect x="334" y="20" width="132" height="22"></rect>
+<text x="400" y="35">aggregate-list</text>
+</g>
+<path d="M466 31h10"></path>
+<path d="M 476 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><strong>树：</strong>裸的 <code>id</code> 和 <code>parent_id</code>。根节点满足 <code>parent_id IS NULL</code>。</li>
+<li><strong>方向：</strong><ul>
+<li><code>UP</code>：每个节点的聚合覆盖它自身及其所有后代。行按子节点在前的顺序输出。</li>
+<li><code>DOWN</code>：每个节点的聚合覆盖它自身及其所有祖先。行按父节点在前的顺序输出。</li>
+</ul>
+</li>
+<li><strong>聚合：</strong>参见<a href="#aggregates">聚合</a>。沿 <code>DOWN</code> 方向的 <code>COUNT(*)</code> 即节点的深度，从 1 开始计。</li>
+<li><strong>输出：</strong>所有输入列，然后是聚合列。别名会保留，但不包含新增的列。</li>
+<li><strong>错误：</strong>两行共用一个 <code>id</code>、某行是它自己的父节点、<code>parent_id</code> 没有对应 <code>id</code> 的行。只有当后续阶段读取某个聚合时才会做这些检查；否则该阶段会被跳过。</li>
+</ul>
+<h3><a name="aggregate" class="anchor" href="#aggregate"></a><code>AGGREGATE</code> </h3><p>把每一组行折叠为一行：</p>
+<div class="railroad"><svg class="railroad-diagram" width="469" height="72" viewBox="0 0 469 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M142 41h0"></path>
+<rect x="50" y="30" width="92" height="22" rx="10" ry="10"></rect>
+<text x="96" y="45">AGGREGATE</text>
+</g>
+<path d="M142 41h10"></path>
+<path d="M152 41h10"></path>
+<g>
+<path d="M162 41h0"></path>
+<path d="M294 41h0"></path>
+<rect x="162" y="30" width="132" height="22"></rect>
+<text x="228" y="45">aggregate-list</text>
+</g>
+<path d="M294 41h10"></path>
+<g>
+<path d="M304 41h0"></path>
+<path d="M428 41h0"></path>
+<path d="M304 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M324 21h84"></path>
+</g>
+<path d="M408 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M304 41h20"></path>
+<g>
+<path d="M324 41h0"></path>
+<path d="M408 41h0"></path>
+<rect x="324" y="30" width="84" height="22"></rect>
+<text x="366" y="45">group-by</text>
+</g>
+<path d="M408 41h20"></path>
+</g>
+<path d="M 428 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><div class="railroad"><div class="railroad-name">group-by</div><svg class="railroad-diagram" width="513" height="102" viewBox="0 0 513 102">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 41h10"></path>
+<g>
+<path d="M50 41h0"></path>
+<path d="M110 41h0"></path>
+<rect x="50" y="30" width="60" height="22" rx="10" ry="10"></rect>
+<text x="80" y="45">GROUP</text>
+</g>
+<path d="M110 41h10"></path>
+<path d="M120 41h10"></path>
+<g>
+<path d="M130 41h0"></path>
+<path d="M166 41h0"></path>
+<rect x="130" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="148" y="45">BY</text>
+</g>
+<path d="M166 41h10"></path>
+<path d="M176 41h10"></path>
+<g>
+<path d="M186 41h0"></path>
+<path d="M462 41h0"></path>
+<path d="M186 41h10"></path>
+<g>
+<path d="M196 41h0"></path>
+<path d="M452 41h0"></path>
+<path d="M196 41h10"></path>
+<g>
+<path d="M206 41h0"></path>
+<path d="M274 41h0"></path>
+<rect x="206" y="30" width="68" height="22"></rect>
+<text x="240" y="45">column</text>
+</g>
+<path d="M274 41h10"></path>
+<g>
+<path d="M284 41h0"></path>
+<path d="M452 41h0"></path>
+<path d="M284 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M304 21h128"></path>
+</g>
+<path d="M432 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M284 41h20"></path>
+<g>
+<path d="M304 41h0"></path>
+<path d="M432 41h0"></path>
+<path d="M304 41h10"></path>
+<g>
+<path d="M314 41h0"></path>
+<path d="M350 41h0"></path>
+<rect x="314" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="332" y="45">AS</text>
+</g>
+<path d="M350 41h10"></path>
+<path d="M360 41h10"></path>
+<g>
+<path d="M370 41h0"></path>
+<path d="M422 41h0"></path>
+<rect x="370" y="30" width="52" height="22"></rect>
+<text x="396" y="45">name</text>
+</g>
+<path d="M422 41h10"></path>
+</g>
+<path d="M432 41h20"></path>
+</g>
+</g>
+<path d="M452 41h10"></path>
+<path d="M196 41a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M196 71h114"></path>
+<path d="M338 71h114"></path>
+<rect x="310" y="60" width="28" height="22" rx="10" ry="10"></rect>
+<text x="324" y="75">,</text>
+</g>
+<path d="M452 71a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M462 41h10"></path>
+<path d="M 472 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><strong>分组：</strong>在每个 <code>GROUP BY</code> 列上都一致的行构成一组。键可以是任何类型，也可以带限定符。<code>NULL</code> 键归为一组。没有 <code>GROUP BY</code> 时，所有行为一组，即使没有任何行也会产出一行。</li>
+<li><strong>聚合：</strong>至少一个；参见<a href="#aggregates">聚合</a>。</li>
+<li><strong>输出：</strong>先输出各键，然后是聚合列。键以其 <code>AS</code> 名称命名，否则以其不带限定符的列名命名。其余所有列和所有别名都会被丢弃。重复列出的键（即使分别写作 <code>cpu</code> 和 <code>t.cpu</code>）只分组一次，但会被输出两次。</li>
+<li><strong>顺序：</strong>分组按其第一行到达的顺序输出。</li>
+</ul>
+<p>例如，计算每个 slice 的 CPU 时间：</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block">INCLUDE PERFETTO <span class="hljs-keyword">MODULE</span> slices.with_context;
+
+<span class="hljs-type">INTERVAL</span> <span class="hljs-keyword">INTERSECTION</span> <span class="hljs-keyword">OF</span> (
+  (<span class="hljs-keyword">SELECT</span> id, ts, dur, utid <span class="hljs-keyword">FROM</span> thread_slice <span class="hljs-keyword">WHERE</span> dur <span class="hljs-operator">&gt;</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">AS</span> s,
+  (<span class="hljs-keyword">SELECT</span> ts, dur, utid <span class="hljs-keyword">FROM</span> sched <span class="hljs-keyword">WHERE</span> dur <span class="hljs-operator">&gt;</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">AS</span> <span class="hljs-keyword">running</span>
+) <span class="hljs-keyword">PER</span> utid
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> AGGREGATE <span class="hljs-built_in">SUM</span>(dur) <span class="hljs-keyword">AS</span> cpu_time <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> s.id
+<span class="hljs-operator">|</span><span class="hljs-operator">&gt;</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> id;</code></div><h3><a name="select" class="anchor" href="#select"></a><code>SELECT</code> </h3><p>用列出的各项替换当前行，并清除所有别名：</p>
+<div class="railroad"><svg class="railroad-diagram" width="261" height="92" viewBox="0 0 261 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M118 31h0"></path>
+<rect x="50" y="20" width="68" height="22" rx="10" ry="10"></rect>
+<text x="84" y="35">SELECT</text>
+</g>
+<path d="M118 31h10"></path>
+<path d="M128 31h10"></path>
+<g>
+<path d="M138 31h0"></path>
+<path d="M210 31h0"></path>
+<path d="M138 31h10"></path>
+<g>
+<path d="M148 31h0"></path>
+<path d="M200 31h0"></path>
+<rect x="148" y="20" width="52" height="22"></rect>
+<text x="174" y="35">item</text>
+</g>
+<path d="M200 31h10"></path>
+<path d="M148 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M148 61h12"></path>
+<path d="M188 61h12"></path>
+<rect x="160" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="174" y="65">,</text>
+</g>
+<path d="M200 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M210 31h10"></path>
+<path d="M 220 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p>每个 <code>&lt;item&gt;</code> 是以下之一：</p>
+<div class="railroad"><div class="railroad-name">item</div><svg class="railroad-diagram" width="377" height="102" viewBox="0 0 377 102">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 41h0"></path>
+<path d="M336 41h0"></path>
+<path d="M40 41h20"></path>
+<g>
+<path d="M60 41h0"></path>
+<path d="M316 41h0"></path>
+<path d="M60 41h10"></path>
+<g>
+<path d="M70 41h0"></path>
+<path d="M138 41h0"></path>
+<rect x="70" y="30" width="68" height="22"></rect>
+<text x="104" y="45">column</text>
+</g>
+<path d="M138 41h10"></path>
+<g>
+<path d="M148 41h0"></path>
+<path d="M316 41h0"></path>
+<path d="M148 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M168 21h128"></path>
+</g>
+<path d="M296 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M148 41h20"></path>
+<g>
+<path d="M168 41h0"></path>
+<path d="M296 41h0"></path>
+<path d="M168 41h10"></path>
+<g>
+<path d="M178 41h0"></path>
+<path d="M214 41h0"></path>
+<rect x="178" y="30" width="36" height="22" rx="10" ry="10"></rect>
+<text x="196" y="45">AS</text>
+</g>
+<path d="M214 41h10"></path>
+<path d="M224 41h10"></path>
+<g>
+<path d="M234 41h0"></path>
+<path d="M286 41h0"></path>
+<rect x="234" y="30" width="52" height="22"></rect>
+<text x="260" y="45">name</text>
+</g>
+<path d="M286 41h10"></path>
+</g>
+<path d="M296 41h20"></path>
+</g>
+</g>
+<path d="M316 41h20"></path>
+<path d="M40 41a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M60 71h102"></path>
+<path d="M214 71h102"></path>
+<rect x="162" y="60" width="52" height="22"></rect>
+<text x="188" y="75">star</text>
+</g>
+<path d="M316 71a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10"></path>
+</g>
+<path d="M 336 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li><strong>列。</strong>不带 <code>AS</code> 时保留其名称。</li>
+<li><strong>表达式</strong>（参见<a href="#expressions">表达式</a>）需带 <code>AS</code> 和名称。</li>
+<li><strong><code>&lt;star&gt;</code>：</strong></li>
+</ul>
+<div class="railroad"><div class="railroad-name">star</div><svg class="railroad-diagram" width="521" height="72" viewBox="0 0 521 72">
+<g transform="translate(.5 .5)">
+<path d="M 20 31 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<g>
+<path d="M40 41h0"></path>
+<path d="M208 41h0"></path>
+<path d="M40 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M60 21h128"></path>
+</g>
+<path d="M188 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M40 41h20"></path>
+<g>
+<path d="M60 41h0"></path>
+<path d="M188 41h0"></path>
+<path d="M60 41h10"></path>
+<g>
+<path d="M70 41h0"></path>
+<path d="M130 41h0"></path>
+<rect x="70" y="30" width="60" height="22"></rect>
+<text x="100" y="45">alias</text>
+</g>
+<path d="M130 41h10"></path>
+<path d="M140 41h10"></path>
+<g>
+<path d="M150 41h0"></path>
+<path d="M178 41h0"></path>
+<rect x="150" y="30" width="28" height="22" rx="10" ry="10"></rect>
+<text x="164" y="45">.</text>
+</g>
+<path d="M178 41h10"></path>
+</g>
+<path d="M188 41h20"></path>
+</g>
+<path d="M208 41h10"></path>
+<g>
+<path d="M218 41h0"></path>
+<path d="M246 41h0"></path>
+<rect x="218" y="30" width="28" height="22" rx="10" ry="10"></rect>
+<text x="232" y="45">&#42;</text>
+</g>
+<path d="M246 41h10"></path>
+<g>
+<path d="M256 41h0"></path>
+<path d="M364 41h0"></path>
+<path d="M256 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M276 21h68"></path>
+</g>
+<path d="M344 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M256 41h20"></path>
+<g>
+<path d="M276 41h0"></path>
+<path d="M344 41h0"></path>
+<rect x="276" y="30" width="68" height="22"></rect>
+<text x="310" y="45">except</text>
+</g>
+<path d="M344 41h20"></path>
+</g>
+<g>
+<path d="M364 41h0"></path>
+<path d="M480 41h0"></path>
+<path d="M364 41a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M384 21h76"></path>
+</g>
+<path d="M460 21a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M364 41h20"></path>
+<g>
+<path d="M384 41h0"></path>
+<path d="M460 41h0"></path>
+<rect x="384" y="30" width="76" height="22"></rect>
+<text x="422" y="45">replace</text>
+</g>
+<path d="M460 41h20"></path>
+</g>
+<path d="M 480 41 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><div class="railroad"><div class="railroad-name">except</div><svg class="railroad-diagram" width="357" height="92" viewBox="0 0 357 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M118 31h0"></path>
+<rect x="50" y="20" width="68" height="22" rx="10" ry="10"></rect>
+<text x="84" y="35">EXCEPT</text>
+</g>
+<path d="M118 31h10"></path>
+<path d="M128 31h10"></path>
+<g>
+<path d="M138 31h0"></path>
+<path d="M166 31h0"></path>
+<rect x="138" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="152" y="35">(</text>
+</g>
+<path d="M166 31h10"></path>
+<path d="M176 31h10"></path>
+<g>
+<path d="M186 31h0"></path>
+<path d="M258 31h0"></path>
+<path d="M186 31h10"></path>
+<g>
+<path d="M196 31h0"></path>
+<path d="M248 31h0"></path>
+<rect x="196" y="20" width="52" height="22"></rect>
+<text x="222" y="35">name</text>
+</g>
+<path d="M248 31h10"></path>
+<path d="M196 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M196 61h12"></path>
+<path d="M236 61h12"></path>
+<rect x="208" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="222" y="65">,</text>
+</g>
+<path d="M248 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M258 31h10"></path>
+<path d="M268 31h10"></path>
+<g>
+<path d="M278 31h0"></path>
+<path d="M306 31h0"></path>
+<rect x="278" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="292" y="35">)</text>
+</g>
+<path d="M306 31h10"></path>
+<path d="M 316 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><div class="railroad"><div class="railroad-name">replace</div><svg class="railroad-diagram" width="545" height="92" viewBox="0 0 545 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M126 31h0"></path>
+<rect x="50" y="20" width="76" height="22" rx="10" ry="10"></rect>
+<text x="88" y="35">REPLACE</text>
+</g>
+<path d="M126 31h10"></path>
+<path d="M136 31h10"></path>
+<g>
+<path d="M146 31h0"></path>
+<path d="M174 31h0"></path>
+<rect x="146" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="160" y="35">(</text>
+</g>
+<path d="M174 31h10"></path>
+<path d="M184 31h10"></path>
+<g>
+<path d="M194 31h0"></path>
+<path d="M446 31h0"></path>
+<path d="M194 31h10"></path>
+<g>
+<path d="M204 31h0"></path>
+<path d="M436 31h0"></path>
+<path d="M204 31h10"></path>
+<g>
+<path d="M214 31h0"></path>
+<path d="M282 31h0"></path>
+<rect x="214" y="20" width="68" height="22"></rect>
+<text x="248" y="35">column</text>
+</g>
+<path d="M282 31h10"></path>
+<path d="M292 31h10"></path>
+<g>
+<path d="M302 31h0"></path>
+<path d="M338 31h0"></path>
+<rect x="302" y="20" width="36" height="22" rx="10" ry="10"></rect>
+<text x="320" y="35">AS</text>
+</g>
+<path d="M338 31h10"></path>
+<path d="M348 31h10"></path>
+<g>
+<path d="M358 31h0"></path>
+<path d="M426 31h0"></path>
+<rect x="358" y="20" width="68" height="22"></rect>
+<text x="392" y="35">target</text>
+</g>
+<path d="M426 31h10"></path>
+</g>
+<path d="M436 31h10"></path>
+<path d="M204 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M204 61h102"></path>
+<path d="M334 61h102"></path>
+<rect x="306" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="320" y="65">,</text>
+</g>
+<path d="M436 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M446 31h10"></path>
+<path d="M456 31h10"></path>
+<g>
+<path d="M466 31h0"></path>
+<path d="M494 31h0"></path>
+<rect x="466" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="480" y="35">)</text>
+</g>
+<path d="M494 31h10"></path>
+<path d="M 504 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p>星号的工作方式如下：</p>
+<ol>
+<li><code>*</code> 即按裸名称可找到的列。在 <code>INTERVAL INTERSECTION OF</code> 之后，这不包括每个源自己的 <code>ts</code> 和 <code>dur</code>。<code>&lt;alias&gt;.*</code> 是该别名被设置时所持有的列。</li>
+<li><code>EXCEPT</code> 移除与所列名称对应的所有列。每个名称都必须至少匹配一列且只能列出一次，并且必须至少保留一列。</li>
+<li><code>REPLACE (&lt;column&gt; AS &lt;target&gt;)</code> 把 <code>&lt;column&gt;</code> 的值放入 <code>&lt;target&gt;</code>，并保持 <code>&lt;target&gt;</code> 的名称和位置。<code>&lt;column&gt;</code> 在该阶段之前的行中查找；<code>&lt;target&gt;</code> 必须是 <code>EXCEPT</code> 之后剩下的恰好一列。</li>
+<li>星号添加的每一列在后续阶段中都可以按裸名称引用。</li>
+</ol>
+<h3><a name="extend" class="anchor" href="#extend"></a><code>EXTEND</code> </h3><p>在行的末尾添加列，保留所有列和别名：</p>
+<div class="railroad"><svg class="railroad-diagram" width="261" height="92" viewBox="0 0 261 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M118 31h0"></path>
+<rect x="50" y="20" width="68" height="22" rx="10" ry="10"></rect>
+<text x="84" y="35">EXTEND</text>
+</g>
+<path d="M118 31h10"></path>
+<path d="M128 31h10"></path>
+<g>
+<path d="M138 31h0"></path>
+<path d="M210 31h0"></path>
+<path d="M138 31h10"></path>
+<g>
+<path d="M148 31h0"></path>
+<path d="M200 31h0"></path>
+<rect x="148" y="20" width="52" height="22"></rect>
+<text x="174" y="35">item</text>
+</g>
+<path d="M200 31h10"></path>
+<path d="M148 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M148 61h12"></path>
+<path d="M188 61h12"></path>
+<rect x="160" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="174" y="65">,</text>
+</g>
+<path d="M200 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M210 31h10"></path>
+<path d="M 220 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>各项与 <code>SELECT</code> 相同，但不允许裸的 <code>*</code>。请使用 <code>&lt;alias&gt;.*</code> 来添加某个别名的列。</li>
+<li>各项读取的都是该阶段之前的行，因此某一项不能引用另一项。</li>
+<li>别名不包含新增的列。</li>
+</ul>
+<h3><a name="drop" class="anchor" href="#drop"></a><code>DROP</code> </h3><p>按名称移除列：</p>
+<div class="railroad"><svg class="railroad-diagram" width="245" height="92" viewBox="0 0 245 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M102 31h0"></path>
+<rect x="50" y="20" width="52" height="22" rx="10" ry="10"></rect>
+<text x="76" y="35">DROP</text>
+</g>
+<path d="M102 31h10"></path>
+<path d="M112 31h10"></path>
+<g>
+<path d="M122 31h0"></path>
+<path d="M194 31h0"></path>
+<path d="M122 31h10"></path>
+<g>
+<path d="M132 31h0"></path>
+<path d="M184 31h0"></path>
+<rect x="132" y="20" width="52" height="22"></rect>
+<text x="158" y="35">name</text>
+</g>
+<path d="M184 31h10"></path>
+<path d="M132 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M132 61h12"></path>
+<path d="M172 61h12"></path>
+<rect x="144" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="158" y="65">,</text>
+</g>
+<path d="M184 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M194 31h10"></path>
+<path d="M 204 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>每个名称都必须匹配一个按裸名称可找到的列，并移除该名称的所有列。</li>
+<li>每个名称只能列出一次，并且必须至少保留一列。</li>
+<li>别名保留被删除的列。与被删除列同名的别名会被移除。</li>
+</ul>
+<h3><a name="rename" class="anchor" href="#rename"></a><code>RENAME</code> </h3><p>就地重命名列：</p>
+<div class="railroad"><svg class="railroad-diagram" width="393" height="92" viewBox="0 0 393 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M118 31h0"></path>
+<rect x="50" y="20" width="68" height="22" rx="10" ry="10"></rect>
+<text x="84" y="35">RENAME</text>
+</g>
+<path d="M118 31h10"></path>
+<path d="M128 31h10"></path>
+<g>
+<path d="M138 31h0"></path>
+<path d="M342 31h0"></path>
+<path d="M138 31h10"></path>
+<g>
+<path d="M148 31h0"></path>
+<path d="M332 31h0"></path>
+<path d="M148 31h10"></path>
+<g>
+<path d="M158 31h0"></path>
+<path d="M202 31h0"></path>
+<rect x="158" y="20" width="44" height="22"></rect>
+<text x="180" y="35">old</text>
+</g>
+<path d="M202 31h10"></path>
+<path d="M212 31h10"></path>
+<g>
+<path d="M222 31h0"></path>
+<path d="M258 31h0"></path>
+<rect x="222" y="20" width="36" height="22" rx="10" ry="10"></rect>
+<text x="240" y="35">AS</text>
+</g>
+<path d="M258 31h10"></path>
+<path d="M268 31h10"></path>
+<g>
+<path d="M278 31h0"></path>
+<path d="M322 31h0"></path>
+<rect x="278" y="20" width="44" height="22"></rect>
+<text x="300" y="35">new</text>
+</g>
+<path d="M322 31h10"></path>
+</g>
+<path d="M332 31h10"></path>
+<path d="M148 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M148 61h78"></path>
+<path d="M254 61h78"></path>
+<rect x="226" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="240" y="65">,</text>
+</g>
+<path d="M332 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M342 31h10"></path>
+<path d="M 352 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>每个 <code>&lt;old&gt;</code> 必须是按裸名称可找到的恰好一列，且只能列出一次。</li>
+<li>所有重命名同时生效，因此 <code>|&gt; RENAME x AS y, y AS x</code> 会交换 <code>x</code> 和 <code>y</code>。</li>
+<li>允许重命名为已存在的名称；该名称因此变得有歧义。</li>
+<li>别名保留旧名称。</li>
+</ul>
+<h3><a name="set" class="anchor" href="#set"></a><code>SET</code> </h3><p>就地替换列的值：</p>
+<div class="railroad"><svg class="railroad-diagram" width="409" height="92" viewBox="0 0 409 92">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M94 31h0"></path>
+<rect x="50" y="20" width="44" height="22" rx="10" ry="10"></rect>
+<text x="72" y="35">SET</text>
+</g>
+<path d="M94 31h10"></path>
+<path d="M104 31h10"></path>
+<g>
+<path d="M114 31h0"></path>
+<path d="M358 31h0"></path>
+<path d="M114 31h10"></path>
+<g>
+<path d="M124 31h0"></path>
+<path d="M348 31h0"></path>
+<path d="M124 31h10"></path>
+<g>
+<path d="M134 31h0"></path>
+<path d="M202 31h0"></path>
+<rect x="134" y="20" width="68" height="22"></rect>
+<text x="168" y="35">target</text>
+</g>
+<path d="M202 31h10"></path>
+<path d="M212 31h10"></path>
+<g>
+<path d="M222 31h0"></path>
+<path d="M250 31h0"></path>
+<rect x="222" y="20" width="28" height="22" rx="10" ry="10"></rect>
+<text x="236" y="35">=</text>
+</g>
+<path d="M250 31h10"></path>
+<path d="M260 31h10"></path>
+<g>
+<path d="M270 31h0"></path>
+<path d="M338 31h0"></path>
+<rect x="270" y="20" width="68" height="22"></rect>
+<text x="304" y="35">column</text>
+</g>
+<path d="M338 31h10"></path>
+</g>
+<path d="M348 31h10"></path>
+<path d="M124 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M124 61h98"></path>
+<path d="M250 61h98"></path>
+<rect x="222" y="50" width="28" height="22" rx="10" ry="10"></rect>
+<text x="236" y="65">,</text>
+</g>
+<path d="M348 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10"></path>
+</g>
+<path d="M358 31h10"></path>
+<path d="M 368 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><ul>
+<li>每个 <code>&lt;target&gt;</code> 必须是按裸名称可找到的恰好一列，且只能列出一次。</li>
+<li>每个 <code>&lt;column&gt;</code> 都在该阶段之前的行中查找。因此 <code>|&gt; SET x = y, y = x</code> 会交换 <code>x</code> 和 <code>y</code> 的值。它也可以是一个<a href="#expressions">表达式</a>。</li>
+<li>别名保留旧值。与某个目标同名的别名会被移除。</li>
+</ul>
+<h3><a name="as" class="anchor" href="#as"></a><code>AS</code> </h3><p>用一个绑定到当前行的别名替换所有别名：</p>
+<div class="railroad"><svg class="railroad-diagram" width="217" height="62" viewBox="0 0 217 62">
+<g transform="translate(.5 .5)">
+<path d="M 20 21 v 20 m 10 -20 v 20 m -10 -10 h 20.5"></path>
+<path d="M40 31h10"></path>
+<g>
+<path d="M50 31h0"></path>
+<path d="M86 31h0"></path>
+<rect x="50" y="20" width="36" height="22" rx="10" ry="10"></rect>
+<text x="68" y="35">AS</text>
+</g>
+<path d="M86 31h10"></path>
+<path d="M96 31h10"></path>
+<g>
+<path d="M106 31h0"></path>
+<path d="M166 31h0"></path>
+<rect x="106" y="20" width="60" height="22"></rect>
+<text x="136" y="35">alias</text>
+</g>
+<path d="M166 31h10"></path>
+<path d="M 176 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>
+</div><p>在 <code>|&gt; AS u</code> 之后，先前的别名不复存在，<code>u.&lt;col&gt;</code> 和 <code>u.*</code> 即此刻按裸名称可找到的列。在 <code>INTERVAL INTERSECTION OF</code> 之后，<code>u.ts</code> 是区域的 <code>ts</code>，各源自己的 <code>ts</code> 和 <code>dur</code> 无法再被访问。</p>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>名称</h2><ul>
+<li><strong>大小写：</strong>列名和别名的匹配不区分 ASCII 大小写。输出保留它们被定义时的大小写。</li>
+<li><strong>重复：</strong>某个阶段可以让两列共用一个名称，例如在 <code>y</code> 已存在时执行 <code>|&gt; RENAME x AS y</code>。只有当后续阶段不加限定符地引用该名称时才会出错。<code>DROP y</code> 或 <code>* EXCEPT (y)</code> 会移除所有副本。</li>
+<li><strong>引号：</strong>名称可以用 <code>&quot;...&quot;</code>、<code>`...`</code> 或 <code>[...]</code> 括起来。在 <code>&quot;...&quot;</code> 和 <code>`...`</code> 内部，双写的引号表示字面引号。</li>
+</ul>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
