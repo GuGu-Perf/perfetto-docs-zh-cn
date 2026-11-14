@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PerfettoSQL pipe 运算符实现说明 - Perfetto Tracing Docs</title>
+  <meta property="og:title" content="PerfettoSQL pipe 运算符实现说明 - Perfetto Tracing Docs">
+  <meta property="og:site_name" content="Perfetto">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en">
+  <meta property="og:url" content="https://perfetto.dev/docs/design-docs/perfetto-sql-pipelines">
+
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="canonical" href="https://perfetto.dev/docs/design-docs/perfetto-sql-pipelines">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Roboto+Mono" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/style.css">
+  <link rel="stylesheet" href="/perfetto-docs-zh-cn/assets/tomorrow-night.css">
+  <link rel="shortcut icon" href="/perfetto-docs-zh-cn/assets/favicon.png" />
+
+  <script type="text/javascript" src="/perfetto-docs-zh-cn/assets/script.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    
+    <a href="/perfetto-docs-zh-cn/docs/">
+      <img src="/perfetto-docs-zh-cn/assets/brand.png">
+      <span class="brand-docs">Docs</span>
+    </a>
+    
+  </div>
+  <a href="#toggle" class="menu"><i class="material-icons-round">menu</i></a>
+
+  
+    <div id="search">
+      <input id="search-box" type="text" placeholder="Search" autocomplete="off">
+      <div id="search-res"></div>
+    </div>
+    <a href="/perfetto-docs-zh-cn/">Home</a>
+  
+  
+  
+  <a href="/perfetto-docs-zh-cn/docs/community.html">Community</a>
+  <a href="https://ui.perfetto.dev/">Trace Viewer</a>
+  <a href="https://github.com/google/perfetto">GitHub</a>
+</header>
+<div class="docs">
+  <nav class="nav">
+    <ul>
+<li><p><a href="#">概述</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/">什么是 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/tracing-101.html">什么是 Tracing？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/getting-started/start-using-perfetto.html">如何开始使用 Perfetto？</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/community.html">社区与获取帮助</a></li>
+</ul>
+</li>
+<li><p><a href="#">快速入门</a></p>
+<ul>
+<li><p><a href="#">教程</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/system-tracing.html">系统 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/in-app-tracing.html">应用内 Tracing</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/getting-started/rust-sdk.html">Rust SDK</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/memory-profiling.html">Memory Profiling</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/cpu-profiling.html">CPU Profiling</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/atrace.html">使用 atrace 插桩</a></li>
+<li class="tag-linux tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/ftrace.html">使用 ftrace 插桩</a></li>
+<li class="tag-chrome"><a href="/perfetto-docs-zh-cn/docs/getting-started/chrome-tracing.html">录制 Chrome Trace</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/other-formats.html">导入其他格式</a></li>
+<li class="tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/converting.html">转换为 Perfetto 格式</a></li>
+</ul>
+</li>
+<li><p><a href="#">实战指南</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/local-android-trace-recording.html">本地录制 Android Trace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/getting-started/android-trace-analysis.html">分析 Android Trace</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/command-line-analysis.html">从命令行分析 trace</a></li>
+<li class="tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/linux-cookbook.html">Linux 上的 Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/getting-started/periodic-trace-snapshots.html">采集周期性 Trace 快照</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/getting-started/using-ai.html">在 Perfetto 中使用 AI</a></li>
+</ul>
+</li>
+<li><p><a href="#">案例研究</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/case-studies/memory.html">调试内存使用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/case-studies/scheduling-blockages.html">调度阻塞</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/common-tasks.html">常见任务</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">深入学习</a></p>
+<ul>
+<li><p><a href="#">概念</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/service-model.html">服务模型</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/buffers.html">缓冲区和数据流</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/config.html">Trace 配置</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/concepts/clock-sync.html">时钟同步</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/concepts/merging-traces.html">Trace 合并</a></li>
+<li class="tag-android tag-linux tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/concepts/concurrent-tracing-sessions.html">并发 Tracing 会话</a></li>
+</ul>
+</li>
+<li><p><a href="#">采集</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/tracing-in-background.html">后台 Tracing</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/learning-more/android.html">高级 Android Tracing</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/symbolization.html">符号化与反混淆</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/previous-boot-trace.html">跨重启 Tracing</a></li>
+<li class="tag-cpp-rust tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/instrumentation/extensions.html">自定义 Proto Extensions</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/heapprofd-api.html">heapprofd API</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/learning-more/multi-machine-tracing.html">多机器记录</a></li>
+</ul>
+</li>
+<li><p><a href="#">数据源</a></p>
+<ul>
+<li><p><a href="#">系统</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-scheduling.html">CPU 调度</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/syscalls.html">系统调用</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/cpu-freq.html">CPU 调频</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/funcgraph.html">内核函数图追踪</a></li>
+<li class="tag-android tag-linux tag-perf"><a href="/perfetto-docs-zh-cn/docs/data-sources/gpu.html">GPU</a></li>
+</ul>
+</li>
+<li><p><a href="#">内存</a></p>
+<ul>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/memory-counters.html">内存 Counter</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/data-sources/native-heap-profiler.html">Allocation Profiler</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/java-heap-profiler.html">ART Heap Dump</a></li>
+</ul>
+</li>
+<li><p><a href="#">Android</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/atrace.html">ATrace</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-log.html">Logcat</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/frametimeline.html">Frame Timeline</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/battery-counters.html">电池与功耗</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-game-intervention-list.html">Android Game Interventions</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/android-aflags.html">Android Aflags</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/data-sources/video-frames.html">屏幕录制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Tracing SDK</a></p>
+<ul>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/tracing-sdk.html">Tracing SDK</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/track-events.html">Track Event</a></li>
+</ul>
+</li>
+<li><p><a href="#">可视化</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui.html">Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/merging-traces.html">在 UI 中合并 trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/data-explorer.html">Data Explorer</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/large-traces.html">打开大型 Trace</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/deep-linking-to-perfetto-ui.html">深度链接</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-the-ui.html">嵌入 Perfetto UI</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/debug-tracks.html">调试 Track</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/visualization/heap-dump-explorer.html">Heap Dump 浏览器</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/visualization/memscope.html">Memscope 与 Memory Overview</a></p></li>
+<li><p><a href="#">扩展 UI</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extending-the-ui.html">概述</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/ui-automation.html">UI 自动化</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/commands-automation-reference.html">命令参考</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/extension-servers.html">扩展服务器</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-perf"><a href="/perfetto-docs-zh-cn/docs/visualization/googler-features.html">Googler 特性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#">Trace 分析</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/getting-started.html">快速入门</a></p></li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-getting-started.html">快速入门</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-syntax.html">语法</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/stdlib-docs.html">标准库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/style-guide.html">样式指南</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-backcompat.html">向后兼容性</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor.html">C++ 库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/trace-processor-python.html">Python 库</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/batch-trace-processor.html">批量 Trace Processor</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/merging-traces.html">从命令行合并 trace</a></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/analysis/trace-summary.html">Trace 汇总</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><p><a href="/perfetto-docs-zh-cn/docs/quickstart/traceconv.html">从 Perfetto 转换</a></p></li>
+</ul>
+</li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/faq.html">FAQ</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">深入探索</a></p>
+<ul>
+<li><p><a href="#">命令行工具</a></p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/reference/trace-processor-cli.html">trace_processor</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-cli.html">perfetto</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced.html">traced</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/traced_probes.html">traced_probes</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/heap_profile-cli.html">heap_profile</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/reference/tracebox.html">tracebox</a></li>
+</ul>
+</li>
+<li><p><a href="#">参考</a></p>
+<ul>
+<li><p><a href="#">Proto</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome"><a href="/perfetto-docs-zh-cn/docs/reference/trace-config-proto.html">Trace Config</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/reference/trace-packet-proto.html">Trace Packet</a></li>
+</ul>
+</li>
+<li><p><a href="#">PerfettoSQL</a></p>
+<ul>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-tables.html">Prelude 表</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/builtin.html">内置函数</a></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><a href="/perfetto-docs-zh-cn/docs/analysis/sql-stats.html">Stats 表</a></li>
+</ul>
+</li>
+<li class="tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/synthetic-track-event.html">合成 Track Event</a></p></li>
+<li class="tag-android tag-linux"><p><a href="/perfetto-docs-zh-cn/docs/reference/kernel-track-event.html">内核 Track Event</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/reference/perfetto-manifest.html">Trace Manifest 格式</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/extension-server-protocol.html">扩展服务器协议</a></p></li>
+<li class="tag-android tag-linux tag-cpp-rust tag-chrome tag-perf"><p><a href="/perfetto-docs-zh-cn/docs/visualization/embedding-api-reference.html">嵌入 API</a></p></li>
+<li class="tag-android"><p><a href="/perfetto-docs-zh-cn/docs/reference/android-version-notes.html">Android 版本说明</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">高级主题</a></p>
+<ul>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/concepts/detached-mode.html">分离模式</a></li>
+<li class="tag-cpp-rust"><a href="/perfetto-docs-zh-cn/docs/instrumentation/interceptors.html">拦截器</a></li>
+<li class="tag-android"><a href="/perfetto-docs-zh-cn/docs/analysis/metrics.html">旧版（v1）指标</a></li>
+<li class="tag-android tag-linux"><a href="/perfetto-docs-zh-cn/docs/deployment/multi-machine-architecture.html">多机架构</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-a-single-machine.html">BigTrace（单机）</a></li>
+<li class="tag-android tag-perf"><a href="/perfetto-docs-zh-cn/docs/deployment/deploying-bigtrace-on-kubernetes.html">Kubernetes 上的 BigTrace</a></li>
+</ul>
+</li>
+<li><p><a href="#">贡献</a></p>
+<ul>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/build-instructions.html">构建</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/testing.html">测试</a></p></li>
+<li><p><a href="#">UI 开发</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-getting-started.html">快速入门</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/ui-plugins.html">插件</a></li>
+</ul>
+</li>
+<li><p><a href="#">发布</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/sdk-releasing.html">SDK 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/contributing/python-releasing.html">Python 发布</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/visualization/perfetto-ui-release-process.html">UI 发布</a></li>
+</ul>
+</li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/become-a-committer.html">成为提交者</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/chrome-branches.html">Chrome 分支</a></p></li>
+<li class="tag-contrib"><p><a href="/perfetto-docs-zh-cn/docs/contributing/sqlite-upgrade-guide.html">SQLite 升级</a></p></li>
+</ul>
+</li>
+<li><p><a href="#">设计文档</a></p>
+<ul>
+<li><p><a href="#">核心</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/api-and-abi.html">API 和 ABI 接口</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/life-of-a-tracing-session.html">Tracing 会话的生命周期</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/security-model.html">安全模型</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-buffer.html">Trace Buffer V2</a></li>
+</ul>
+</li>
+<li><p><a href="#">基础设施</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/protozero.html">ProtoZero</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/lock-free-task-runner.html">LockFreeTaskRunner</a></li>
+</ul>
+</li>
+<li><p><a href="#">Trace Processor</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/trace-processor-architecture.html">架构</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/batch-trace-processor.html">批量 Trace Processor</a></li>
+</ul>
+</li>
+<li><p><a href="#">UI</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/data-explorer-architecture.html">数据浏览器架构</a></li>
+</ul>
+</li>
+<li><p><a href="#">Profiling</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-design.html">Heapprofd 设计</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-wire-protocol.html">Heapprofd 线路协议</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/heapprofd-sampling.html">Heapprofd 采样</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/pprof-support.html">pprof 支持</a></li>
+</ul>
+</li>
+<li><p><a href="#">其他</a></p>
+<ul>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/checkpoint-atoms.html">Statsd Checkpoint Atom</a></li>
+<li class="tag-contrib"><a href="/perfetto-docs-zh-cn/docs/design-docs/continuous-integration.html">Perfetto CI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav>
+
+  <main class="md-content" data-md-file="/docs/design-docs/perfetto-sql-pipelines">
+    <h1>PerfettoSQL pipe 运算符实现说明</h1><p>本页面描述 pipeline 如何被编译与执行，以及每个阶段是如何实现的。</p>
+<blockquote>
+<p><strong>警告:</strong> pipe 语法及其实现是<strong>实验性的、不稳定的</strong>。请<strong>不要</strong>依赖这里描述的任何内容。无论是语法还是执行行为，都可能且必将在毫无预兆的情况下发生变化。</p>
+</blockquote>
+<p>相关页面：</p>
+<ul>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-syntax.html">PerfettoSQL pipe 语法参考</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-migration.html">迁移到 PerfettoSQL pipe 语法</a></li>
+<li><a href="/perfetto-docs-zh-cn/docs/analysis/perfetto-sql-pipe-getting-started.html">PerfettoSQL pipe 语法入门指南</a></li>
+</ul>
+<hr>
+<h2><a name="-" class="anchor" href="#-"></a>从查询到行</h2><p>代码：<code>/src/trace_processor/perfetto_sql/pipeline/</code></p>
+<ol>
+<li><strong>编译。</strong> <code>Compiler</code> 把解析后的 pipeline 转换成一个 <code>LogicalPlan</code>：一棵由 <code>PlanNode</code> 组成的树，每个数据源或阶段对应一个节点，各持有一个 <code>PlanOperation</code>。名称解析与类型检查都在这一步完成，因此错误会指向出错的 token。</li>
+<li><strong>裁剪。</strong> <code>PruneColumns</code> 丢弃没有任何下游读取的内容（参见<a href="#column-pruning">列裁剪</a>）。</li>
+<li><strong>序列化。</strong> <code>SelectPipelineSql</code> 把执行计划写成字节，并包装成一条调用 <code>__intrinsic_pipeline</code> 表函数的 SQL 语句。每个 SQL 数据源都变成一个由 <code>__intrinsic_dataframe_agg</code> 构造的参数（参见<a href="#from"><code>FROM</code></a>）。</li>
+<li><strong>降级（lower）。</strong> 当 SQLite 执行该语句时，执行计划会被读回（<code>DeserializePlan</code>），各 SQL 数据源被绑定为 dataframe（<code>BindDataframeArgs</code>），绑定后遍历（bound passes）会重写它（参见<a href="#bound-passes">绑定后遍历</a>），最后由 <code>Lower</code> 把它转换为由执行器运算符组成的 <code>PhysicalPlan</code>。直接读取的表会被校验，确认它与执行计划编译时所依据的是同一张表。</li>
+<li><strong>运行。</strong> <code>RowCursor</code> 拉动各批次流过运算符，SQLite 再逐行读取它们。</li>
+</ol>
+<p>每个 <code>PlanOperation</code> 说明三件事。<code>Needs</code> 是它对每个输入的行有什么要求，例如某个给定类型的列、按某些键分组并按 <code>ts</code> 排好序的行，或者一种树序。<code>Derive</code> 是它随后输出什么：有哪些列、各列的类型，以及行的排列方式（<code>OutputProperties</code>）。<code>Lower</code> 则加入自己的运算符。</p>
+<p>所有做决策的工作都集中在对执行计划的一趟遍历（<code>RunBoundPasses</code>）中完成，方向自各输入向上。在每个节点上，它先让该操作重写执行计划（<code>Rewrite</code>）；然后比较每个输入提供的内容与该节点的需求，并算出需要采取的步骤：类型转换、排序、分组或树序，且只在行尚不处于该状态时才插入。它最后才推导节点的输出，这同时为其中的表达式确定了类型。执行计划的任何问题都在这里被发现。降级某个输入时会顺带执行这些步骤，因此降级本身不做任何决策，也不可能失败。顺序不再被任何下游读取的排序，会在被更晚的排序取代时从执行计划中移除。</p>
+<p>拥有多个输入的运算符（例如 <code>INTERVAL INTERSECTION OF</code>）会通过侧 pipeline（<code>AddSidePipeline</code>）读取每个额外输入，侧 pipeline 的降级方式与主 pipeline 相同。</p>
+<h3><a name="-" class="anchor" href="#-"></a>批次</h3><p>运算符之间传递列式批次（<code>RowBatch</code>），每个批次最多 2048 行。每一列都是建立在一段平坦数组之上的视图，可选地附带一个用于 <code>NULL</code> 的位向量。每个批次只有一个 <code>Selection</code>（行选择集）：一组递增的行索引，指明哪些行是存活的。它只能丢弃行，因此过滤不会复制任何内容。重排行（如排序所做的）则会把行复制进新的缓冲区（<code>RowStore::Gather</code>）。</p>
+<h3><a name="column-pruning" class="anchor" href="#column-pruning"></a>列裁剪 </h3><p>降级之前，<code>PruneColumns</code> 从 pipeline 的输出回溯到各数据源，标记出会被读取的列：</p>
+<ul>
+<li>数据源只读取存活的列。扫描总是至少读取一个列，因此它仍然知道共有多少行。</li>
+<li><code>INTERVAL INTERSECTION OF</code> 只保留会被读取的操作数列。</li>
+<li>没有任何人读取的聚合会从 <code>TREE ACCUMULATE</code>、<code>INTERVAL FLATTEN</code> 和 <code>AGGREGATE</code> 中丢弃。如果 <code>TREE ACCUMULATE</code> 的输出一列都没有被读取，整个阶段都会被移除。</li>
+<li><code>INTERVAL FILL GAPS</code> 丢弃没有人读取的输出。</li>
+<li><code>WHERE</code>、<code>ORDER BY</code> 和 <code>DISTINCT</code> 保留它们用于比较的列，<code>AGGREGATE</code> 保留其键。</li>
+</ul>
+<h3><a name="bound-passes" class="anchor" href="#bound-passes"></a>绑定后遍历 </h3><p>有些决策依赖绑定（binding）阶段发现的信息：一张表是如何排序或索引的，或者某个输入的行会以什么顺序到达。编译期做不了这些决策，因为它只能看到名称和形状；降级也做不了，因为它一次只为一个操作添加步骤，从不移动操作。</p>
+<p>绑定阶段把发现的信息记录在执行计划旁的 <code>Bindings</code> 中，执行计划本身保持原样。随后 <code>RunBoundPasses</code> 依据这些事实运行若干趟处理，它们可以重排、合并或删除节点。每一趟都定义在它所重写的操作旁边。一趟自输入向上的扫描会运行这些重写并推导每个节点的输出，因此在某个节点上执行的重写，看到的是其下方的一切都已是最终形态，而其上方还没有任何内容被推导出来。</p>
+<hr>
+<h2><a name="from" class="anchor" href="#from"></a><code>FROM</code> </h2><p>代码：<code>operations/scan.cc</code>、<code>/src/trace_processor/core/exec/dataframe_scan.cc</code></p>
+<p>每个数据源都由 <code>DataframeScan</code> 以 dataframe 的形式读取。</p>
+<h3><a name="-" class="anchor" href="#-"></a>表</h3><p>当 <code>FROM</code> 指向一个已定稿的 dataframe（例如 <code>slice</code>、<code>sched</code> 或任何 <code>PERFETTO TABLE</code>）时，pipeline 会直接读取其存储：</p>
+<ul>
+<li>只读取存活的列，并跳过隐藏列。</li>
+<li>列缓冲区是被引用的，而不是被复制的。</li>
+<li>已排序的列会被声明为已排序，因此在这些列上的 <code>ORDER BY</code> 没有开销。</li>
+<li>以 <code>0, 1, 2, ...</code> 形式存储的 <code>id</code> 列能让 <code>TREE ACCUMULATE</code> 跳过其哈希表。</li>
+</ul>
+<h3><a name="-" class="anchor" href="#-"></a>视图与子查询</h3><p>视图、虚拟表或 <code>SELECT</code> 子查询的列名与类型在 pipeline 编译时由 <code>RelationAnalyzer</code> 推导得出。如果它只是选取并重命名某个已定稿表的列，该表就会像上面那样被直接读取。</p>
+<p>否则 SQLite 会把它执行一次，由 <code>__intrinsic_dataframe_agg</code> 把返回的行收集成一个 dataframe，再交给 pipeline：</p>
+<div class="code-block-wrapper"><button class="code-copy-button" type="button" aria-label="Copy code" title="Copy to clipboard"></button><code class="hljs code-block"><span class="hljs-keyword">SELECT</span> __intrinsic_dataframe_agg(<span class="hljs-string">&#x27;&lt;col_0&gt;,&lt;col_2&gt;&#x27;</span>, &quot;&lt;col_0&gt;&quot;, &quot;&lt;col_2&gt;&quot;)
+<span class="hljs-keyword">FROM</span> <span class="hljs-operator">&lt;</span>source<span class="hljs-operator">&gt;</span></code></div><p>这里只列出存活的列，因此 SQLite 可以跳过其余列的计算。</p>
+<hr>
+<h2><a name="-code-interval-intersection-of-code-" class="anchor" href="#-code-interval-intersection-of-code-"></a><code>INTERVAL INTERSECTION OF</code></h2><p>代码：<code>/src/trace_processor/core/exec/interval_intersect.cc</code></p>
+<p><code>INTERVAL INTERSECTION OF</code> 会读完全部操作数，然后才产出任何输出。</p>
+<h3><a name="1-" class="anchor" href="#1-"></a>1. 读取操作数</h3><p>每个操作数都是一个侧 pipeline：</p>
+<ul>
+<li><code>ts</code> 和 <code>dur</code> 会被转换为 64 位整数。各 <code>PER</code> 列会被统一转换成一个类型；允许字符串。</li>
+<li>如果行尚未处于该状态，则会按 <code>PER</code> 列分组，并在每组内按 <code>ts</code> 排序。</li>
+<li><code>ts</code> 或 <code>dur</code> 为 <code>NULL</code> 的行会被跳过。负的边界值，或者发生溢出的 <code>ts + dur</code>，都属于错误。</li>
+<li>只保留会被下游读取的操作数列。</li>
+</ul>
+<p>所有操作数都在一个共享的 <code>GroupTable</code> 中为各自的 <code>PER</code> 键编号，因此同一个键在所有地方都持有相同编号。不存在于任何更早操作数中的键不可能产生区域，因此其行在读取时即被丢弃。读取某个 lane 的过程中，运算符会记录该 lane 内是否有任何两个区间相互重叠。</p>
+<h3><a name="2-" class="anchor" href="#2-"></a>2. 对每个键求交</h3><p>只有键数最少的那个操作数中的键才可能开启一个区域，因此运算符只遍历这些键，并跳过任何其他操作数缺失的键。对每个键：</p>
+<ul>
+<li><strong>无重叠：</strong>如果任何操作数的区间都不相互重叠，一趟扫描会同时推进所有操作数，把区域直接写入输出。</li>
+<li><strong>有重叠：</strong>否则由各操作数逐一收窄区域，最小的最先。每一步都使用 <code>IntervalIntersector</code>，它会依据操作数本身以及剩余区域的数量，在线性扫描、二分查找或区间树之间做出选择。</li>
+</ul>
+<p>区域存储为存放边界和操作数行的平坦数组，因此没有任何区域需要单独分配内存。</p>
+<h3><a name="3-" class="anchor" href="#3-"></a>3. 输出</h3><p>区域按每批最多 2048 个输出。每个批次先放区域的 <code>ts</code> 和 <code>dur</code>，然后是各操作数被保留的列，其值复制自区域所来自的行。</p>
+<h3><a name="-" class="anchor" href="#-"></a>名称</h3><p>编译器把区域的 <code>ts</code> 和 <code>dur</code> 放在行的最前面，然后是所有操作数列。当某个操作数列只应通过其别名才能找到时，它会被标记为 <code>qualified_only</code>：包括操作数自身的 <code>ts</code> 和 <code>dur</code>，以及除第一个外各操作数的 <code>PER</code> 列。其余所有列同样能通过裸名称找到。</p>
+<hr>
+<h2><a name="-code-interval-flatten-code-" class="anchor" href="#-code-interval-flatten-code-"></a><code>INTERVAL FLATTEN</code></h2><p>代码：<code>/src/trace_processor/core/exec/interval_flatten.cc</code></p>
+<p>输入按 <code>PER</code> 键分组，并在每组内按 <code>ts</code> 排序；只有在需要时才会插入排序。随后 <code>IntervalFlatten</code> 流式地扫过排序后的行。</p>
+<p>一个最小堆跟踪各活跃区间的结束时刻。每个区间把它所在行的聚合状态保存在一个槽位中；一批 segment 的聚合结果由各 segment 中存活的槽位共同聚合而成，因此单个 segment 不必重新扫描全部活跃区间。只要输入中尚未出现 <code>NULL</code>，支持移除值的聚合函数（计数与求和都属于此类）就会在每个区间首个 segment 处加入其槽位，在其结束处移除，并维护运行中的总计；否则（例如 <code>MIN</code> 和 <code>MAX</code>），每个槽位会被合并进一棵覆盖该批次全部 segment 的树。求和会记录自己是否加入过任何值，因此仅对 <code>NULL</code> 值求和的结果仍为 <code>NULL</code>。</p>
+<p>位于同一时刻的各个点会被收集起来，等到所有以该时刻为起点的行都读完后一起输出。它们的总计包含在该时刻活跃的区间，但不会延续到下一个 segment。</p>
+<p>segment 以大小有界的批次输出；内存中只保留活跃区间。端点与求和运算都带溢出检查。</p>
+<p>未使用的聚合会被裁剪，但即使一个不剩该阶段也会保留，因为它仍然决定输出的行。</p>
+<hr>
+<h2><a name="-code-interval-fill-gaps-code-" class="anchor" href="#-code-interval-fill-gaps-code-"></a><code>INTERVAL FILL GAPS</code></h2><p>代码：<code>/src/trace_processor/core/exec/interval_fill_gaps.cc</code></p>
+<p>背景是一个侧 pipeline，会在输入之前被完整读取。背景与输入都按 <code>PER</code> 键分组并按 <code>ts</code> 排序，两者共有的列会被转换成同一类型。</p>
+<p><code>IntervalFillGaps</code> 流式地扫过输入，原样输出每一行，并为背景中没有被同一 lane 内任何输入行覆盖的每一段添加一个填充行。它按以下两种方式之一运行：</p>
+<ul>
+<li><strong>背景带有 <code>PER</code> 列，或者双方都没有。</strong>每个背景行属于一个 lane。没有任何输入的 lane 会被整体填充。</li>
+<li><strong>背景没有 <code>PER</code> 列而输入有。</strong>每个输入 lane 都对照整个背景进行填充。</li>
+</ul>
+<p>填充行的每个列取自背景中同名的列；若没有，则取该 lane 的 <code>PER</code> 值；再没有则为 <code>NULL</code>。输入的 <code>dur</code> 为 <code>-1</code> 表示永久持续。填充行的时长永不为零，输出行也没有特定顺序。</p>
+<hr>
+<h2><a name="-code-tree-accumulate-code-" class="anchor" href="#-code-tree-accumulate-code-"></a><code>TREE ACCUMULATE</code></h2><p>代码：</p>
+<ul>
+<li><code>/src/trace_processor/core/exec/tree_number_nodes.cc</code></li>
+<li><code>/src/trace_processor/core/exec/tree_order.cc</code></li>
+<li><code>/src/trace_processor/core/exec/tree_accumulate.cc</code></li>
+</ul>
+<p>一个 <code>TREE ACCUMULATE</code> 阶段会被降级为三个步骤：节点编号、行排序和累加。</p>
+<h3><a name="1-code-treenumbernodes-code-" class="anchor" href="#1-code-treenumbernodes-code-"></a>1. 节点编号：<code>TreeNumberNodes</code></h3><p>树运算符需要按节点保存状态。<code>id</code> 可以是任意的 64 位整数或字符串，因此直接以它为下标的数组可能会极其庞大，或者根本无法建立。</p>
+<p><code>TreeNumberNodes</code> 向每个批次追加两个稠密的 <code>Uint32</code> 列：一个是该行的节点编号，按首次见到的顺序依次赋为 <code>0, 1, 2, ...</code>；另一个是其父节点的编号，根节点则为 <code>kNoNode</code>。后续运算符只读取这两列，因此所有按节点分配的数组长度都与输入行数相同。</p>
+<p>它有三条路径：</p>
+<ol>
+<li><strong><code>Id</code> 列：</strong>当读取的 dataframe 未经过滤、其 <code>id</code> 以 <code>Id</code> 类型存储、<code>parent_id</code> 为 <code>Uint32</code>，且每个父节点都先于其子节点出现时，编号直接从这些列复制而来。</li>
+<li><strong>稠密整数：</strong>只要见到的 <code>id</code> 仍是 <code>0, 1, 2, ...</code> 且每个父节点都已被见过，每个 <code>id</code> 本身就是自己的编号，不做任何哈希。</li>
+<li><strong>哈希表：</strong>从第一个打破上述条件的 <code>id</code> 或任何字符串 <code>id</code> 开始，由一个 <code>FlatHashMap</code> 把 id 映射为编号。此前见过的 id 会先被加入其中。</li>
+</ol>
+<h3><a name="2-code-treechildfirst-code-code-treeparentfirst-code-" class="anchor" href="#2-code-treechildfirst-code-code-treeparentfirst-code-"></a>2. 行排序：<code>TreeChildFirst</code> 与 <code>TreeParentFirst</code></h3><p>行到达的顺序必须保证一个节点所依赖的值在它之前已处理完毕。这并不要求严格的深度优先顺序：子树之间可以交错，因为累加器为每个节点各自维护一个总计值。</p>
+<h4><code>UP</code>：<code>TreeChildFirst</code></h4><p><code>UP</code> 要求每个子节点先于其父节点出现。某一行的子节点可能直到最后才到达，因此 <code>TreeChildFirst</code> 会读完全部行之后才开始输出：</p>
+<ul>
+<li>它会记录输入是否已经是子节点在前，或者已经是父节点在前。</li>
+<li><strong>子节点在前：</strong>按原到达顺序输出各行。</li>
+<li><strong>父节点在前：</strong>按相反顺序输出。</li>
+<li><strong>两者都不是：</strong>基于节点编号构建子节点列表，从根出发遍历得到父节点在前的顺序，校验每一行都被访问到（这能捕获环），最后把结果反转。</li>
+</ul>
+<h4><code>DOWN</code>：<code>TreeParentFirst</code></h4><p><code>DOWN</code> 要求每个父节点先于其子节点出现。某一行只要其父节点已经输出就可以立即输出，因此 <code>TreeParentFirst</code> 是流式的：</p>
+<ul>
+<li>一个位向量标记已经输出的节点。</li>
+<li>根行，以及父节点已输出的行，会直接通过。如果批次中的每一行都能通过，该批次会被原样转发，不进行复制。</li>
+<li>先于父节点到达的行会被复制到一旁，挂到其父节点的等待列表上。当父节点被输出后，它等待中的子节点以及这些子节点各自等待中的后代会随之输出。</li>
+<li>只有先于父节点到达的行才会消耗内存或引发复制。</li>
+</ul>
+<h3><a name="3-code-treeaccumulateup-code-code-treeaccumulatedown-code-" class="anchor" href="#3-code-treeaccumulateup-code-code-treeaccumulatedown-code-"></a>3. 累加：<code>TreeAccumulateUp</code> 与 <code>TreeAccumulateDown</code></h3><p>阶段中的所有聚合由同一个流式运算符计算，它使用执行器共享的聚合函数（<code>/src/trace_processor/core/exec/aggregate_function.h</code>），与 <code>INTERVAL FLATTEN</code> 和 <code>AGGREGATE</code> 所用的相同：</p>
+<ul>
+<li>被聚合的列会被转换为平坦的 <code>Int64</code>。求和会跳过 <code>NULL</code> 并记录自己是否加入过任何值，因此未加入任何值的求和结果为 <code>NULL</code>。溢出会被作为错误报告。</li>
+<li>每个节点的聚合状态存放在同一个按节点编号索引的向量中。对每个批次，先把每一行加入其节点的状态，然后按行序沿批次的边界合并各状态：<ul>
+<li><strong>向上：</strong>子节点先到，因此当一个节点到达时，它的所有后代都已合并进它。随后它被合并进其父节点。</li>
+<li><strong>向下：</strong>父节点先到，因此当一个节点到达时，它的父节点已覆盖所有祖先。父节点被合并进它。</li>
+</ul>
+</li>
+</ul>
+<h3><a name="4-code-tree-accumulate-code-" class="anchor" href="#4-code-tree-accumulate-code-"></a>4. 多个 <code>TREE ACCUMULATE</code> 阶段</h3><ul>
+<li>只要 <code>id</code> 和 <code>parent_id</code> 仍是相同的列，后续阶段就会复用第一个阶段的节点编号。</li>
+<li>连续两个 <code>UP</code> 阶段或连续两个 <code>DOWN</code> 阶段，会复用第一个阶段的行顺序。</li>
+<li>在 <code>UP</code> 与 <code>DOWN</code> 之间切换时，编号保留，行重新排序。</li>
+<li>两个方向相反的阶段，如果后一个不读取前一个所计算的任何内容，就会按行当前遍历树的既有顺序运行，因此其中只有一个需要重排行（<code>ReorderTreeFold</code>）。<code>GRAPH ... TREE</code> 以父节点在前的顺序输出行，因此在它上面，写在 <code>UP</code> 之后的 <code>DOWN</code> 会先运行。</li>
+</ul>
+<hr>
+<h2><a name="-code-graph-tree-code-" class="anchor" href="#-code-graph-tree-code-"></a><code>GRAPH ... TREE</code></h2><p>代码：</p>
+<ul>
+<li><code>/src/trace_processor/core/exec/graph_tree.cc</code></li>
+<li><code>/src/trace_processor/util/graph.cc</code></li>
+</ul>
+<p><code>NODES</code>、<code>EDGES</code> 和 <code>FROM</code> 各是一个侧 pipeline，其中的 id 都会被转换为 <code>Int64</code>。<code>GraphTree</code> 会读完全部三者之后才开始输出：</p>
+<ul>
+<li>节点行保存在 <code>RowStore</code> 中，每个节点按其所在行编号。接近稠密的 id 通过数组查找，其余的通过 <code>FlatHashMap</code> 查找。</li>
+<li>边按源节点分组，并保持到达顺序。</li>
+<li>搜索树或支配树在这些编号上运行，从各种子（seed）出发，顺序与其到达顺序一致。支配树会从一个额外的节点生长出来，该节点到每个种子都有一条边，而它本身不会出现在输出中。</li>
+</ul>
+<p>种子和边的顺序决定了在同样优秀的父节点之间如何挑选，因此降级过程不会添加任何会重排这些输入的操作。</p>
+<p>输出时父节点在前，汇集每个节点的行，并附上其父节点的 <code>id</code> 以及 <code>TreeNumberNodes</code> 本会追加的那两个 <code>Uint32</code> 列。降级过程把这记录为 <code>id</code> 和 <code>parent_id</code> 的一次 <code>DOWN</code> 遍历，因此其后的 <code>TREE ACCUMULATE DOWN</code> 不再需要其他运算符，而 <code>UP</code> 只需把行反转。</p>
+<hr>
+<h2><a name="-code-aggregate-code-" class="anchor" href="#-code-aggregate-code-"></a><code>AGGREGATE</code></h2><p>代码：<code>/src/trace_processor/core/exec/hash_aggregate.cc</code></p>
+<p><code>AGGREGATE</code> 被降级为一个 <code>HashAggregate</code>，它会读完全部输入之后才开始输出。<code>GroupTable</code> 对每一行的键做哈希以找到所属分组，并按首次见到的顺序为分组编号。任意宽度的整数键按值判等，字符串按其驻留（intern）id 判等，各 <code>NULL</code> 彼此相等。每个分组的聚合状态紧挨着其键存放，每读入一行就立即加入对应状态，因此内存随分组数而非行数增长。最后，分组按首次被见到的顺序输出。如果输入本身已按键排序，输出也会被声明为已排序。</p>
+<p>没有 <code>GROUP BY</code> 时只有一个分组，即使输入没有任何行，这个分组也会被输出。</p>
+<p>未使用的聚合会被裁剪，但阶段本身总会保留，因为它决定输出的行。</p>
+<p>编译器会把行替换为各键、随后是各聚合，并清空所有别名。</p>
+<hr>
+<h2><a name="-code-where-code-" class="anchor" href="#-code-where-code-"></a><code>WHERE</code></h2><p>代码：<code>operations/where.cc</code>、<code>/src/trace_processor/core/exec/filter.cc</code></p>
+<p><code>WHERE</code> 被降级为一个流式的 <code>Filter</code>。每个比较的字面量或 <code>IN</code> 列表会在降级期间一次性转换为其所属列的类型，并与执行计划存放在一起（<code>PhysicalPlan::filter_values()</code>）。字符串会被转换为它在字符串池中的 id，因此 <code>=</code> 和 <code>!=</code> 比较的是 id，而没有任何行持有的字符串将匹配不到任何行。在降级期间做转换是安全的，因为执行计划是在各输入绑定之后、针对每个游标各自降级的，此时它们持有的所有字符串都已在池中。类型未知的列会先被转换为字面量的类型；只要有一个字面量是字符串，就转换为字符串。<code>IS [NOT] NULL</code> 可以读取任何列，包括逐行携带类型的列。<code>BETWEEN</code> 是两个比较。<code>Filter</code> 使用与 dataframe 自身过滤器相同的比较内核，并收窄每个批次的行选择集，因此不复制任何内容。</p>
+<p>一趟绑定后遍历（<code>SearchScans</code>）会把 <code>WHERE</code> 直接读取的每个扫描中可借助搜索回答的条件移入该扫描，其选择方式与 dataframe 自身的规划器一致（<code>SortedFilterStrategy</code>、<code>GetBestIndexForFilterSpecs</code>）：</p>
+<ul>
+<li>如果某个条件不可能匹配任何行（例如字符串池中不存在的字符串），扫描会变成一个 <code>EmptySource</code>。</li>
+<li>否则，作用在无 null 的已排序列上的条件会变成 <code>SortedScan</code>：二分查找，或 SetId 与小值查找，它们把行收窄到一个仍保持表序的范围内。</li>
+<li>否则，作用在索引前导列上的等值条件会变成 <code>IndexScan</code>，它按索引顺序读取行，因此在其之后不再假定任何表序。表的索引在执行计划加载时被发现，与其列的发现方式相同，因此在 pipeline 编写之后才创建的索引依然会被使用。</li>
+</ul>
+<p>扫描之后的 <code>Filter</code> 负责测试其余条件，而一个没有任何条件可测的 <code>WHERE</code> 会被丢弃。只有作用在按表原始存储方式读取的列上的条件才会走搜索；而作用在需要先做转换的列上的条件则留给 <code>Filter</code>。</p>
+<hr>
+<h2><a name="-code-distinct-code-" class="anchor" href="#-code-distinct-code-"></a><code>DISTINCT</code></h2><p>代码：<code>operations/distinct.cc</code>、<code>/src/trace_processor/core/exec/distinct.cc</code></p>
+<p><code>DISTINCT</code> 被降级为一个流式的 <code>Distinct</code>。一个 <code>GroupTable</code> 保存目前保留的行的键；键已存在的行会通过收窄行选择集被丢弃。内存随互异行数增长，行保持原有顺序。一行最多可以有 64 列。</p>
+<hr>
+<h2><a name="-code-order-by-code-" class="anchor" href="#-code-order-by-code-"></a><code>ORDER BY</code></h2><p>代码：<code>/src/trace_processor/core/exec/sort.cc</code></p>
+<p><code>Sort</code> 会读完全部行之后才开始输出。它把每一行的键编码成一条可按字节比较的定宽记录，依据这些记录对行索引排序，然后按该顺序把行复制出来。</p>
+<p>字符串键会被编码为它在所有行的字符串中的排名，因此比较依据是内容，而不是它在字符串池中的 id。排名只有等到所有行都到齐后才能确定，因此字符串键在排序前一刻才被编码。类型未知的来自 SQLite 的键会被转换为整数。</p>
+<p>降级过程会跟踪行当前所处的顺序。单个升序键如果表本身已按其排好序（例如 <code>slice</code> 上的 <code>ts</code>），就不需要 <code>Sort</code>。如果一个 <code>Sort</code> 的顺序没有任何下游读取（因为更晚的阶段会先排序、分组或遍历树），它会被移除。排序之后树序会被遗忘，因此其后的 <code>TREE ACCUMULATE</code> 会重排行，但保留节点编号。</p>
+<hr>
+<h2><a name="-code-limit-code-" class="anchor" href="#-code-limit-code-"></a><code>LIMIT</code></h2><p>代码：<code>operations/limit.cc</code>、<code>/src/trace_processor/core/exec/limit.cc</code></p>
+<p><code>LIMIT</code> 被降级为一个流式的 <code>Limit</code>，它收窄每个批次的行选择集。它会关闭其前面任何未完成的 <code>Sort</code>，因此 <code>ORDER BY</code> 永远不会从 <code>LIMIT</code> 之前被移除。一旦保留了 <code>count</code> 行，它就不再接受输入，因此位于它之前的任何运算符都不会读到超出所需范围的行。保留下来的行保持原有顺序，因此一切已知的排列方式都能保留下来。</p>
+<hr>
+<h2><a name="-code-select-code-code-extend-code-code-drop-code-code-rename-code-code-set-code-code-as-code-" class="anchor" href="#-code-select-code-code-extend-code-code-drop-code-code-rename-code-code-set-code-code-as-code-"></a><code>SELECT</code>、<code>EXTEND</code>、<code>DROP</code>、<code>RENAME</code>、<code>SET</code> 和 <code>AS</code></h2><p>代码：<code>/src/trace_processor/perfetto_sql/pipeline/operations/projection.cc</code></p>
+<p>这些阶段只在 pipeline 编译期间存在。它们不添加任何运算符，也不复制任何数据。</p>
+<p>编译器把当前行维护为一个 <code>RowColumn</code> 列表：一个名称、持有其值的 <code>ColumnId</code>，以及它是否为 <code>qualified_only</code>（意为只有别名才能找到它）。旁边是一份别名列表，每个别名都是该行在被设置那一刻的副本。</p>
+<ul>
+<li><code>DROP</code> 移除裸名称能找到的该名称的列，以及该名称的任何别名。</li>
+<li><code>RENAME</code> 修改某个列的名称。</li>
+<li><code>SET</code> 让某个列指向另一个 <code>ColumnId</code>，并移除该名称的任何别名。</li>
+<li><code>EXTEND</code> 在末尾追加列。裸 <code>*</code> 会被拒绝。</li>
+<li><code>AS</code> 从行中丢弃 <code>qualified_only</code> 的列，并把所有别名替换为针对剩余行的别名。</li>
+<li><code>SELECT</code> 用列出的列替换行，并清空所有别名。裸 <code>*</code> 只取不是 <code>qualified_only</code> 的列。它列出的每一个列（包括来自 <code>&lt;alias&gt;.*</code> 的列）之后都可以通过裸名称找到。</li>
+</ul>
+<p><code>AGGREGATE</code>、<code>INTERVAL FLATTEN</code> 和 <code>INTERVAL FILL GAPS</code> 也会重建行与别名。</p>
+<p>编译结束时，行中不是 <code>qualified_only</code> 的列成为 pipeline 的输出。裁剪从这些列出发，降级过程把每一列映射到最终批次的某个列。重排、复制、重命名或删除列从不会复制数据。</p>
+
+  </main>
+
+  <section class="toc"></section>
+
+  
+<footer class="site-footer">
+  <p class="footer-notice">
+    Except as otherwise noted, the content of this page is licensed under the
+    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons
+    Attribution 4.0 License</a>, and code samples are licensed
+    under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
+    License</a>. Java is a registered trademark of Oracle and/or its affiliates.
+  </p>
+  <ul>
+    <li><a href="//creativecommons.org/licenses/by/4.0/">Site CC BY 4.0</a></li>
+    <li><a href="//www.google.com/intl/en/policies/privacy/">Privacy</a></li>
+  </ul>
+</footer>
+</div>
+
+</body>
+</html>
