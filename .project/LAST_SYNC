@@ -2,4 +2,4 @@
 #
 # 更新方式: python3 .project/workwork.py sync-update
 
-e5be393a 2026-10-01 11:17:11 -0700 docs: add hidden documentation for PerfettoSQL pipe syntax (#7712)
+c394862be 2026-11-13 07:37:31 -0800 docs: Add Sentry to the "Who uses Perfetto" section (#8647)

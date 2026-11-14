@@ -6,6 +6,45 @@
 
 ---
 
+## 2026-11-14 会话：大同步 e5be393a→c394862be（41 文件）+ pfsql 构建依赖代理
+
+### 本轮产出
+- 同步 41 文件（pipe 体系大演进 / 新页面 community + googler-features / README 重写 /
+  trace-processor-cli 重构），提交 c5c5a29a 推送
+- LAST_SYNC → c394862be；部署 f5550e45（回退点 `pre-deploy-20261114-220609`）
+- 门禁全绿：audit 133 文件 0 差异 / proofread 0 错 / compare-structure 124 页 0 差异 /
+  回译抽查 3/3（pipe-syntax、trace-processor-cli、using-ai）
+
+### 坑与绕法（下次会话必读）
+1. **上游 10/20 起站点构建新增 pfsql C++ 编译**（railroad 语法图需要）→
+   check_build_deps 要求重装构建依赖 + test_data 同步，下载域 75% 是 Google 系
+   （appspot/googlesource/storage.googleapis）**必须代理**。VPN 恢复后
+   `install-build-deps --no-dev-tools` 一次解决（自动同步 78 个 test_data 文件）。
+   无代理时构建管线完全不可用——伪造版本戳可绕但违反 fail-closed 原则，勿做
+2. **子代理派发遇 "ZCode 网络连接繁忙"** 基础设施错误（本轮连续 2 次）——重试无果后
+   该批次由主代理亲自完成；小批次（≤3 文件）可直接主代理做，避免空转
+3. **译文语序颠倒行内元素会被 DOM 签名逐元素比对抓住**（本轮 2 处：`as_arrow_table()`
+   与 Arrow 链接顺序、`**#help**` 与 Discord 链接顺序）——中文行文尽量让 strong/a/code
+   的出现顺序镜像上游
+4. **上游工作树会在会话中被不明进程 pull 前移**（本轮 fd9c7de6e→6fffac7ff，疑似某子
+   代理违规跑了 sync-check）——docs/ 无变更则译文不受影响，但审计基线会漂移；开工后
+   留意 `git -C ../perfetto log -1` 与 sync-check 报告是否一致
+5. **三份独立构建目录**：预览（out/perfetto.dev）≠ 比对（out/en-site、out/zh-site）——
+   改完译文要让用户刷新预览必须重跑 deploy-local，跑 compare-structure 不更新预览
+6. toc 标签类漂移（.tag-cpp→.tag-cpp-rust）audit 不查，本轮已对齐 31 处；后续会话可
+   顺手 diff 上游 toc 标签
+
+### 术语决策
+- **feature → 特性**（googler-features 页 7 处 + toc；phrases 入库；历史 62 文件
+  「功能」混译为存量——function/capability/feature 混用，需逐处对照上游校准后才能批量清理）
+- **Cookbook → 实战指南**（glossary 修正为 translate=true；5 处统一：toc 分组名、
+  command-line-analysis 与 android-trace-analysis 两个 H1、两处链接文本；
+  start-using-perfetto 术语释义段保留英文原词+中文注释形式——它是定义页）
+- 新页面标题定型：Community and getting help →「社区与获取帮助」；
+  Googler Features & 3rd-Party Cookies →「Googler 特性与第三方 Cookie」
+
+---
+
 ## 2026-10-13 会话：首页图片损坏 → 资产可达性断言体系（连锁抓获 3 个存量 bug）
 
 ### 根因三层（首页 perfetto-stack.svg 404）
