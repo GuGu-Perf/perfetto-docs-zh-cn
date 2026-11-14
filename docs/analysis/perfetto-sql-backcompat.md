@@ -6,6 +6,32 @@ PerfettoSQL 尽最大努力减少向后不兼容的更改，但有时这些更�
 - **背景**： 我们为什么要进行此更改，即为什么它必须向后不兼容
 - **迁移**： 建议你对 PerfettoSQL 进行以下更改，以避免受此更改影响
 
+## `graph_reachable_dfs`/`graph_reachable_bfs` 在图没有边时返回起始节点
+
+**日期/版本**
+
+2026-10-06/v59.0
+
+**表现**
+
+- 当描述图的表为空时，`graph_reachable_dfs` 和 `graph_reachable_bfs` 会返回行（每个起始节点一行，`parent_node_id` 为 `NULL`），而此前它们不返回任何行。
+
+**背景**
+
+当图中至少有一条边时，未出现在任何边中的起始节点就已经会被返回（因为每个节点都可从自身到达）。然而，当图为空时，起始节点完全不会被返回。这种不一致意味着，一旦碰巧没有边，计算"从 X 可到达的节点集合"的调用方就会得到错误的答案（例如，在没有 slice 具有父节点时，计算哪些 slice 可从根 slice 到达）。
+
+现在，无论图中是否有边，起始节点都会被返回。
+
+**迁移**
+
+如果你依赖空图产生空结果，请显式检查图是否为空。例如：
+
+```sql
+SELECT *
+FROM graph_reachable_dfs!(edges, start_nodes)
+WHERE EXISTS (SELECT 1 FROM edges)
+```
+
 ## 从 slice 表中删除 `stack_id` 和 `parent_stack_id` 列
 
 **日期/版本**

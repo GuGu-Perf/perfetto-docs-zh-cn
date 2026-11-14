@@ -436,7 +436,6 @@ tracing，首选直接使用 Perfetto 的 ftrace 数据源。**
 
 - **官方 Ftrace 文档：** [Ftrace - Function Tracing (kernel.org)](https://www.kernel.org/doc/html/latest/trace/ftrace.html) (主要来源：Linux 内核源代码中的 `Documentation/trace/ftrace.txt` 或 `ftrace.rst`)
 - **`trace-cmd` Man Page：** `man trace-cmd` (或在线查找，例如在 [Arch Linux man pages](https://man.archlinux.org/man/trace-cmd.1.en))
-- **Tracefs 文档：** [The Tracefs Pseudo Filesystem (kernel.org)](https://www.kernel.org/doc/html/latest/trace/tracefs.html)
 
 ## {#strace-format} Linux `strace` 文本格式
 

@@ -245,10 +245,12 @@ Perfetto UI 的合并对话框在打开前会报告这种情况。
 凡期望出现时钟名称之处，均使用以下名称之一：
 
 `REALTIME`、`REALTIME_COARSE`、`MONOTONIC`、`MONOTONIC_COARSE`、
-`MONOTONIC_RAW`、`BOOTTIME`
+`MONOTONIC_RAW`、`BOOTTIME`、`TRACE_FILE`
 
 它们对应 [builtin_clock.proto](/protos/perfetto/common/builtin_clock.proto)
-中的内建时钟，以及同名的 POSIX `clock_gettime` 时钟域。
+中的内建时钟，以及同名的 POSIX `clock_gettime` 时钟域。`TRACE_FILE`
+是文件自身的逐文件时间线（与省略 `clock` 相同）；在 `trace_time` 中
+使用时需要 `file`。
 
 ## {#sql} 对 SQL 层面的影响
 

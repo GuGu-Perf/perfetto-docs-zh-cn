@@ -1,4 +1,4 @@
-# Cookbook: 分析 Android Traces
+# 实战指南: 分析 Android Traces
 
 本页将带你了解一些真实世界的示例，介绍如何使用 SQL 和 Perfetto UI 的更高级功能来分析问题。
 

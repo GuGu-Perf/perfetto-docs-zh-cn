@@ -307,7 +307,9 @@ UI 根本无法到达服务器。这通常是网络或 CORS
 - **401 或 403** —— 认证失败。对于 GitHub PATs，检查 token
   是否未过期并具有对仓库的读取访问权限（Settings > Personal
   access tokens）。对于带有 SSO 的 HTTPS 服务器，尝试在新标签页中直接登录服务器
-  以刷新你的会话，然后重新加载 Perfetto UI。
+  以刷新你的会话，然后重新加载 Perfetto UI。对于访问内部 extension
+  server 的 Googler，必须启用第三方 cookie；参见
+  [Googler Features & 3rd-Party Cookies](/docs/visualization/googler-features.md)。
 - **404** —— 端点不存在。检查服务器是否实现了
   预期的 [endpoint paths](/docs/visualization/extension-server-protocol.md#endpoints)
   并且仓库/分支/路径是否正确。

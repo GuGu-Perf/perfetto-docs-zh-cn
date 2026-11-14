@@ -253,3 +253,11 @@ out/linux_msan/perfetto_unittests --gtest_brief=1 --gtest_filter="<TestSuiteName
 
 - 为提交添加前缀：将 Trace Processor 代码的更改前缀为 `tp:`,UI 代码为 `ui:`，常规 Perfetto 更改为 `perfetto:`。
 - 保持简洁：简短的一行摘要，后跟一个 \n，然后是一个描述更改的段落，是最佳提交消息。将提交消息换行在 72 列。
+
+## CHANGELOG
+
+进行更改时，请考虑是否需要在 `CHANGELOG` 文件顶部的 `Unreleased:` 块中添加条目：
+
+- 新功能：仅当该功能面向用户，并且足够有趣、值得用户关注时，才添加条目。
+- Bug 修复：仅当该 bug 在上一个发布版本中就已存在时，才添加条目。
+  不要为在当前发布周期内引入并修复的 bug 添加条目。

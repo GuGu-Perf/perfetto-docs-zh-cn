@@ -233,7 +233,7 @@ Debug tracks 将 SQL 查询结果可视化在 Timeline 上。查询必须返回�
     - 匹配任何数字：`\\d+`
     - 匹配开头/结尾：`^` 和 `$`
 
-6. **Debug tracks 需要好的查询。** 确保 SQL 返回 `ts` 以及 `dur` 和 `name`（对于 slices）或 `value`（对于 counters）。对于 Android 用例，请参阅 [Android Trace Analysis Cookbook](/docs/getting-started/android-trace-analysis.md)。
+6. **Debug tracks 需要好的查询。** 确保 SQL 返回 `ts` 以及 `dur` 和 `name`（对于 slices）或 `value`（对于 counters）。对于 Android 用例，请参阅 [Android Trace 分析实战指南](/docs/getting-started/android-trace-analysis.md)。
 
 ## 与团队共享
 

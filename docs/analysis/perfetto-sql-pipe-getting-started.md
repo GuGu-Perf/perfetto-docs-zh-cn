@@ -1,7 +1,5 @@
 # PerfettoSQL pipe 语法入门指南
 
-本页面是使用 PerfettoSQL pipe 语法查询 trace 的入门指南原型。
-
 > **警告：**pipe 语法是**实验性的、不稳定的**。**不要**在仪表盘、脚本或生产查询中依赖它。任何内容都可能并且终将发生破坏，恕不另行通知。要在 Perfetto UI 或 `trace_processor_shell` 中运行本页的示例，请以 `PERFETTO PRAGMA pipelines = 1;` 作为查询的开头。
 
 相关页面：
@@ -14,33 +12,31 @@
 
 ## pipeline 的工作方式
 
-标准 SQL 查询的阅读顺序是从内向外：你先写 `SELECT` 列出最终想要的列，再写 `FROM` 说明数据来自哪里。每当需要多步转换时，就要嵌套子查询或 CTE。
-
-而使用 pipe 语法时，查询按照数据被处理的顺序自上而下阅读：
+SQL 查询的阅读顺序是从内向外：`SELECT` 写在最前却最后执行，每多一步都要再嵌套一层子查询或 CTE。而 pipeline 按照工作发生的顺序自上而下阅读：
 
 1. 从一个**源**开始：`FROM <table>`、`FROM (<subquery>)` 或 `INTERVAL INTERSECTION OF (...)`。
-2. 用 `|>` 串联一个或多个**pipe 阶段**，逐步对行进行转换、聚合或重塑。
+2. 每个 `|>` **阶段**接收上一步的行，并把新的行传递给下一步。
 
 ```sql
 PERFETTO PRAGMA pipelines = 1;
 
 FROM slice
+|> WHERE dur > 0
 |> RENAME dur AS duration_ns
 |> SELECT id, name, ts, duration_ns;
 ```
 
-每个 `|>` 阶段都接收上一步产生的表，并为下一步输出一个新表。
-
 ### 将 pipeline 保存为表
 
-你可以直接把一个 pipeline 当作查询来运行，也可以把它的输出保存到 `PERFETTO TABLE` 中，以便后续继续用 SQL 查询：
+既可以独立运行一条 pipeline 作为查询，也可以把它保存为 `PERFETTO TABLE`，再用 SQL 查询它：
 
 ```sql
 PERFETTO PRAGMA pipelines = 1;
 
 CREATE PERFETTO TABLE named_slices AS
-FROM (SELECT id, ts, dur, name FROM slice WHERE dur > 0)
-|> RENAME dur AS duration_ns;
+FROM slice
+|> WHERE dur > 0
+|> SELECT id, ts, dur AS duration_ns, name;
 
 SELECT name, duration_ns
 FROM named_slices
@@ -52,24 +48,22 @@ LIMIT 10;
 
 ## 求时间区间的交集：`INTERVAL INTERSECTION OF`
 
-许多 trace 分析问题都在问两个或多个时间区间集合 `[ts, ts + dur)` 在哪些地方重叠：
+关于 trace 的许多问题都在问两个或多个区间集合 `[ts, ts + dur)` 在哪些地方重叠：
 
 - 每个调度 slice 运行期间，各个 CPU 核心的频率是多少？
 - 某个线程处于特定状态时，哪些 slice 是活跃的？
-- 在 GPU 活跃区域期间，每个任务消耗了多少电量？
+- GPU 活跃期间，每个任务消耗了多少电量？
 
-`INTERVAL INTERSECTION OF` 接受两个或多个区间源，并为它们共有的每个重叠时间区域输出一行：
+`INTERVAL INTERSECTION OF` 接受两个或多个区间源，并为所有输入重叠的每个区域输出一行：
 
 ```sql
 PERFETTO PRAGMA pipelines = 1;
 
--- 1. 持续时间为正的调度 slice
 CREATE PERFETTO TABLE running_sched AS
 SELECT ts, dur, cpu, utid
 FROM sched
 WHERE dur > 0;
 
--- 2. 每个 CPU 的 CPU 频率区间
 CREATE PERFETTO TABLE cpu_freq AS
 SELECT
   c.ts,
@@ -80,13 +74,10 @@ FROM counter AS c
 JOIN cpu_counter_track AS t ON c.track_id = t.id
 WHERE t.name = 'cpufreq';
 
--- 3. 按 CPU 求调度 slice 与 CPU 频率的交集
 CREATE PERFETTO TABLE sched_with_freq AS
 INTERVAL INTERSECTION OF (running_sched AS s, cpu_freq AS f) PER cpu
-|> SELECT ts, dur, cpu, s.utid, f.freq;
+|> SELECT ts, dur, cpu, utid, freq;
 ```
-
-### 工作原理
 
 ```
 running_sched (s):   [------- utid 10 -------)     [--- utid 20 ---)
@@ -95,24 +86,96 @@ cpu_freq (f):        [--- 1.8 GHz ---)[-------- 2.4 GHz --------)
 Result regions:      [-- 10 @ 1.8G --)[- 10 -]     [-- 20 @ 2.4G --)
 ```
 
-- **区域的 `ts` 和 `dur`：**输出中裸露的 `ts` 和 `dur` 是重叠区域的起点和时长，被裁剪到所有输入同时活跃的范围。
-- **用 `PER` 分区：**添加 `PER cpu` 后，只有当区间出现在同一个 `cpu` 上时才会求交集。`cpu` 列可以直接通过其裸名称访问。
-- **访问输入列：**每个输入都有一个别名，这里是 `AS s` 和 `AS f`。来自 `s` 和 `f` 的所有列都会被携带，并通过 `s.<col>` 和 `f.<col>` 访问。这包括每个输入原始的、未裁剪的 `s.ts` 和 `s.dur`。
+- **`ts` 和 `dur`** 是重叠区域，被裁剪到每个输入都活跃的范围。
+- **`PER cpu`** 只对同一个 `cpu` 上的行求交集。
+- **输入列**会被携带下来。可以直接写裸名，如 `utid` 和 `freq`；也可以通过输入的别名访问，如 `s.utid`。如果两个输入有同名的列，就必须使用别名。
+- **输入自身的边界**是未经裁剪的 `s.ts` 和 `s.dur`。
+
+---
+
+## 展平重叠区间：`INTERVAL FLATTEN` {#flattening-overlapping-intervals-interval-flatten}
+
+`INTERVAL FLATTEN` 会把一组重叠区间切分成若干段，并对每段内活跃的行做聚合。可以用它统计并发活动，或在并发区间上对某个值求和。
+
+两个任务分别在 `[0, 10)` 和 `[5, 15)` 期间运行，权重分别为 2 和 3：
+
+```sql
+PERFETTO PRAGMA pipelines = 1;
+
+FROM (
+  SELECT 0 AS ts, 10 AS dur, 2 AS weight
+  UNION ALL
+  SELECT 5 AS ts, 10 AS dur, 3 AS weight
+)
+|> INTERVAL FLATTEN AGGREGATE COUNT(*) AS active, SUM(weight) AS total_weight;
+```
+
+| ts | dur | active | total_weight |
+| -- | --- | ------ | ------------ |
+| 0 | 5 | 1 | 2 |
+| 5 | 5 | 2 | 5 |
+| 10 | 5 | 1 | 3 |
+
+`PER` 会让每个组各自独立展平。要统计每条 track 上重叠的 slice：
+
+```sql
+FROM slice
+|> WHERE dur > 0
+|> INTERVAL FLATTEN PER track_id AGGREGATE COUNT(*) AS active;
+```
+
+结果包含 `ts`、`dur`、`track_id` 和 `active`，其余所有列都会被丢弃。没有活动的空隙不会产生行。
+
+`SUM` 只是把活跃行的值相加，不会按区段时长加权。如果需要加权，请把 pipeline 保存为表，然后在 SQL 中对 `dur * total_weight` 求和。
+
+关于零时长区间、`NULL` 以及支持的聚合函数，参见[语法参考](/docs/analysis/perfetto-sql-pipe-syntax.md#interval-flatten)。
+
+---
+
+## 填补空隙：`INTERVAL FILL GAPS` {#filling-gaps-interval-fill-gaps}
+
+`INTERVAL FILL GAPS` 保留输入的每一行，并为背景区间中未被任何输入覆盖的每一段补上一行。填充行的值取自背景，背景中没有的列则填 `NULL`。
+
+要标记 0 到 10 之间每个 CPU 何时空闲：
+
+```sql
+PERFETTO PRAGMA pipelines = 1;
+
+CREATE PERFETTO TABLE spans AS
+SELECT 2 AS ts, 3 AS dur, 0 AS cpu, 'run' AS state
+UNION ALL SELECT 6, 2, 0, 'run'
+UNION ALL SELECT 1, 4, 1, 'run';
+
+FROM spans
+|> INTERVAL FILL GAPS WITH (SELECT 0 AS ts, 10 AS dur, 'idle' AS state) PER cpu
+|> ORDER BY cpu, ts;
+```
+
+| ts | dur | cpu | state |
+| -- | --- | --- | ----- |
+| 0 | 2 | 0 | idle |
+| 2 | 3 | 0 | run |
+| 5 | 1 | 0 | idle |
+| 6 | 2 | 0 | run |
+| 8 | 2 | 0 | idle |
+| 0 | 1 | 1 | idle |
+| 1 | 4 | 1 | run |
+| 5 | 5 | 1 | idle |
 
 ---
 
 ## 在树上求和：`TREE ACCUMULATE`
 
-trace 中经常包含树形结构，其中每一行都有一个 `id` 和一个 `parent_id`，并且根节点满足 `parent_id IS NULL`：
+trace 中有许多树形结构，其中每一行都有 `id` 和 `parent_id`，并且根节点满足 `parent_id IS NULL`：
 
-- `slice` 中嵌套的用户空间 slice
-- 来自 CPU profiling、perf 和 native heap profile 的采样调用栈
-- Java 堆图的最短路径树
+- `slice` 中嵌套的 slice。
+- 来自 CPU profiling、perf 和 native heap profile 的调用栈。
+- Java 堆图的最短路径树。
 
-`TREE ACCUMULATE` 在单个阶段中对由 `id` 和 `parent_id` 构成的树计算累计和，保留所有现有列并追加总计值：
+`TREE ACCUMULATE` 在单个阶段内对这样的树求和。它会保留所有列，并在末尾追加总计值：
 
-- **`TREE ACCUMULATE UP`：**将每个节点的值与它的所有后代节点的值求和。
-- **`TREE ACCUMULATE DOWN`：**将每个节点的值与从根节点到该节点的所有祖先节点的值求和。
+- **`UP`** 将每个节点与它的所有后代求和。
+- **`DOWN`** 将每个节点与它的所有祖先求和。
 
 ```sql
 PERFETTO PRAGMA pipelines = 1;
@@ -123,14 +186,11 @@ UNION ALL SELECT 1, 0, 'a', 20
 UNION ALL SELECT 2, 0, 'b', 30
 UNION ALL SELECT 3, 1, 'c', 40;
 
-CREATE PERFETTO TABLE tree_totals AS
 FROM tree
 |> TREE ACCUMULATE UP SUM(self) AS subtree_total
-|> TREE ACCUMULATE DOWN SUM(self) AS path_total;
-
-SELECT name, self, subtree_total, path_total
-FROM tree_totals
-ORDER BY id;
+|> TREE ACCUMULATE DOWN SUM(self) AS path_total
+|> ORDER BY id
+|> SELECT name, self, subtree_total, path_total;
 ```
 
 对于树 `root (10) -> a (20) -> c (40)` 和 `root (10) -> b (30)`：
@@ -144,37 +204,75 @@ ORDER BY id;
 
 ---
 
+## 分组：`AGGREGATE`
+
+`AGGREGATE` 把每一组行折叠为一行，作用与 SQL 中的 `GROUP BY` 相同：
+
+```sql
+FROM slice
+|> WHERE dur > 0
+|> AGGREGATE COUNT(*) AS slices, SUM(dur) AS total, MAX(dur) AS longest
+   GROUP BY track_id;
+```
+
+结果包含 `track_id`、`slices`、`total` 和 `longest`。如果不带 `GROUP BY`，所有行都会归入同一个组。
+
+---
+
+## 过滤与排序行
+
+- **`|> WHERE`** 保留匹配的行。目前它支持列与数值的比较，多个条件用 `AND` 连接：
+  ```sql
+  FROM slice
+  |> WHERE dur > 0 AND depth = 0
+  ```
+- **`|> DISTINCT`** 丢弃重复的行：
+  ```sql
+  FROM slice
+  |> SELECT track_id
+  |> DISTINCT
+  ```
+- **`|> ORDER BY`** 按数值列排序：
+  ```sql
+  FROM slice
+  |> ORDER BY dur DESC
+  ```
+
+---
+
 ## 重塑列
 
-与其为了添加、删除或重命名列而把查询包裹在额外的外层 `SELECT` 中，不如使用列重塑阶段就地修改当前行：
+这些阶段会修改列，无需把查询包裹进另一层 `SELECT`：
 
-- **`|> SELECT`：**选取、重排或重命名列。你还可以使用 `* EXCEPT (col1, col2)` 排除列，或使用 `* REPLACE (other_col AS col1)` 就地替换某个列：
+- **`|> SELECT`** 选取、重排并重命名列。`* EXCEPT (...)` 会丢弃部分列，`* REPLACE (other_col AS col)` 会就地替换某个列：
   ```sql
   FROM slice
   |> SELECT * EXCEPT (arg_set_id, parent_id)
   ```
-- **`|> EXTEND`：**在保留所有现有列的同时，向当前行的末尾追加新列：
+- **`|> EXTEND`** 在末尾追加列：
   ```sql
   FROM slice AS s
   |> EXTEND s.dur AS original_dur
   ```
-- **`|> DROP`：**按名称移除一个或多个列：
+- **`|> DROP`** 移除列：
   ```sql
   FROM slice
   |> DROP category, track_id, arg_set_id
   ```
-- **`|> RENAME`：**就地重命名列，无需逐一列出其他列：
+- **`|> RENAME`** 就地重命名列：
   ```sql
   FROM slice
   |> RENAME ts AS start_ts, dur AS duration_ns
   ```
-- **`|> SET`：**就地替换现有列的值：
+- **`|> SET`** 替换某个列的值：
   ```sql
-  FROM tree AS t
+  FROM tree
   |> TREE ACCUMULATE UP SUM(self) AS total
   |> SET self = total
   |> DROP total
   ```
+
+`SELECT`、`EXTEND` 和 `SET` 也接受[表达式](/docs/analysis/perfetto-sql-pipe-syntax.md#expressions)，例如 `a + 1` 或 `'label'`。
 
 ---
 

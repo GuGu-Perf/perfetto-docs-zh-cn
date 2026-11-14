@@ -3,6 +3,7 @@
   - [什么是 Perfetto？](README.md)
   - [什么是 Tracing？](tracing-101.md)
   - [如何开始使用 Perfetto？](getting-started/start-using-perfetto.md)
+  - [社区与获取帮助](community.md)
 
 - [快速入门](#)
 
@@ -19,7 +20,7 @@
     - [导入其他格式](getting-started/other-formats.md) {.tag-perf}
     - [转换为 Perfetto 格式](getting-started/converting.md) {.tag-perf}
 
-  - [Cookbooks](#)
+  - [实战指南](#)
 
     - [本地录制 Android Trace](getting-started/local-android-trace-recording.md) {.tag-android}
     - [分析 Android Trace](getting-started/android-trace-analysis.md) {.tag-android}
@@ -43,9 +44,9 @@
   - [概念](#)
 
     - [服务模型](concepts/service-model.md) {.tag-android .tag-linux .tag-cpp-rust}
-    - [缓冲区和数据流](concepts/buffers.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
-    - [Trace 配置](concepts/config.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
-    - [时钟同步](concepts/clock-sync.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
+    - [缓冲区和数据流](concepts/buffers.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome}
+    - [Trace 配置](concepts/config.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome}
+    - [时钟同步](concepts/clock-sync.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome}
     - [Trace 合并](concepts/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [并发 Tracing 会话](concepts/concurrent-tracing-sessions.md) {.tag-android .tag-linux .tag-cpp-rust}
 
@@ -55,7 +56,7 @@
     - [高级 Android Tracing](learning-more/android.md) {.tag-android}
     - [符号化与反混淆](learning-more/symbolization.md) {.tag-android .tag-linux}
     - [跨重启 Tracing](data-sources/previous-boot-trace.md) {.tag-android .tag-linux}
-    - [自定义 Proto Extensions](instrumentation/extensions.md) {.tag-cpp .tag-android .tag-perf}
+    - [自定义 Proto Extensions](instrumentation/extensions.md) {.tag-cpp-rust .tag-android .tag-perf}
     - [heapprofd API](instrumentation/heapprofd-api.md) {.tag-cpp-rust}
     - [多机器记录](learning-more/multi-machine-tracing.md) {.tag-android .tag-linux}
 
@@ -92,46 +93,47 @@
 
   - [可视化](#)
 
-    - [Perfetto UI](visualization/perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [Perfetto UI](visualization/perfetto-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [在 UI 中合并 trace](visualization/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
-    - [Data Explorer](visualization/data-explorer.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-    - [打开大型 Trace](visualization/large-traces.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-    - [深度链接](visualization/deep-linking-to-perfetto-ui.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [Data Explorer](visualization/data-explorer.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [打开大型 Trace](visualization/large-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [深度链接](visualization/deep-linking-to-perfetto-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [嵌入 Perfetto UI](visualization/embedding-the-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
-    - [调试 Track](analysis/debug-tracks.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [调试 Track](analysis/debug-tracks.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [Heap Dump 浏览器](visualization/heap-dump-explorer.md) {.tag-android}
     - [Memscope 与 Memory Overview](visualization/memscope.md) {.tag-android .tag-linux}
 
     - [扩展 UI](#)
 
-      - [概述](visualization/extending-the-ui.md) {.tag-android .tag-linux .tag-cpp .tag-perf}
-      - [UI 自动化](visualization/ui-automation.md) {.tag-android .tag-linux .tag-cpp .tag-perf}
-      - [命令参考](visualization/commands-automation-reference.md) {.tag-android .tag-linux .tag-cpp .tag-perf}
-      - [扩展服务器](visualization/extension-servers.md) {.tag-android .tag-linux .tag-cpp .tag-perf}
+      - [概述](visualization/extending-the-ui.md) {.tag-android .tag-linux .tag-cpp-rust .tag-perf}
+      - [UI 自动化](visualization/ui-automation.md) {.tag-android .tag-linux .tag-cpp-rust .tag-perf}
+      - [命令参考](visualization/commands-automation-reference.md) {.tag-android .tag-linux .tag-cpp-rust .tag-perf}
+      - [扩展服务器](visualization/extension-servers.md) {.tag-android .tag-linux .tag-cpp-rust .tag-perf}
+      - [Googler 特性](visualization/googler-features.md) {.tag-android .tag-linux .tag-cpp-rust .tag-perf}
 
   - [Trace 分析](#)
 
-    - [快速入门](analysis/getting-started.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [快速入门](analysis/getting-started.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [PerfettoSQL](#)
 
-      - [快速入门](analysis/perfetto-sql-getting-started.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [语法](analysis/perfetto-sql-syntax.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [标准库](analysis/stdlib-docs.autogen) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [样式指南](analysis/style-guide.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [向后兼容性](analysis/perfetto-sql-backcompat.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+      - [快速入门](analysis/perfetto-sql-getting-started.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [语法](analysis/perfetto-sql-syntax.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [标准库](analysis/stdlib-docs.autogen) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [样式指南](analysis/style-guide.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [向后兼容性](analysis/perfetto-sql-backcompat.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [Trace Processor](#)
 
-      - [C++ 库](analysis/trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [Python 库](analysis/trace-processor-python.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [批量 Trace Processor](analysis/batch-trace-processor.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+      - [C++ 库](analysis/trace-processor.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [Python 库](analysis/trace-processor-python.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [批量 Trace Processor](analysis/batch-trace-processor.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
       - [从命令行合并 trace](analysis/merging-traces.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
-    - [Trace 汇总](analysis/trace-summary.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-    - [从 Perfetto 转换](quickstart/traceconv.md) {.tag-android .tag-linux .tag-cpp .tag-chrome}
+    - [Trace 汇总](analysis/trace-summary.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+    - [从 Perfetto 转换](quickstart/traceconv.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome}
 
-  - [FAQ](faq.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+  - [FAQ](faq.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
 - [深入探索](#)
 
@@ -148,19 +150,19 @@
 
     - [Proto](#)
 
-      - [Trace Config](reference/trace-config-proto.autogen) {.tag-android .tag-linux .tag-cpp .tag-chrome}
-      - [Trace Packet](reference/trace-packet-proto.autogen) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+      - [Trace Config](reference/trace-config-proto.autogen) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome}
+      - [Trace Packet](reference/trace-packet-proto.autogen) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [PerfettoSQL](#)
 
-      - [Prelude 表](analysis/sql-tables.autogen) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [内置函数](analysis/builtin.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
-      - [Stats 表](analysis/sql-stats.autogen) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+      - [Prelude 表](analysis/sql-tables.autogen) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [内置函数](analysis/builtin.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
+      - [Stats 表](analysis/sql-stats.autogen) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
 
     - [合成 Track Event](reference/synthetic-track-event.md) {.tag-perf}
     - [内核 Track Event](reference/kernel-track-event.md) {.tag-android .tag-linux}
     - [Trace Manifest 格式](reference/perfetto-manifest.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
-    - [扩展服务器协议](visualization/extension-server-protocol.md) {.tag-android .tag-linux .tag-cpp .tag-chrome .tag-perf}
+    - [扩展服务器协议](visualization/extension-server-protocol.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [嵌入 API](visualization/embedding-api-reference.md) {.tag-android .tag-linux .tag-cpp-rust .tag-chrome .tag-perf}
     - [Android 版本说明](reference/android-version-notes.md) {.tag-android}
 

@@ -185,7 +185,18 @@ tools/test_data upload
 
 完成后，你可以提交并上传作为 CL 的一部分，导致 CI 使用你的新屏幕截图。
 
-NOTE:如果你看到失败的差异测试，你可以通过使用以 `ui-test-artifacts/index.html` 结尾的链接在 CI 上查看像素差异。该页面上报告包含已更改的屏幕截图以及接受更改的命令（如果这些更改是需要的）。
+NOTE: 如果截图测试在 CI 上失败，`ui` 作业的 job summary 以及拉取请求上的“Perfetto UI Builds & Tests”评论会链接到两份报告：
+
+- `ui-test-artifacts/screenshot-diffs/index.html` 在单个页面上显示每一张失败的截图，
+  并将 Before、After 和 Diff 图片并排展示。每张卡片都链接到完整 Playwright 报告中对应的测试。
+- `ui-test-artifacts/index.html` 是完整的 Playwright 报告，包含每个测试的错误、测试步骤和重试情况。
+
+如果这些更改是需要的，请在你的 checkout 中运行截图差异页面顶部显示的命令来接受它们，然后上传并提交新的截图：
+
+```
+tools/download_changed_screenshots.py <CI job id>
+tools/test_data upload
+```
 
 ## Android CTS 测试
 

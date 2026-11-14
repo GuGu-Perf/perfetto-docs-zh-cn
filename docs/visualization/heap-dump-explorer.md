@@ -253,6 +253,8 @@ Classes 标签页列出 dump 中的每个类，按 *Retained* 降序排列：
 
 当你有可疑的类，或想要自上而下查看哪些类拥有最多内存时，使用此标签页。点击类名打开按该类过滤的 Objects。
 
+类名后面带有警告图标表示该类可能在应用优化期间包含了被合并进它的其他类；参见[被合并的类](#merged-classes)。
+
 ## Objects
 
 Objects 标签页列出可达实例。从 Classes 或重复组打开会自动应用过滤器；直接打开则显示所有对象。
@@ -367,6 +369,25 @@ Timeline heap graph 火焰图（完整功能参考参见上方的 [Flamegraph](#
 3. 从那里，点击任何对象打开其[对象标签页](#inspecting-a-single-object)，或使用 *Back to Timeline* 返回火焰图视图。
 
 多个火焰图选择可以同时打开，每个作为自己的标签页——对于并排比较两个调用栈很有用。
+
+## 被合并的类
+
+当应用被优化和混淆（例如由 R8）时，多个源类可能被合并为一个：一个类
+合并进它唯一的子类，或相似的兄弟类被组合。在 heap dump 中，这些类的
+所有实例都显示在目标类的名称之下，因此其计数、浅大小和保留大小表示
+合并后的总量。
+
+当 trace 包含该应用的反混淆 mapping 时（参见
+[符号化与反混淆](/docs/learning-more/symbolization.md#merged-classes)），
+Explorer 和 heap graph 火焰图会用警告图标标记可能包含被合并类的类。
+悬停在图标（或火焰图节点）上可查看详情。
+
+![Classes 标签页中 `com.example.sampleapp.MainActivityJava` 后带有警告图标；其工具提示显示 "Possibly merged class"。](../images/heap_docs/19-merged-class-classes.png)
+
+将被标记类的数字视为所显示类的上限：其中一部分内存可能属于被合并进
+它的类。要查看哪些类被合并了，请在反混淆 mapping 中查找该类。如果
+mapping 没有记录被合并的类（例如格式 2.3 之前的 R8 mapping 文件），
+则每个被重命名的类都会被标记。
 
 ## 案例研究
 

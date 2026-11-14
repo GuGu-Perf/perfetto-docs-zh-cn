@@ -48,6 +48,8 @@ tracepoint 名称和子系统可以是任意的。你的头文件可以声明匹
 
 对具有附加字段、字段顺序或 `TRACE_EVENT()` 声明的其他部分没有约束。请注意，这包括 printk 说明符，因此tracepoint的文本格式可以是任意的（你甚至不需要打印 perfetto 特定的字段）。
 
+如果 tracepoint 后来在 perfetto 的 `protos/perfetto/trace/ftrace/` 下签入了对应的 proto，只要该 proto 保持相同的字段名，这一约定仍然有效。
+
 ## 计数器
 
 对于表示 Counter 值（按 Track 分组），知名字段为：

@@ -96,39 +96,23 @@ Google 还有许多其他团队以多种方式使用 Perfetto。这包括 tracin
 - [性能](https://www.twoscomplement.org/podcast/performance.mp3) 
  [Twoscomplement 播客](https://www.twoscomplement.org/#podcast) 的一集"我们最高效的播客。Ben 和 Matt 在不到 30 分钟内谈论性能测试和优化。"
 - [Collabora：使用 Perfetto 分析虚拟化 GPU 加速](https://www.collabora.com/news-and-blog/blog/2021/04/22/profiling-virtualized-gpu-acceleration-with-perfetto/)
-- [Snap：大规模客户端 Tracing](https://www.droidcon.com/2022/06/28/client-tracing-at-scale/)
+- [Snap：大规模客户端 Tracing](https://web.archive.org/web/2023/https://www.droidcon.com/2022/06/28/client-tracing-at-scale/)
  "由于 Android 设备种类繁多，很难找到性能问题的根本原因。通过利用 trace，我们可以开始了解导致糟糕用户体验的确切情况。我们将讨论如何为我们的 Snapchat 应用进行插桩，以便我们能够获得必要的可解释性信号。此外，我们将描述如何将 tracing 纳入我们的开发过程，从本地调试到性能测试，最后到生产。"
 - [Microsoft：用于分析 Android、Linux 和 Chromium 浏览器性能的 Perfetto 工具](https://devblogs.microsoft.com/performance-diagnostics/perfetto-tooling-for-analyzing-android-linux-and-chromium-browser-performance-microsoft-performance-tools-linux-android/)
 - [Mesa 3D](https://docs.mesa3d.org/perfetto.html) 在其某些驱动程序中嵌入 Perfetto，用于 GPU Counters 和渲染阶段监控。
 - [JaneStreet 的 MagicTrace](https://blog.janestreet.com/magic-trace/) 基于 Perfetto 的工具，用于采集和可视化 Intel 处理器 trace。
+- [Sentry：Android profiling 现已通过 ProfilingManager 使用 Perfetto](https://blog.sentry.io/android-profilingmanager-perfetto/)
+  Sentry Android SDK 使用 Android `ProfilingManager` API 采集基于 Perfetto 的
+  调用栈 profile，并在 Sentry 中进行分析。
 
 ## 在哪里可以找到更多信息并获得 Perfetto 的帮助？
 
 关于我们的源代码和项目主页：
 [GitHub](https://github.com/google/perfetto)
 
-问答：
-
-- [GitHub Discussions](https://github.com/google/perfetto/discussions/categories/q-a) 或我们的
- [公开邮件列表](https://groups.google.com/forum/#!forum/perfetto-dev)。
-- **Googlers**： 使用 [YAQS](https://go/perfetto-yaqs) 或我们的
- [内部邮件列表](http://go/perfetto-dev)。
-
-影响 Perfetto 任何部分（Chrome tracing **除外**）的错误：
-
-- [GitHub issues](https://github.com/google/perfetto/issues)。
-- **Googlers**： 使用内部错误跟踪器
- [go/perfetto-bugs](http://goto.google.com/perfetto-bugs)
-
-影响 Chrome Tracing 的错误：
-
-- 使用 http://crbug.com `Component:Speed>Tracing label:Perfetto`。
-
-直接与 Perfetto 团队聊天：
-
-- 使用 [Discord](https://discord.gg/35ShE3A)
-- **Googlers**： 感谢你联系我们。我们的线路目前正忙。你的留言对我们很重要，客服人员会尽快回复你。如果你的咨询确实紧急，请参阅
- [此页面](http://go/perfetto-project)。
+要提问，请使用我们 [Discord 服务器](https://discord.gg/35ShE3A) 的 #help 频道。
+bug 报告、邮件列表及其他联系方式参见
+[社区与获取帮助](community.md)。
 
 Perfetto 遵循
 [Google 开源社区指南](https://opensource.google/conduct/)。

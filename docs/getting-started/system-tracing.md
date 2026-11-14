@@ -215,5 +215,5 @@ System trace 可以包含来自系统许多不同部分的数据。了解更多�
 要了解更多关于程序化分析的信息，请参阅：
 
 - **[Trace Analysis with SQL](/docs/analysis/getting-started.md)** : 了解如何使用 Trace Processor 和 PerfettoSQL 分析 traces。
-- **[Android Analysis Cookbooks](/docs/getting-started/android-trace-analysis.md)** :
+- **[Android Trace 分析实战指南](/docs/getting-started/android-trace-analysis.md)** :
   用于处理 Android traces 的有用查询和可视化技巧集合。

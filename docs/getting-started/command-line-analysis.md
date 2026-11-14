@@ -1,4 +1,4 @@
-# Cookbook: 从命令行分析 Trace
+# 实战指南: 从命令行分析 Trace
 
 本页面是一组面向任务的配方，介绍如何在 shell 中使用 `trace_processor` 处理 trace：运行查询、免重复解析地迭代、合并、导出和转换。它展示每个任务的常见形式；完整的子命令和标志列表见
 [trace_processor CLI 参考](/docs/reference/trace-processor-cli.md)。

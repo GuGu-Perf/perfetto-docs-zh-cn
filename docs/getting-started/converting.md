@@ -1112,6 +1112,76 @@ FROM metadata
 WHERE name GLOB 'trace_attribute.*';
 ```
 
+## 报告采样错误
+
+如果你的数据来自堆栈采样器（一种周期性采集调用栈的 profiler），某些采样可能会失败：采样器无法读取线程的栈，或者无法对其进行展开。在 trace 中记录这些失败可以展示缺失了多少数据以及原因，而不是留下无声的空缺。
+
+堆栈采样以 [StackSample](/protos/perfetto/trace/profiling/stack_sample.proto) packets 的形式写入。要报告一个无法采集的采样，发出一个设置了 `error` 字段（而非调用栈）的 `StackSample`：
+
+1.  使用 `ErrorDescriptor` 描述错误。对于 Perfetto 已知的具体种类，设置 `builtin`：采样完全无法采集时用 `BUILTIN_SAMPLE_FAILED`，其栈无法展开时用 `BUILTIN_UNWIND_FAILED`。
+2.  对于任何其他种类，改设 `name`，并使用反向域名样式的前缀作命名空间（例如 `com.example.profiler.mapping_not_found`），以免与其他 producer 使用的种类冲突。你还可以设置 `severity`（`SEVERITY_INFO`、`SEVERITY_DATA_LOSS` 或 `SEVERITY_ERROR`；未设置时默认为 data loss）和 `description`。
+3.  保留采样的 `timestamp` 和 `task_context`，但省略调用栈：错误即代替调用栈。
+
+如果你的采样器报告大量错误，可以对描述符做 interning：在 `interned_data.stack_sample_error_descriptors` 中以一个 `iid` 将每个描述符发出一次，然后在每个采样中通过 `error_iid` 引用它。
+
+NOTE: 一个采样不能同时带有错误和调用栈。如果两者兼有，Trace Processor 会保留错误、忽略调用栈，并在 `stack_sample_error_with_callstack` 统计中计入该采样。
+
+### Python 示例：采样错误
+
+将以下 Python 代码复制到 `trace_converter_template.py` 脚本中的 `populate_packets(builder)` 函数。
+
+<details>
+<summary><b>点击展开/折叠 Python 代码</b></summary>
+
+```python
+    from perfetto.protos.perfetto.trace.perfetto_trace_pb2 import StackSample
+
+    ErrorDescriptor = StackSample.ErrorDescriptor
+
+    def emit_sample(ts, frames=None, error=None):
+        """Writes a StackSample with either a callstack or an error."""
+        packet = builder.add_packet()
+        packet.timestamp = ts
+        packet.trusted_packet_sequence_id = TRUSTED_PACKET_SEQUENCE_ID
+        sample = packet.stack_sample
+        sample.task_context.pid = 1234
+        sample.task_context.tid = 1234
+        if error is not None:
+            sample.error.CopyFrom(error)
+        for function_name in frames or []:
+            sample.callstack.frames.add().function_name = function_name
+
+    # 1. 一个成功采集的采样
+    emit_sample(ts=1000, frames=["main", "HandleRequest"])
+
+    # 2. 采样器完全无法采集此采样
+    emit_sample(
+        ts=2000,
+        error=ErrorDescriptor(builtin=ErrorDescriptor.BUILTIN_SAMPLE_FAILED),
+    )
+
+    # 3. 由 producer 自定义种类的错误
+    emit_sample(
+        ts=3000,
+        error=ErrorDescriptor(
+            name="com.example.profiler.mapping_not_found",
+            severity=ErrorDescriptor.SEVERITY_DATA_LOSS,
+            description="No memory mapping was found for the sampled pc.",
+        ),
+    )
+```
+
+</details>
+
+Trace Processor 不会为错误创建采样。相反，每个错误都计入其种类的统计值：内置种类对应 `stack_sample_failed` 和 `stack_sample_unwind_failed`，你自定义的每种类型对应 `stack_sample_error.<name>`。在 [Perfetto UI](https://ui.perfetto.dev) 中，这些统计显示在可从左侧侧边栏进入的 "Overview" 页面上：数据丢失显示在 "Data Losses" 标签页，错误显示在 "Trace Errors" 标签页，全部统计显示在 "Stats" 标签页。
+
+你还可以在 Perfetto UI 的 Query 标签页中使用 SQL 查询这些统计，或使用 [Trace Processor](/docs/analysis/getting-started.md)：
+```sql
+SELECT name, severity, value
+FROM stats
+WHERE name GLOB 'stack_sample_*' AND value > 0;
+```
+
 ## 将数据导出
 
 一旦你的 trace 加载完成，trace processor 可以使用 `export` 子命令将解析后的表写回出来：

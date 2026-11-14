@@ -50,7 +50,7 @@ trace_processor help <command>
 | `--debuginfod-connect-timeout SECONDS` | 每个请求的连接超时。 | `5` |
 | `--debuginfod-stall-timeout SECONDS` | 传输速度低于每秒一字节并持续此时长时中止传输。 | `10` |
 
-仅设置 URL 并不会启用下载；配置了 `DEBUGINFOD_URLS` 但没有 `--debuginfod` 时会产生警告。本地符号路径和 Breakpad 文件会先被搜索，只有仍未解析的 build ID 才会被获取——先从缓存，再依次从每个服务器。下载的文件会与请求的 build ID 核对，并以原子方式发布到缓存。没有自动清除机制。`DEBUGINFOD_URLS` 和 `LLVM_SYMBOLIZER_OPTS` 会从 `llvm-symbolizer` 的环境中移除，使其无法自行下载。汇总信息会统计下载数、缓存命中数、没有服务器持有的 build ID 数和失败的查找数，并列出无法访问的服务器；`--verbose` 会列出为每个 mapping 尝试的每个服务器及未生效的原因。
+仅设置 URL 并不会启用下载；配置了 `DEBUGINFOD_URLS` 但没有 `--debuginfod` 时，如果符号化仍留有未解析的帧，就会产生警告。本地符号路径和 Breakpad 文件会先被搜索，只有仍未解析的 build ID 才会被获取——先从缓存，再依次从每个服务器。下载的文件会与请求的 build ID 核对，并以原子方式发布到缓存。没有自动清除机制。`DEBUGINFOD_URLS` 和 `LLVM_SYMBOLIZER_OPTS` 会从 `llvm-symbolizer` 的环境中移除，使其无法自行下载。汇总信息会统计下载数、缓存命中数、没有服务器持有的 build ID 数和失败的查找数，并列出无法访问的服务器；`--verbose` 会列出为每个 mapping 尝试的每个服务器及未生效的原因。
 
 ## {#subcommands} 命令
 
@@ -81,20 +81,82 @@ trace_processor query -f queries.sql trace.pftrace
 cat queries.sql | trace_processor query trace.pftrace
 ```
 
-每条语句的结果集以 CSV 形式打印，连续的结果集之间以单个空行分隔。由于每个字符串值都带引号，该分隔符不会有歧义。
+每条语句的结果集会打印到 stdout，连续的结果集之间以单个空行分隔。`--format` 在 [CSV](#query-csv)（默认）和 [markdown](#query-markdown) 之间选择。[Agent mode](#agent-mode) 会把默认值切换为 markdown。
 
 标志：
 
 - `--remote ADDR`：在已预热的 session 上运行，而不是加载本地 trace；参见 [sessions](/docs/analysis/trace-processor.md#sessions)。`ADDR` 是 session 名称、`*.sock` 或绝对 socket 路径，或 `host:port`。此模式下不传递 trace 文件参数。
 - `-f, --query-file FILE`：从 `FILE` 读取 SQL；传入 `-` 表示从 stdin 读取。
 - `-i, --interactive`：查询结束后进入交互式 REPL。
-- `-W, --wide`：打印结果时使用双倍宽度的列。
 - `--perf-file FILE`：将 trace 加载和查询的耗时写入 `FILE`。
+- `--format FMT`：以 `csv`（默认）或 `markdown` 打印结果。会关闭自动 [agent mode](#agent-mode)。
+- `--agent`、`--no-agent`：强制开启或关闭 [agent mode](#agent-mode)。
+- `--max-rows N`、`--max-bytes N`、`--max-cell-width N`：对每个结果集打印的行数、字节数和每单元格字符数的限制；`0` 表示不限制。它们的默认值和效果取决于格式，见下文。
 - `--structured-query-id ID` 加 `--summary-spec FILE` *（高级）*：按 ID 运行来自一个或多个 [TraceSummarySpec](/docs/analysis/trace-summary.md) 文件的单个结构化查询，而不是使用上面的 SQL 来源。
+
+#### {#query-csv} CSV 输出
+
+CSV 是默认格式，面向脚本。每个字符串值都带引号，因此结果集之间的空行分隔不会有歧义。
+
+CSV 默认没有任何限制。如果传入任何 `--max-*` 标志：
+
+- 超过行数或字节限制的结果会被截断，只保留前几行。
+- 超过 `--max-cell-width` 字符的单元格会被截断，并带有 `…(+N chars)` 标记。
+- 一行给出行数的说明会打印到 stderr，因此 stdout 仍保持为合法的 CSV。
+
+#### {#query-markdown} Markdown 输出
+
+`--format markdown` 将每个结果集打印为紧凑的 markdown 表格，不带对齐填充。NULL 值打印为 `NULL`；`|` 和换行符会被转义。
+
+Markdown 面向阅读，因此默认设有上限：
+
+| 标志 | 默认值 | 效果 |
+| --- | --- | --- |
+| `--max-rows` | 1000 | 更大的结果只显示其开头和结尾的行。 |
+| `--max-bytes` | 10000 | 同上，针对输出的字节数。 |
+| `--max-cell-width` | 500 | 更长的单元格会被截断，并带有 `…(+N chars)` 标记。 |
+
+被截断的结果每端最多显示 20 行，中间是一行 `| … N rows omitted … |`。一旦结果超出上限 100,000 行，其余部分就不会再读取。传入 `--max-rows 0 --max-bytes 0` 可打印每一行。
+
+对于被截断、为空或达到 10 行及以上的结果，会以脚注给出行数。例如：`(first 20 and last 20 of 5000 rows. ...)`。当读取提前停止时，该行数是一个下界。
+
+#### {#agent-mode} Agent mode
+
+Agent mode 专为编码代理调整 `query` 输出——它们通过管道读取输出，无法滚动或请求被省略的数据，并且每个 token 都有成本。
+
+它在以下条件全部成立时自动开启：
+
+- 设置了某个编码代理环境变量（见下文）。
+- stdout 不是终端。
+- 未传入 `--format`：显式指定格式是一种明确的选择，例如由解析输出的脚本做出。
+
+stderr 上的一行提示会说明它何时开启。`--agent` 和 `--no-agent` 可强制开启或关闭。
+
+检查的环境变量与 DuckDB 的相同：
+
+| 变量 | 由谁设置 |
+| --- | --- |
+| `AI_AGENT`、`AGENT` | 通用标记，例如 Claude Code、Goose、Amp |
+| `CLAUDECODE` | Claude Code |
+| `CODEX_CI`、`CODEX_SANDBOX`、`CODEX_THREAD_ID` | Codex |
+| `CURSOR_AGENT` | Cursor |
+| `GEMINI_CLI` | Gemini CLI |
+| `COPILOT_AGENT`、`COPILOT_CLI`、`COPILOT_AGENT_SESSION_ID` | GitHub Copilot |
+
+在 agent mode 下：
+
+- 结果默认为 markdown，并采用其[默认限制](#query-markdown)。显式的 `--format` 和 `--max-*` 标志优先。
+- 错误以单行 JSON 的形式打印到 stderr。只有 `error` 字段始终存在；参见下面的示例。
+
+```json
+{"error":"no such column: foo","statement":2,"location":"query:1:8","traceback":"...","hint":"..."}
+```
+
+当查询失败、stdout 已被重定向且 agent mode 既未被检测到也未被明确关闭时，stderr 上的一行提示会指向 `--agent`。这让未设置上述任何变量的代理也能找到它。
 
 ### {#subcommand-interactive} `interactive`：REPL
 
-`interactive` 打开 [shell 指南](/docs/analysis/trace-processor.md#shell)中描述的同一个交互式 PerfettoSQL 提示符。它是默认子命令，因此 `trace_processor trace.pftrace` 与 `trace_processor interactive trace.pftrace` 等价。唯一的子命令专属标志是 `-W, --wide`。
+`interactive` 打开 [shell 指南](/docs/analysis/trace-processor.md#shell)中描述的同一个交互式 PerfettoSQL 提示符。它是默认子命令，因此 `trace_processor trace.pftrace` 与 `trace_processor interactive trace.pftrace` 等价。结果以对齐的表格形式逐页打印：按 Enter 显示下一页，或按 `q` 停止。
 
 ### {#subcommand-server} `server`：HTTP、stdio 或 unix RPC
 

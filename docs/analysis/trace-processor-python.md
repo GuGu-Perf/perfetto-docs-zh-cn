@@ -204,6 +204,26 @@ shape: (5, 3)
 └─────────────────────┴────────┴─────────────────────────────┘
 ```
 
+查询结果也可以转换为一个 [Apache Arrow](https://arrow.apache.org/) 表，使用的是 `as_arrow_table()`。pyarrow 是一个可选依赖。每一列都会根据其中的值获得相应的 Arrow 类型：整数变成 `int64`，浮点数变成 `float64`，字符串变成 `string`，blob 变成 `binary`。整数与浮点数混合的列变成 `float64`。字符串或 blob 与其他类型混合的列无法转换，会抛出错误；请在查询中将其 `CAST` 为单一类型。只包含 NULL 的列（包括空结果的所有列）会获得 Arrow 的 `null` 类型。
+
+转换发生在 Python 中、在结果从 trace processor 接收之后。
+
+```python
+# 需要 pyarrow
+# pip install perfetto[pyarrow]
+qr_it = tp.query('SELECT ts, dur, name FROM slice')
+table = qr_it.as_arrow_table()
+```
+
+查询结果还实现了 [Arrow PyCapsule 接口](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html)，因此可以直接传递给接受 Arrow 数据的库。例如，可以在 [DuckDB](https://duckdb.org/) 中按名称查询结果：
+
+```python
+import duckdb
+
+slices = tp.query('SELECT ts, dur, name FROM slice')
+duckdb.sql('SELECT name, sum(dur) FROM slices GROUP BY name').show()
+```
+
 可以使用 Pandas DataFrame 轻松地从 trace 数据创建可视化。
 
 ```python

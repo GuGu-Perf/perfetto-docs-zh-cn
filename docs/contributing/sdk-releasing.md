@@ -101,6 +101,8 @@ git push origin vX.Y
 6. 发送一封带有 CHANGELOG 的电子邮件到 perfetto-dev@，抄送 perfetto-announce@
    （内部 - 执行前请确保你有权限）和
    [公开 perfetto-dev](https://groups.google.com/forum/#!forum/perfetto-dev)。
+   在 [Discord](https://discord.gg/35ShE3A) 的 #announcements 中发布要点，
+   并点击 Publish，以便关注该频道的服务器能够收到。
 
 ## 使用预构建和 SDK 源代码创建 GitHub 发布
 
@@ -140,5 +142,6 @@ git checkout vX.Y
 
 8. 发送一封带有 CHANGELOG 的电子邮件到 perfetto-dev@（内部）和
    [公开 perfetto-dev](https://groups.google.com/forum/#!forum/perfetto-dev)。
+   在 [Discord](https://discord.gg/35ShE3A) 的 #announcements 中发布要点并点击 Publish。
 
 9. 呼，你完成了！

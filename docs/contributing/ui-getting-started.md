@@ -104,7 +104,7 @@ Perfetto UI 使用 [Mithril](https://mithril.js.org/) 库来渲染接口。
 ### 组件状态
 
 组件的本地状态可以驻留在类成员中，并通过访问 `this` 直接在方法中访问。
-需要持久化（例如保存到 permalink 中）的状态保存在通过 `trace.mountStore()` 挂载的 `Store` 中，参见
+需要持久化（例如保存到 permalink 中）的状态通过 `trace.registerStorage()` 注册，参见
 [UI 插件](ui-plugins#state)。
 
-对于 store 中可以使用的内容有限制：普通 JS 对象是可以的，但类实例不行（此限制是由于状态序列化：状态应该是有效的 JSON 对象）。
+对于可以持久化的内容有限制：普通 JS 对象是可以的，但类实例不行（此限制是由于状态序列化：状态应该是有效的 JSON 对象）。

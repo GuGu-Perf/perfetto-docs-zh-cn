@@ -1268,113 +1268,69 @@ NOTE: 使用持久状态时必须考虑版本偏差。
 
 插件可以将信息持久化到 permalinks 中。这允许插件优雅地处理永久链接，并且是一个选择加入的机制，不是自动的。
 
-持久化插件状态使用 `Store<T>`，其中 `T` 是某些 JSON 可序列化对象。`Store` 实现
-[这里](https://github.com/google/perfetto/blob/main/ui/src/base/store.ts)。
-`Store` 允许读取和写入 `T`。读取：
+持久化插件状态通过 `Trace` 对象上的 `registerStorage()` 注册。
+你需要提供一个唯一的 id、一个描述状态结构的 [Zod](https://zod.dev) schema，
+以及一个默认值。schema 的输出类型必须是 JSON 可序列化的。
 
 ```typescript
-interface Foo {
-  bar: string;
-}
+import {z} from 'zod';
 
-const store: Store<Foo> = getFooStoreSomehow();
-
-// store.state 是不可变的，不得编辑。
-const foo = store.state.foo;
-const bar = foo.bar;
-
-console.log(bar);
-```
-
-写入：
-
-```typescript
-interface Foo {
-  bar: string;
-}
-
-const store: Store<Foo> = getFooStoreSomehow();
-
-store.edit((draft) => {
-  draft.foo.bar = 'Hello, world!';
+const MY_STATE_SCHEMA = z.object({
+  version: z.literal(1),
+  favouriteSlices: z.array(z.number()),
 });
 
-console.log(store.state.foo.bar);
-// > Hello, world!
-```
+type MyState = z.infer<typeof MY_STATE_SCHEMA>;
 
-首先为你的特定插件状态定义一个接口。
-
-```typescript
-interface MyState {
-  favouriteSlices: MySliceInfo[];
-}
-```
-
-要访问永久链接状态，请在 `Trace` 对象上调用 `mountStore()`，传入 store id 和 migration 函数。
-
-```typescript
 export default class implements PerfettoPlugin {
   static readonly id = 'com.example.MyPlugin';
   async onTraceLoad(trace: Trace): Promise<void> {
-    const store = trace.mountStore('com.example.MyPlugin', migrate);
+    const storage = trace.registerStorage({
+      id: 'com.example.MyPlugin',
+      schema: MY_STATE_SCHEMA,
+      defaultValue: {version: 1, favouriteSlices: []},
+    });
   }
-}
-
-function migrate(initialState: unknown): MyState {
-  // ...
 }
 ```
 
-关于 migration，需要考虑两种情况：
-
-- 加载新 trace
-- 从永久链接加载
-
-在新 trace 的情况下，你的 migration 函数以 `undefined` 调用。在这种情况下，你应该返回 `MyState` 的默认版本：
+返回的 `Storage<MyState>` 允许读取和写入状态：
 
 ```typescript
-const DEFAULT = {favouriteSlices: []};
+// 返回的值是深度冻结的，不得编辑。
+const slices = storage.get().favouriteSlices;
 
-function migrate(initialState: unknown): MyState {
-  if (initialState === undefined) {
-    // 返回 MyState 的默认版本。
-    return DEFAULT;
-  } else {
-    // 在这里迁移旧版本。
-  }
-}
+// 要更新状态，请设置一个新值。
+const current = storage.get();
+storage.set({...current, favouriteSlices: [...current.favouriteSlices, 42]});
 ```
 
-在永久链接的情况下，你的 migration 函数以生成永久链接时的插件 store 状态调用。这可能来自插件的旧版本或新版本。
+`get()` 会根据 schema 验证已存储的值：
 
-**插件不得对 `initialState` 的内容做任何假设！**
+- 加载新 trace：没有已存储的值，因此返回 `defaultValue`。
+- 从永久链接加载：生成永久链接时存储的值会根据 schema 进行验证。
+  它可能来自插件的旧版本或新版本。如果有效，则返回解析后的值，
+  否则返回 `defaultValue`。
 
-在这种情况下，你需要仔细验证状态对象。这可以通过几种方式实现，但没有一种是特别直接的。状态迁移很困难！
+**插件不得对永久链接的内容做任何假设！** schema 是挡在你的插件与任意 JSON 之间的唯一屏障，
+因此请保持它足够严格。
 
-一种暴力方法是使用版本号。
+包含版本号（例如 `version: z.literal(1)`）可以轻松拒绝来自不兼容插件版本的状态：
+任何不匹配的内容都会回退到 `defaultValue`。
+
+如果你希望从部分无效的状态中恢复，而不是丢弃全部状态，可以为单个字段添加 `.catch()`。
+这样只有无效的字段会被替换：
 
 ```typescript
-interface MyState {
-  version: number;
-  favouriteSlices: MySliceInfo[];
-}
-
-const VERSION = 3;
-const DEFAULT = {favouriteSlices: []};
-
-function migrate(initialState: unknown): MyState {
-  if (initialState && (initialState as {version: any}).version === VERSION) {
-    // 版本号检查通过，假设结构正确。
-    return initialState as State;
-  } else {
-    // Null、undefined 或错误的版本号 - 返回默认值。
-    return DEFAULT;
-  }
-}
+const MY_STATE_SCHEMA = z.object({
+  version: z.literal(1),
+  favouriteSlices: z.array(z.number()).catch([]),
+});
 ```
 
-更改时你需要记住更新你的版本号！迁移应该进行单元测试以确保兼容性。
+永久链接会永久存在，因此更改 schema 时要小心。如果某项更改使先前存储的状态变为无效，
+那么任何打开旧永久链接的人的状态都会被静默重置。
+应针对先前存储状态的示例对 schema 进行单元测试，以确保兼容性。
 
 示例：
 

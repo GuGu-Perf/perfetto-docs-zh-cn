@@ -21,9 +21,13 @@
     "PerfettoSQL Pipe Syntax Getting Started": "PerfettoSQL pipe 语法入门指南",
     "PerfettoSQL Pipe Syntax Reference": "PerfettoSQL pipe 语法参考",
     "Migrating to PerfettoSQL Pipe Syntax": "迁移到 PerfettoSQL pipe 语法",
-    "PerfettoSQL Pipe Operator Implementation Notes": "PerfettoSQL pipe 运算符实现说明"
+    "PerfettoSQL Pipe Operator Implementation Notes": "PerfettoSQL pipe 运算符实现说明",
+    "Googler Features": "Googler 特性",
+    "Android Trace Analysis Cookbook": "Android Trace 分析实战指南",
+    "Android Analysis Cookbooks": "Android Trace 分析实战指南"
   },
   "phrases": {
+    "feature": "特性",
     "capture/record a trace": "采集 trace",
     "to profile": "进行 profile/profiling",
     "keep a trace warm": "让 trace 保持热身状态",

@@ -43,7 +43,7 @@ TAB: Android (Perfetto UI)
 #### 先决条件
 
 - 一台运行 Android 10+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/guide/topics/manifest/profileable-element) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
@@ -68,7 +68,7 @@ TAB: Android (Command line)
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
 - *Windows 用户*：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
 - 一台运行 Android 10+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/guide/topics/manifest/profileable-element) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。有关更多详细信息，请参见 [heapprofd documentation][hdocs]。
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
@@ -251,7 +251,7 @@ TAB: Android (Perfetto UI)
 #### 先决条件
 
 - 一台运行 Android 11+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/guide/topics/manifest/profileable-element) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
 - 打开 https://ui.perfetto.dev/#!/record
@@ -273,7 +273,7 @@ TAB: Android (Command line)
 - 已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
 - *Windows 用户*：确保下载的 adb.exe 在 PATH 中。`set PATH=%PATH%;%USERPROFILE%\Downloads\platform-tools`
 - 一台运行 Android 11+ 的设备。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/guide/topics/manifest/profileable-element) 应用。如果你在 Android 的 _"user"_ 构建上运行（相对于 _"userdebug"_ 或 *"eng"* ），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 #### 说明
 

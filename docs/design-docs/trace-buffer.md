@@ -77,6 +77,7 @@ Reader 端：
 
 - `BeginRead()`：在读回时调用，在每个读取批处理开始时调用。
 - `ReadNextTracePacket()`：为每个 packet 调用一次，直到 buffer 中没有更多 packets，或 TracingServiceImpl 决定它已为当前任务读取了足够的数据（以避免使 IPC 通道饱和）。
+- `MaybeCompact()`：在所有读取批次完成且其 packets 已释放后，可选地执行 compaction。再次读取前须调用 `BeginRead()`。参见 [Compaction](#compaction)。
 
 ## 关键挑战
 
@@ -294,7 +295,7 @@ TBChunk 与 SMB chunk 非常相似，但有以下注意事项：
 "list" 实际上是一个 offsets 的 CircularQueue，具有 O(1)
 `push_back()` 和 `pop_front()` 操作。
 
-- TraceBuffer 持有 `ProducerAndWriterID` -> `SequenceState` 的 hashmap。
+- TraceBuffer 持有一个 `SequenceStateMap`，它是 `ProducerAndWriterID` -> `SequenceState` 的 hashmap。
 - buffer 中每个活动的 {Producer,Writer} 都有一个 `SequenceState`。
 - `SequenceState` 持有：
   - producer 的身份（uid、pid、...）
@@ -311,8 +312,9 @@ TBChunk 与 SMB chunk 非常相似，但有以下注意事项：
   [b/268257546](http://b/268257546)）。[Long trace mode][lt] 定期消耗 buffer，因此如果我们要积极处理，所有序列都可以被销毁。
 - 这里的问题在于 `SequenceState` 持有 `last_chunk_consumed`，用于检测 chunk ids 中的间隙。
 
-TraceBufferV2 使用惰性清理方法平衡这一点：它允许最近删除的 `SequenceState`s 保持活动状态，最多
-`kKeepLastEmptySeq = 1024`。请参阅 `DeleteStaleEmptySequences()`。
+TraceBufferV2 使用惰性清理方法平衡这一点：每插入 `kInsertsPerPrune = 256`
+个新序列后，它会删除最近最少使用的空 `SequenceState`，并保留最新的
+`kPrunableSequencesToKeep = 1024` 个。请参阅 `SequenceStateMap::MaybePrune()`。
 
 ### FragIterator
 
@@ -520,12 +522,69 @@ flowchart TD
 - 外层按 buffer 顺序迭代，因为这尊重全局 FIFO-ness，试图以大致相同的顺序获取事件（% chunking）
 - 在每一步，内层按序列顺序进行，如下：
   - 它获取 buffer-order visit 找到的下一个 chunk（上面示例中的 B3）。
-  - 它通过在 `sequences_` map 中进行 hash-lookup 找到其 SequenceState。
+  - 它通过在 `SequenceStateMap` 中进行 hash-lookup 找到其 SequenceState。
   - 它跳转到 `SequenceState.chunks` 有序列表中的第一个 Chunk。
   - 它按序列顺序进行，直到到达目标 chunk（B3）。
 - 外层继续按 buffer 顺序进行，故事重复。
 
 在代码中，外层 walk 由 `TraceBufferV2::ReadNextTracePacket()` 实现，而内层 walk 由 `class ChunkSeqReader::ReadNextPacketInSeqOrder()` 实现。
+
+### Compaction
+
+读取会把已消耗的 chunks 变成 padding 而不释放它们的页面，因此
+compaction 将存活的 chunks 移动到一起以回收未使用的空间。
+会话级的 `TraceConfig.experimental_trace_buffer_v2_compaction` flag
+启用此行为，默认为 false。
+Compaction 仅适用于可写的 TraceBufferV2 `RING_BUFFER` buffer，因为
+`DISCARD` buffer 必须保留其写入游标以便在末尾停止写入。
+一旦 compaction 成为默认行为，这个临时 flag 将被移除。
+
+Packet slices 指向 buffer 内部，因此 service 只在所有读取批次完成、
+调用方不再使用这些 slices 之后才执行 compaction。
+对于 consumer 读取，它会 post 一个在 `OnTraceData()` 返回之后运行的
+任务；对于文件输出，则在 packets 写入完成后执行 compaction。
+`MaybeCompact()` 还会重置缓存的 `ChunkSeqReader`，因为 chunk 的
+offset 可能改变，所以调用方必须在下一次读取前使用 `BeginRead()`。
+
+读取可能留下不完整的 chunks 或等待 patch 的 chunks，而新的 chunks
+也可能在 compaction 运行之前到达。
+`MaybeCompact()` 收集它们在 `SequenceState::chunks` 中的 offsets 的
+指针，而不扫描 padding，然后按 offset 对这些指针排序。
+该排序对于 N 个存活 chunks 的开销为 O(N log N)。
+
+在一次环绕（wrap）之后，位于 `wr_` 处或之后的 chunks 比它之前的更旧。
+因此，如果 `wr_` 两侧都存在存活 chunks，它会跳过 compaction，因为
+地址顺序与 ring 顺序不一致。
+否则，它按地址顺序将 chunks 移动到前面，并在其原始队列条目中更新每个
+offset，从而保持序列顺序。
+它还会重新计算每个被移动 chunk 的 checksum，因为 checksum 包含
+offset。
+
+随后 compaction 将 `wr_` 和 `used_size_` 设置为剩余 chunks 的总大小，
+使下一次写入从那里追加。
+因此，不完整的 chunks 可以保留到后续写入覆盖它们为止。
+
+超过旧 `used_size_` 的字节本来就已为零，因此 compaction 只用 `memset`
+清零 `[new used_size_, old used_size_)` 区间。
+这使整个未使用的尾部保持零填充。
+如果没有存活 chunk 留下，offset 0 处被清零的 header 就是一个空的
+padding chunk，因此 reader 不需要特殊处理。
+
+为了减少 page fault，compaction 使用之前写入过的范围来估计后续写入
+需要多少容量。
+它保留旧的 `used_size_` 加上 `old_used_size / kSpareCapacityDivisor`
+（上限为 `size_`），在不触及非驻留页面的情况下保留驻留的备用页面。
+较小的写入周期会降低保留边界，而另一次没有存活 chunks 或新写入的
+compaction 可以释放所有整页。
+
+为了释放这些页面，`PagedMemory::AdviseDontNeedAfter()` 将边界向上、
+分配的末端向下对齐到系统页面边界，以保留不完整的页面。
+然后它建议 OS 丢弃整页范围，这依赖于平台，可能是 no-op。
+
+`compactions` 计数器包含已完成的 compaction（即使没有 chunk 被移动），
+而 `compactions_skipped` 统计因 `wr_` 两侧存在存活 chunks 而跳过的
+次数。
+这两个计数器都不包含对 `DISCARD` 或只读 buffer 的调用。
 
 ## 基准测试
 

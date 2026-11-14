@@ -151,11 +151,10 @@ CLOCK_BOOTTIME = (3703 - 1200) + 5200 = 7703
 
 这样的 trace 将包含几个快照，这些快照打破了两个时钟域之间的双射性。在这种情况下，将 `CLOCK_BOOTTIME` 时间戳转换为 `CLOCK_REALTIME` 始终可能而不会产生歧义（最终两个不同的时间戳可以解析为同一个 `CLOCK_REALTIME` 时间戳）。反之是不允许的，因为上午 2 点到上午 3 点之间的 `CLOCK_REALTIME` 时间戳有歧义，并且可以解析为两个不同的 `CLOCK_BOOTTIME` 时间戳)。
 
-[6756fb05]: https://android-review.googlesource.com/c/platform/external/perfetto/+/1101915/
-[clock_snapshot]: https://android.googlesource.com/platform/external/perfetto/+/refs/heads/main/protos/perfetto/trace/clock_snapshot.proto
-[timestamp_clock_id]: https://android.googlesource.com/platform/external/perfetto/+/3e7ca4f5893f7d762ec24a2eac9a47343b226c6c/protos/perfetto/trace/trace_packet.proto#68
-[builtin_clocks]: https://android.googlesource.com/platform/external/perfetto/+/3e7ca4f5893f7d762ec24a2eac9a47343b226c6c/protos/perfetto/trace/clock_snapshot.proto#25
-
 ## 跨 trace 和机器的时钟
 
 以上所有内容描述的是单个 trace 内的时钟域。当合并多个 trace 文件，或者一个 trace 包含来自多台机器的数据时，同样的图会扩展为带有机器和文件限定符的时钟：机器 A 上的 `CLOCK_BOOTTIME` 和机器 B 上的 `CLOCK_BOOTTIME` 是不同的节点，通过显式的边关联（录制时的时钟同步、wall-clock 汇合点或 [trace manifest](/docs/reference/perfetto-manifest.md)）。所有边，无论其来源，都记录在 `clock_snapshot` 表中。完整模型参见 [Trace 合并](/docs/concepts/merging-traces.md)。
+
+[6756fb05]: https://github.com/google/perfetto/commit/6756fb0548df5e0abb743644879fd34c9e72b0e8
+[clock_snapshot]: https://github.com/google/perfetto/blob/main/protos/perfetto/trace/clock_snapshot.proto
+[builtin_clocks]: https://github.com/google/perfetto/blob/a39834aa20faca91179990afaff9c8551f6305a3/protos/perfetto/trace/clock_snapshot.proto#L27

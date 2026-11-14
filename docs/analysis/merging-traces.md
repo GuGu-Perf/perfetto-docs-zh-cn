@@ -190,11 +190,19 @@ FROM stats
 WHERE severity = 'error' AND value > 0;
 ```
 
-合并需注意的统计项：`clock_sync_unrelatable_clock_domains` 和
-`clock_sync_failure_no_path` 统计时钟无法关联到时间线的事件数量
-（录制 clock snapshot 或添加 manifest `clocks` 条目）；
-`trace_sorter_negative_timestamp_dropped` 统计被 `offset_ns`
-移动到时间线开始之前的事件数量。
+合并需注意的统计项：
+
+- `clock_sync_unrelatable_clock_domains` 和 `clock_sync_failure_no_path`
+  统计时钟无法关联到时间线的事件。请录制 clock snapshot 或添加
+  manifest `clocks` 条目。
+- `clock_sync_failure_unknown_source_clock` 和
+  `clock_sync_failure_undeferrable_packet_loss` 统计时钟未被任何
+  clock snapshot 定义的事件，典型情况是进程内 SDK trace 被合并时
+  缺少与其一同录制的系统 trace。如果系统 trace 就在归档中，
+  请检查它没有被单独压缩（例如 `system.pftrace.gz`）：
+  请以未压缩形式添加它。
+- `trace_sorter_negative_timestamp_dropped` 统计被 `offset_ns`
+  移动到时间线开始之前的事件。
 
 按文件元数据可通过 `metadata` 表的 `trace_id` 列获取，或者更高层
 通过 `traceinfo.trace` stdlib 模块中的 `_metadata_by_trace` 视图。

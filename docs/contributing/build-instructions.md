@@ -39,6 +39,8 @@ sudo apt install curl python3-venv build-essential
 
 `--linux-arm` 将拉取交叉编译 Linux ARM/64 的 sysroots。
 
+`--linux-x64` 将拉取用于构建 Linux x64 二进制文件的 sysroot，这些二进制文件不依赖主机的 glibc 版本（见下文）。
+
 `--rust` 将拉取构建 [Rust SDK](/docs/getting-started/rust-sdk.md) 所需的 Rust 工具链。Rust SDK 也可以通过 Cargo 使用系统 Rust 工具链（1.85+）构建，无需此标志。
 
 WARNING: 请注意，如果你使用 M1 或任何后续的 ARM Mac，你的 Python 版本至少应为 3.9.1，以解决
@@ -199,7 +201,7 @@ python3 tools/ninja -C out/win perfetto traced trace_processor_shell
 
 为 Linux 交叉编译时，你将需要 sysroot。你有两个选择：
 
-#### 1. 使用基于 Debian Sid 的内置 sysroot
+#### 1. 使用基于 Debian Bullseye 的内置 sysroot
 
 ```bash
 tools/install-build-deps --linux-arm
@@ -212,6 +214,20 @@ target_os = "linux"
 target_cpu = "arm"
 # 或
 target_cpu = "arm64"
+```
+
+官方发布的二进制文件使用的也是这些 sysroot，因此它们只要求 Debian Bullseye 附带的 glibc 版本（2.31）或更旧的版本。
+
+如果要以相同的 glibc 基线构建 Linux x64 二进制文件，而不受主机发行版的影响，请拉取 x64 sysroot 并显式地让 GN 指向它：
+
+```bash
+tools/install-build-deps --linux-x64
+```
+
+```python
+target_os = "linux"
+target_cpu = "x64"
+sysroot = "/path/to/perfetto/buildtools/debian_bullseye_amd64-sysroot"
 ```
 
 #### 2. 使用你自己的 sysroot

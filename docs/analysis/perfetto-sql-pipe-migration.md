@@ -1,6 +1,6 @@
 # 迁移到 PerfettoSQL pipe 语法
 
-本指南面向已经了解 PerfettoSQL 的读者，介绍我们为什么引入 pipe 语法、它与现有宏和虚拟表有何不同，以及如何迁移现有查询。
+本指南面向已经了解 PerfettoSQL 的读者，介绍 pipe 语法为什么存在、它与所取代的宏和虚拟表有何不同，以及如何把查询迁移到 pipe 语法。
 
 > **警告:** pipe 语法是**实验性的、不稳定的**。请**不要**在仪表盘、脚本或生产查询中依赖它。任何内容都可能且必将在毫无预兆的情况下损坏。在 PerfettoSQL 标准库之外，你必须在自己的连接上执行 `PERFETTO PRAGMA pipelines = 1;` 才能启用它。
 
@@ -16,48 +16,53 @@
 
 用标准 SQLite 编写 trace 分析查询时，会遇到几个反复出现的痛点：
 
-1. **表宏与虚拟表不擅长组合。**区间交集与树遍历这类操作并不存在于 SQL 之中。Perfetto 通过 `SPAN_JOIN` 等 SQLite 虚拟表，或者用 `_interval_intersect!`、`_graph_aggregating_scan!`、`_callstacks_self_to_cumulative!` 等宏封装的 C++ 表函数来提供这些能力。把其中两三个串联起来，就需要深层嵌套的子查询，或者一串中间视图和中间表。
-2. **手工搭建 `id` 通道与反向 JOIN。**`_interval_intersect!` 只返回 `ts`、`dur`、`id_0`、`id_1` 等列。要读取输入中的其他列，每个输入都必须有 `id` 列，或者包一层 `_ii_subquery!`，随后还要按 `id_0`、`id_1` 等对每个输入表各做一次 `JOIN`。
-3. **为树手工建立索引和临时表。**要用 `_graph_aggregating_scan!` 沿调用栈或堆图向上求和，需要先物化一张原始表，在 `parent_id` 上创建 `PERFETTO INDEX`，以免查找叶子的 `NOT IN` 查询退化为平方复杂度，然后运行扫描，最后再按 `id` 把结果 JOIN 回原始表。
-4. **难读的宏错误与 SQLite 虚拟表开销。**PerfettoSQL 宏是文本替换，因此参数里的一处错误会产生指向展开后宏体内部的 SQLite 错误。在运行时，SQLite 与自定义运算符之间传递行，会迫使每一行都经过 SQLite 逐行处理的虚拟表接口。
+1. **宏与虚拟表无法组合。**SQL 本身没有区间交集和树遍历，因此 Perfetto 通过 `SPAN_JOIN` 等 SQLite 虚拟表，或者用 `_interval_intersect!`、`_graph_aggregating_scan!` 等宏封装的 C++ 表函数来提供这些能力。把其中两三个串联起来，就需要深层嵌套的子查询，或者一连串中间表。
+2. **`id` 上的反向 JOIN。**`_interval_intersect!` 只返回 `ts`、`dur`、分区列以及 `id_0`、`id_1` 等。要读取其他任何列，每个输入都必须有 `id` 列，或者包一层 `_ii_subquery!`，而且结果还需要 JOIN 回每个输入。
+3. **为树建立索引和临时表。**要用 `_graph_aggregating_scan!` 沿调用栈或堆图向上求和，就得先保存一张表、在 `parent_id` 上建索引，让查找叶子的 `NOT IN` 查询不至于退化为平方复杂度，然后运行扫描，最后再按 `id` 把结果 JOIN 回去。
+4. **难懂的报错与缓慢的逐行执行。**宏是文本替换，参数里的一处错误就会产生指向展开后宏体内部的 SQLite 错误。运行时，每一行都要逐个通过 SQLite 的虚拟表接口。
 
 ### pipe 带来了什么变化
 
-PerfettoSQL pipe 语法使用线性的 `|>` 阶段，设计上参考了 [GoogleSQL pipe 语法](https://cloud.google.com/bigquery/docs/pipe-syntax)，并在列式批处理执行器上运行这些阶段：
+pipe 语法把 `|>` 阶段串联起来，做法与 [GoogleSQL pipe 语法](https://cloud.google.com/bigquery/docs/pipe-syntax) 一致，并在 C++ 实现的列式执行器上运行这些阶段：
 
-- **`INTERVAL INTERSECTION OF` 和 `TREE ACCUMULATE` 是语言的一部分。**它们会自动携带输入列。不再需要 `id_0`/`id_1` 反向 JOIN、`_ii_subquery!` 或 `parent_id` 索引。
-- **直接扫描 dataframe。**当 pipeline 读取 `slice` 或 `sched` 这类已定稿的 `PERFETTO TABLE` 时，会直接在 C++ 中读取该表的列式存储，而不经过 SQLite。
-- **编译期列检查与裁剪。**编译器会提前检查列名和类型，出错时指向出错的 token，并在执行前丢弃未使用的列和未使用的树聚合。
+- **区间与树操作是语言的一部分。**`INTERVAL INTERSECTION OF` 和 `TREE ACCUMULATE` 等阶段会携带输入列，因此不需要 `id_0`/`id_1` 反向 JOIN、`_ii_subquery!` 包装或 `parent_id` 索引。
+- **直接读取表。**pipeline 读取 `slice`、`sched` 或任意 `PERFETTO TABLE` 时，直接访问其列式存储，不经过 SQLite。
+- **错误提前暴露。**列名和类型在任何代码运行之前就会得到检查，出错时会指向出错的 token。未使用的列和聚合会在执行前被丢弃。
 
 ---
 
 ## 启用 pipe 语法
 
-在 `trace_processor_shell`、Perfetto UI、Python API 和 diff 测试中，可以在自己的连接上通过以下语句启用 pipe 语法：
+在 `trace_processor_shell`、Perfetto UI、Python API 和 diff 测试中，通过以下语句启用 pipe 语法：
 
 ```sql
 PERFETTO PRAGMA pipelines = 1;
 ```
 
-可以用 `PERFETTO PRAGMA pipelines = 0;` 再次关闭它。在 PerfettoSQL 标准库内部，无需该 pragma，pipeline 默认启用。
+用 `PERFETTO PRAGMA pipelines = 0;` 可以再次关闭它。标准库则始终可以使用 pipeline。
 
 ---
 
 ## 什么放在 SQL 里，什么放在 pipeline 里？
 
-pipe 语法正在逐步构建中。目前，pipeline 支持两个 trace 运算符——`INTERVAL INTERSECTION OF` 和 `TREE ACCUMULATE`，以及六个列重塑阶段：`SELECT`、`EXTEND`、`DROP`、`RENAME`、`SET` 和 `AS`。
-
-如今迁移查询时，请按以下方式在 SQL 与 pipeline 之间分工：
+pipeline 目前尚不能覆盖 SQL 的全部能力。请按以下方式分工：
 
 | 任务 | 目前应在哪里完成 |
 | :--- | :--- |
-| 过滤行、标准 `JOIN`、`GROUP BY`、窗口函数与计算表达式 | 放在 `FROM (SELECT ...)` 源子查询内，或者对得到的 `PERFETTO TABLE` 执行标准 SQL 查询。 |
-| 对两张及以上的表求时间区间交集 | 在 pipeline 开头使用 `INTERVAL INTERSECTION OF (...) [PER ...]`。 |
-| 沿父子树向上或向下求和 | 使用 `\|> TREE ACCUMULATE UP \| DOWN SUM(col) AS total` 阶段。 |
-| 挑选、丢弃、重命名或调换列 | 使用 `\|> SELECT`、`\|> EXTEND`、`\|> DROP`、`\|> RENAME`、`\|> SET`、`\|> AS` 阶段。 |
-| 对最终输出排序或限制行数 | 对 pipeline 创建的 `PERFETTO TABLE` 执行带 `ORDER BY` 或 `LIMIT` 的 `SELECT`。 |
+| 用列与数值的比较（以 `AND` 连接）过滤行 | `\|> WHERE dur > 0 AND depth = 0` |
+| 其他任何过滤、`JOIN`、窗口函数与计算表达式 | 放在 `FROM (SELECT ...)` 子查询内，或对 pipeline 保存的表执行 SQL。 |
+| 对两张及以上的表求区间交集 | `INTERVAL INTERSECTION OF (...) [PER ...]` |
+| 统计或求和一组区间内的并发活动 | `\|> INTERVAL FLATTEN [PER ...] AGGREGATE ...`；参见[示例](/docs/analysis/perfetto-sql-pipe-getting-started.md#flattening-overlapping-intervals-interval-flatten)。 |
+| 填补区间之间的空隙 | `\|> INTERVAL FILL GAPS WITH <background> [PER ...]` |
+| 沿树向上或向下聚合 | `\|> TREE ACCUMULATE UP \| DOWN ...` |
+| 按组使用 `COUNT(*)`，以及对整数列使用 `SUM`、`MIN` 和 `MAX` | `\|> AGGREGATE ... [GROUP BY ...]` |
+| 其他任何聚合 | 在 SQL 中完成。 |
+| 去除重复行 | `\|> DISTINCT` |
+| 挑选、丢弃、重命名或调换列 | `\|> SELECT`、`EXTEND`、`DROP`、`RENAME`、`SET` 和 `AS` |
+| 按数值列排序 | `\|> ORDER BY col [DESC]` |
+| 按字符串或表达式排序，或使用 `LIMIT` | 对 pipeline 保存的表执行 SQL。 |
 
-> **注意:** pipeline 可以作为顶层语句运行，也可以作为 `CREATE [OR REPLACE] PERFETTO TABLE ... AS <pipeline>` 的主体。它尚不能用作 `CREATE PERFETTO VIEW`、`CREATE PERFETTO FUNCTION` 或 `WITH` CTE 的主体。
+pipeline 可以独立作为一条语句，也可以作为 `CREATE [OR REPLACE] PERFETTO TABLE` 的主体。它尚不能作为视图、函数或 `WITH` 子句的主体。
 
 ---
 
@@ -69,6 +74,7 @@ pipe 语法正在逐步构建中。目前，pipeline 支持两个 trace 运算�
 
 ```sql
 INCLUDE PERFETTO MODULE intervals.intersect;
+INCLUDE PERFETTO MODULE wattson.utils;
 
 CREATE PERFETTO TABLE _estimates_w_tasks_attribution AS
 SELECT ii.ts, ii.dur, ii.cpu, uw.estimated_mw, s.utid
@@ -98,20 +104,20 @@ INTERVAL INTERSECTION OF (
 
 ### `INTERVAL INTERSECTION OF` 迁移检查清单
 
-1. **去掉反向 JOIN 和 `_ii_subquery!` 包装。**`_interval_intersect!` 要求每个输入都有 `id` 列，好让你能把 `id_0` 和 `id_1` JOIN 回输入表。`INTERVAL INTERSECTION OF` 会自动携带操作数的列，只要求输入带有 `ts` 和 `dur`。只有当你确实需要在输出中以 `alias.id` 的形式暴露 SQLite 的 `_auto_id` 时，才保留 `_ii_subquery!`。
-2. **给每个操作数一个互不相同的别名。**写成 `INTERVAL INTERSECTION OF (a AS x, b AS y)`。在子查询上省略 `AS <alias>`，或者在不同操作数之间复用同一别名，都是编译错误。
-3. **用 `PER` 取代分区列列表或 `PARTITIONED`。**写成 `PER cpu` 或 `PER utid, track_id`。对于不分区的交集，直接省略 `PER` 即可。
-4. **给操作数列加限定名，而区域的 `ts`、`dur` 和 `PER` 列保持裸名。**裸名 `ts` 和 `dur` 是相交区域的起点和时长，裸名 `cpu` 是匹配行共享的分区键。其余所有操作数列——包括每个操作数原始的、未经裁剪的 `x.ts` 和 `x.dur`——都必须用操作数的别名加以限定，例如 `x.utid` 或 `y.freq`。务必在 `INTERVAL INTERSECTION OF` 之后紧跟 `|> SELECT ...`；如果没有 `SELECT` 阶段，每个操作数的 `ts` 和 `dur` 都会留在输出行中，从而产生重复的列名。
+1. **去掉反向 JOIN 和 `_ii_subquery!` 包装。**输入只需要 `ts` 和 `dur`，其余所有列都会自动携带。
+2. **给每个输入一个自己的别名：**写成 `INTERVAL INTERSECTION OF (a AS x, b AS y)`。子查询不带别名，或两个输入共用一个别名，都会报错。
+3. **用 `PER` 指定分区：**写成 `PER cpu` 或 `PER utid, track_id`。省略 `PER` 则对所有内容求交集。
+4. **裸名代表相交区域。**`ts` 和 `dur` 是重叠区域，`cpu` 是共享的 `PER` 值。输入自身的边界是 `x.ts` 和 `x.dur`。其他列可以用裸名书写，如 `utid`；但若两个输入有同名的列，就要写成 `x.utid`。如果两个输入的列名相同，请以一个为每个副本分别命名的 `|> SELECT` 结尾，否则结果无法保存为表。
 5. **留意行为差异。**
-   - **`dur IS NULL` 或 `ts IS NULL` 的行会被跳过。**如果输入表用 `lead(ts) OVER (...) - ts AS dur` 计算时长，其最后一行就会出现 `dur IS NULL`。`_interval_intersect!` 会把 `NULL` 时长强制转换为 `0`；`INTERVAL INTERSECTION OF` 则会跳过 `ts` 或 `dur` 为 `NULL` 的行。
-   - **`ts` 或 `dur` 为负数会被视为错误。**`dur = -1` 的未完成 slice 会被拒绝，报错为 `ts or dur is below zero`。请在输入中用 `WHERE dur >= 0` 或 `WHERE dur > 0` 过滤。
-   - **操作数内部区间重叠也没问题。**当区间在单张表内重叠时，`SPAN_JOIN` 会产生错误的结果，而 `INTERVAL INTERSECTION OF` 会自动处理重叠区间。
+   - **`NULL` 边界会被跳过。**用 `lead(ts) OVER (...) - ts` 计算的 `dur` 在最后一行是 `NULL`。`_interval_intersect!` 把它当作 `dur = 0` 处理，而 pipeline 会跳过该行。
+   - **输入内部的区间可以重叠。**此时 `SPAN_JOIN` 会给出错误的结果，而 `INTERVAL INTERSECTION OF` 可以正常处理。
+   - **负的边界会被视为错误**，这一点与 `_interval_intersect!` 相同。请用 `|> WHERE dur >= 0` 或在输入子查询中过滤掉 `dur = -1` 的未完成 slice。
 
 ---
 
 ## 迁移树聚合
 
-用 `TREE ACCUMULATE UP` 和 `TREE ACCUMULATE DOWN` 替换 `_graph_aggregating_scan!`、`_callstacks_self_to_cumulative!`，以及用递归 CTE 实现的子树和或路径和。
+用 `TREE ACCUMULATE UP` 和 `TREE ACCUMULATE DOWN` 替换 `_graph_aggregating_scan!`，以及对子树或路径求和的递归 CTE。
 
 ### 迁移前：`_graph_aggregating_scan!`
 
@@ -169,16 +175,16 @@ FROM _heap_graph_class_tree
 
 ### `TREE ACCUMULATE` 迁移检查清单
 
-1. **删除中间原始表、`parent_id` 索引和反向 JOIN。**可以直接从宏或子查询接入 pipeline：
+1. **删除中间表、`parent_id` 索引和反向 JOIN。**可以直接从宏或子查询接入 pipeline：
    ```sql
    CREATE PERFETTO TABLE _linux_perf_callstacks AS
    FROM _callstacks_for_callsites!((SELECT callsite_id FROM perf_sample))
    |> TREE ACCUMULATE UP SUM(self_count) AS cumulative_count;
    ```
-   `TREE ACCUMULATE` 会保留输入行的所有列，并在末尾追加 `cumulative_count`。不需要把结果 `JOIN` 回输入表，也不需要在 `parent_id` 上创建 `PERFETTO INDEX`。
-2. **确保数据源具有 `id` 和 `parent_id` 列。**`TREE ACCUMULATE` 会在当前行中查找裸名 `id` 和 `parent_id`。根节点必须满足 `parent_id IS NULL`。
-3. **总计总是包含节点自身。**`TREE ACCUMULATE UP SUM(x) AS total` 把节点自身的 `x` 与其全部后代的 `x` 相加；`TREE ACCUMULATE DOWN SUM(x) AS path` 把节点自身的 `x` 与其全部祖先的 `x` 相加。迁移手写的 `_graph_aggregating_scan!` 查询时，请检查旧的步骤查询是否忘记为非叶节点加上 `r.self_*`。
-4. **如有需要，在公开表上保留 `ORDER BY id`。**`TREE ACCUMULATE UP` 按子节点在前的顺序产出行，`DOWN` 按父节点在前的顺序产出行。如果某个公开的标准库表或测试期望行按 `id` 排序，请用 `SELECT ... ORDER BY id` 查询生成的表。
+   输入的列全部保留，`cumulative_count` 追加在末尾。
+2. **数据源需要 `id` 和 `parent_id` 列**，且根节点满足 `parent_id IS NULL`。
+3. **总计包含节点自身。**`UP SUM(x)` 把节点的 `x` 加到其后代的合计上；`DOWN SUM(x)` 把它加到其祖先的合计上。手写的 `_graph_aggregating_scan!` 步骤有时会忘记为有子节点的节点加上 `r.self_*`，迁移后请核对结果是否一致。
+4. **如果顺序重要就排序。**`UP` 先输出子节点，`DOWN` 先输出父节点。如果某个表或测试期望行按 `id` 排列，请以 `|> ORDER BY id` 结尾。
 
 ---
 
@@ -186,36 +192,41 @@ FROM _heap_graph_class_tree
 
 ### 1. 每个源列都需要有效且互不相同的名称
 
-当 pipeline 从 SQL 子查询读取数据时，编译器会在列裁剪运行之前检查该子查询返回的每一列，包括后续阶段会丢弃的列：
+源子查询的每一列都会被检查，包括后续阶段会丢弃的列：
 
-- **未加别名的表达式会失败：**
+- **表达式必须有名称：**
   ```sql
-  -- ERROR: expected every column to have a valid name, but '1 + 1' is not one:
+  -- ERROR: expected every column to have a name, but column 3 has none:
   -- give it one with AS
   FROM (SELECT id, parent_id, 1 + 1 FROM tree)
   |> TREE ACCUMULATE UP SUM(id) AS total
   |> SELECT id, total;
   ```
-- **子查询中出现重复列名会失败：**SQLite 会把 `SELECT 1 AS x, 2 AS x` 中的第二个 `x` 重命名为 `x:1`。pipeline 编译器会以如下信息拒绝：`expected distinct column names, but there are two named 'x', which SQLite renamed to 'x' and 'x:1'`。
+- **名称必须互不相同：**`FROM (SELECT 1 AS x, 2 AS x)` 会失败，报错为 `expected distinct column names, but there are two named 'x'`。
 
-### 2. 在 `FROM` 中把 `WHERE` 和 `JOIN` 括在圆括号里
+### 2. `FROM` 接受表、宏或子查询
 
-pipeline 的 `FROM` 子句只接受表名或视图名，或者带圆括号的 `SELECT` 子查询：
+`FROM` 不能自带 `WHERE` 或 `JOIN`。请用 `|> WHERE` 阶段过滤，或者把 SQL 放进子查询：
 
 ```sql
 -- ERROR:
 FROM slice WHERE dur > 0 |> TREE ACCUMULATE UP SUM(dur) AS total;
 
 -- OK:
-FROM (SELECT id, parent_id, dur FROM slice WHERE dur > 0)
+FROM slice
+|> WHERE dur > 0
+|> TREE ACCUMULATE UP SUM(dur) AS total;
+
+-- OK, and needed for a JOIN or a filter WHERE does not support:
+FROM (SELECT id, parent_id, dur FROM slice WHERE name GLOB 'Choreographer*')
 |> TREE ACCUMULATE UP SUM(dur) AS total;
 ```
 
-### 3. 表别名会在绑定那一刻对行做快照
+### 3. 别名记住的是它被设置那一刻的行
 
-在 `DROP`、`RENAME`、`SET`、`EXTEND` 等 pipeline 阶段中，表别名会记住别名创建时行所具有的列：
+`DROP`、`RENAME`、`SET` 和 `EXTEND` 不会改变别名：
 
-- `FROM t |> DROP x |> SELECT t.x` 仍然有效，可以找回 `x`。
-- `FROM t |> RENAME x AS y |> SELECT t.x` 仍以 `t.x` 访问该列，而裸名 `y` 以新名称访问它。
-- `|> SELECT ...` 会构建一个新行并清除之前的所有别名。
-- `|> AS u` 会用 `u` 替换之前的所有别名，并对当前行做快照。
+- `FROM t AS t |> DROP x |> SELECT t.x` 仍能找到 `x`。
+- 在 `FROM t AS t |> RENAME x AS y` 之后，该列的裸名是 `y`，通过别名访问则仍是 `t.x`。
+- `|> SELECT` 会清除所有别名。
+- `|> AS u` 会把所有别名替换为 `u`，对应替换那一刻的行。

@@ -51,60 +51,6 @@ android_cpu {
 
 由于 metrics 编写需要大量迭代才能正确，因此有几个技巧可以使体验更顺畅。
 
-### 热重新加载 metrics
-
-为了在开发 metrics 时获得最快的迭代时间，可以热重新加载 SQL 的任何更改；这将跳过重新编译（对于内置 metrics）和 trace 加载（对于内置和自定义 metrics）。
-
-为此，trace processor 在*交互模式*中启动，同时指定关于应该运行哪些 metrics 和任何扩展路径的命令行标志。然后，在 REPL shell 中，使用命令 `.load-metrics-sql`（导致磁盘上的任何 SQL 被重新读取）和 `.run-metrics`（运行 metrics 并打印结果）。
-
-例如，假设我们要迭代 `android_startup` metrics。我们可以从 Perfetto checkout 运行以下命令：
-
-```python
-> ./tools/trace_processor --interactive \
- --run-metrics android_startup \
- --metric-extension src/trace_processor/metrics@/ \
- --dev \
-  <trace>
-android_startup {
-  <contents of startup metric>
-}
-
-# 现在对与启动 metrics 相关的 SQL 文件进行你想要的任何更改。
-# 即使在 src/trace_processor/metric 中添加新文件也可以工作。
-
-# 然后,我们可以使用 `.load-metrics-sql` 重新加载更改。
-> .load-metrics-sql
-
-# 我们可以使用 `.run-metrics` 重新运行更改后的 metrics
-> .run-metrics
-android_startup {
-  <contents of changed startup metric>
-}
-```
-
-NOTE: 下面将看到为什么此命令需要 `--dev`。
-
-这也适用于命令行上指定的自定义 metrics：
-
-```python
-> ./tools/trace_processor -i --run-metrics /tmp/my_custom_metric.sql <trace>
-my_custom_metric {
-  <contents of my_custom_metric>
-}
-
-# 像以前一样更改 SQL 文件。
-
-> .load-metrics-sql
-> .run-metrics
-my_custom_metric {
-  <contents of changed my_custom_metric>
-}
-```
-
-WARNING: 目前无法以相同的方式重新加载 protos。如果更改了 protos，则需要重新编译（对于内置 metrics）并重新调用 trace processor 以获取更改。
-
-WARNING: 从 `--metric-extension` 文件夹中删除的文件*不会*被删除，并且仍然可用，例如，对于 RUN_METRIC 调用。
-
 ### 在不重新编译的情况下修改内置 metrics SQL
 
 可以在运行时覆盖内置 metrics 的 SQL，而无需重新编译 trace processor。为此，需要使用内置 metrics 所在的磁盘路径和虚拟路径的特殊字符串 `/` 来指定标志 `--metric-extension`。

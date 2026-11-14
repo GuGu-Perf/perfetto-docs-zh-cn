@@ -205,7 +205,7 @@ TAB: Android (command line)
 先决条件：
 - 主机上已安装 [ADB](https://developer.android.com/studio/command-line/adb)。
 - 一台运行 Android 15+ 的设备，使用 USB 连接到主机并已授权 ADB。
-- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-instrumentation#profileable-apps) 应用。如果你在 Android 的"user"构建上运行（相对于"userdebug"或"eng"），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
+- 一个 [_Profileable_ 或 _Debuggable_](https://developer.android.com/guide/topics/manifest/profileable-element) 应用。如果你在 Android 的"user"构建上运行（相对于"userdebug"或"eng"），你的应用需要在 manifest 中标记为 profileable 或 debuggable。
 
 对于 android,`tools/cpu_profile` 辅助 python 脚本简化了 trace config 的构建，并具有用于 profile 的后符号化（对于没有符号信息的库）以及转换为更适合纯火焰图可视化的 [pprof](https://github.com/google/pprof) 格式的附加选项。它可以按如下方式下载：
 ```bash

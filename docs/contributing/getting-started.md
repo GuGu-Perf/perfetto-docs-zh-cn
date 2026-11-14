@@ -127,9 +127,10 @@ gh pr create # 需要 cli.github.com
 
 ### 联系
 
-我们的主要交流渠道是我们的邮件列表：https://groups.google.com/forum/#!forum/perfetto-dev。
-
-你也可以在我们的 [Discord 频道](https://discord.gg/35ShE3A) 上联系我们，但我们在那里的支持只是尽力而为。
+联系我们最快的方式是我们的 [Discord 服务器](https://discord.gg/35ShE3A)。
+请在 #help 中提问，开发与设计方面的讨论请使用 #discuss。
+你也可以使用我们的邮件列表：
+https://groups.google.com/forum/#!forum/perfetto-dev。
 
 本项目遵循
 [Google 开源社区准则](https://opensource.google/conduct/)。

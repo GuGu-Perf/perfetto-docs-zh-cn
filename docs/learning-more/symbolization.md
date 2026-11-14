@@ -145,6 +145,19 @@ cat ${TRACE} symbols deobfuscation_map > enriched-trace
 - 拼接技巧**仅适用于 Perfetto protobuf trace**。其他 trace 格式（Chrome JSON、systrace、Firefox profile 等）不能以这种方式追加 `TracePacket` 字节。对于这些格式，请使用[方式 1](#option-1-traceconv-bundle)并通过 `trace_processor_shell` 加载符号。
 - 你必须手动管理 `PERFETTO_BINARY_PATH` / `PERFETTO_PROGUARD_MAP`；方式 1 中的自动发现不适用。
 
+### 被合并的类 {#merged-classes}
+
+对应用进行优化和混淆（例如使用 R8）可能将多个类合并为一个。当反混淆
+mapping 记录了哪些类被合并时，Perfetto 会将 heap dump 中由此产生的类
+标记为可能被合并（`heap_graph_class.potentially_merged`），并在 UI 中
+在它们旁边显示警告；参见
+[Heap Dump Explorer](/docs/visualization/heap-dump-explorer.md#merged-classes)。
+
+如果 mapping 没有记录被合并的类，Perfetto 便无法分辨哪些类被合并，
+因此会转而标记每一个被重命名的类。例如，R8 从 mapping 格式 2.3 开始
+在 `com.android.tools.r8.mergedClasses` 注释中记录被合并的类；更早的
+R8 mapping 文件则不会。
+
 ### 符号查找顺序
 
 对于 trace 中的每个 native mapping，符号化器查找具有匹配 Build ID 的文件。对于每个搜索路径 `P`，它按以下顺序尝试：

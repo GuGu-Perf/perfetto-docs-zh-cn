@@ -15,6 +15,8 @@
   然后三种开启方式 — 设备端开关、录制页面以及可完全控制质量和大小的原始配置。
 - [查看屏幕视频](#viewing-display-video)：时间线 track、
   悬停预览帧以及保持时间线同步地回放采集内容。
+- [将帧关联到帧时间线](#linking-frames-to-the-frame-timeline)：
+  将每个采集的帧与产生它的 SurfaceFlinger vsync 匹配。
 
 ## 工作原理及成本
 
@@ -120,7 +122,9 @@ issue 上评论和点赞以便进行优先级排序：
 包含屏幕视频的 trace 会显示一个 **Video Frames** 分组，每个屏幕有
 一个 track（对于手机，通常是一个 **Built-in Screen**）。Track 上的
 每个 slice 是一个采集的帧，标有帧号。该编号仅是采集帧的顺序计数器
-— 与帧时间线中的 vsync ID 无关。
+— 与帧时间线中的 vsync ID 无关。与产生该帧的 SurfaceFlinger
+composite 相关联的帧，会改标为该 composite 的 vsync ID
+（例如 `vsync 123456`）；参见[将帧关联到帧时间线](#linking-frames-to-the-frame-timeline)。
 
 ![Perfetto 时间线，顶部固定了 "Video Frames" 分组的 "Built-in Screen" track — 一行彩色 slice，标注为 Frame 30、Frame 57 等 — 位于 CPU 调度 track 之上。](../images/video_frames/03-track.png)
 
@@ -181,3 +185,53 @@ python3 python/tools/trace_video_conv.py before.perfetto-trace --compare after.p
 | `--query2` | 剪辑 `--compare` trace 的 SQL 选择区域。 |
 | `--title`, `--title2` | 第一个和第二个视频的标题（默认：文件名）。 |
 | `--trace-processor` | 本地 `trace_processor` 构建路径（否则会自动下载）。 |
+
+## 将帧关联到帧时间线
+
+每个采集的帧都可以关联到产生它的 SurfaceFlinger composite，并经由它
+关联到该 vsync 的[帧时间线](/docs/data-sources/frametimeline.md)。这个
+关联来自 SurfaceFlinger 的 **android.surfaceflinger.virtualdisplay**
+数据源：它为每个排队到虚拟显示器的 composite 发出一个 packet，其中带有
+该 composite 的 vsync ID 以及打在所排队 buffer 上的呈现时间。编码器
+通常会把该呈现时间原样传递为帧的呈现时间，因此 trace_processor 将两者
+匹配，并把 vsync ID 存入 `__intrinsic_video_frames` 的
+`frame_timeline_vsync_id` 列。
+
+在采集的同时启用它，并一起启用这些关联所指向的帧时间线：
+
+```
+data_sources {
+  config {
+    name: "android.display.video"
+  }
+}
+data_sources {
+  config {
+    name: "android.surfaceflinger.virtualdisplay"
+  }
+}
+data_sources {
+  config {
+    name: "android.surfaceflinger.frametimeline"
+  }
+}
+```
+
+虚拟显示器数据源仅在设备的 SurfaceFlinger 启用了
+`com.android.graphics.surfaceflinger.flags.virtual_display_composite_tracing`
+flag 时才可用。若未启用，帧仍会照常采集，但保持未关联状态。
+
+在 UI 中，已关联的帧在视频 track 上标有其 vsync ID。视频帧的详情会显示
+**Frame timeline vsync id**，它链接到帧时间线上的 SurfaceFlinger
+DisplayFrame，并列出被合成到其中的各个应用帧，每个都链接到对应应用的
+帧。反方向地，当某个 vsync 产生了一个已采集的帧时，在 **Actual
+Timeline** track 上选择一个 slice 会显示一个 **Display video** 小节，
+其中带有 **Jump to video frame** 链接。
+
+当没有 composite 具有该帧的呈现时间时（例如因为编码器调整了时间戳），
+或者当具有不同 vsync ID 的 composite 共享同一呈现时间时，该帧保持未
+关联。`android_video_vsync_composite_unmatched` 统计项统计没有匹配视频
+帧的 composite，而 `android_video_vsync_present_time_ambiguous` 统计
+映射到相互冲突的 vsync ID 且匹配到了某个帧的呈现时间。composite
+packet 中的 display ID 是 SurfaceFlinger 为虚拟显示器分配的 ID，与
+视频流的 display ID 无关，因此呈现时间是这一匹配可以使用的唯一键。

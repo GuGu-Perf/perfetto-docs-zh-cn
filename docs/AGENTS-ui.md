@@ -442,6 +442,43 @@ function process(items: string[]): void { ... }
 function process(items: readonly string[]): void { ... }
 ```
 
+**不要用 `!` 消除索引访问的报错:**
+已启用 `noUncheckedIndexedAccess`，因此 `arr[i]` 的类型是 `T | undefined`。
+追加 `!` 虽然能让报错消失，却会掩盖真实的 bug。优先使用类型系统真正能检查的构造：
+
+- 使用 `for...of` / `arr.entries()` 代替索引循环。
+- 先读取再检查，而不是先检查 `length` 再索引。
+- 当确实需要断言某个不变式时，使用 `ensureDefined()` / `assertDefined()`（来自 `base/assert.ts`），
+  让它明确地失败，而不是被默默假设成立。
+- 在不需要索引的地方完全避免索引，例如使用命名值或保留直接引用，
+  而不是读取 `arr[0]!`。
+- 在可行时使用字面量定长数组（元组），并使用 `mapTuple()`
+  （来自 `base/array_utils.ts`）在 map 过程中保持元组长度。
+- 对保证非空的数组使用 `ReadonlyNonEmpty<T>`（来自 `base/array_utils.ts`），
+  使 `[0]` 的类型为 `T`。
+- 如果 `!` 确实必须保留（例如索引可证明在范围内的热循环），
+  请添加注释说明为什么这样做是安全的。
+
+```typescript
+// 不好
+for (let i = 0; i < items.length; i++) {
+  process(items[i]!);
+}
+if (items.length > 0) {
+  use(items[0]!);
+}
+
+// 好
+for (const item of items) {
+  process(item);
+}
+const first = items[0];
+if (first !== undefined) {
+  use(first);
+}
+const required = ensureDefined(items[0], 'items must not be empty');
+```
+
 **使用 `classNames()` 实用程序构建 CSS 类字符串：**
 
 ```typescript
